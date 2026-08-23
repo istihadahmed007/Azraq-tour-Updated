@@ -15,6 +15,8 @@ export interface AgencyConfig {
   workingHours: string;
   operatingDays: string;
   travelpayoutsPartnerId?: string;
+  travelpayoutsMarker?: string;
+  travelpayoutsTrsId?: string;
   aviasalesAffiliateUrl: string;
   aviasalesBaseUrl: string;
   officialAffiliateDisclosure: string;
@@ -40,6 +42,8 @@ export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
   workingHours: '10:00 AM – 8:00 PM',
   operatingDays: 'Saturday – Thursday (24/7 WhatsApp concierge)',
   travelpayoutsPartnerId: '565363',
+  travelpayoutsMarker: '765415',
+  travelpayoutsTrsId: '565363',
   aviasalesAffiliateUrl: 'https://www.aviasales.com/?marker=765415&trs=565363&currency=bdt',
   aviasalesBaseUrl: 'https://www.aviasales.com/?marker=765415&trs=565363&currency=bdt&params=DAC1',
   officialAffiliateDisclosure:
@@ -56,3 +60,6 @@ export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
   affiliateDisclosureText:
     'Azraq collaborates with licensed global travel distribution partners and Travelpayouts to provide comprehensive flight and lodging rate comparisons. When you search or book through partner links, Azraq may earn an affiliate commission at no additional cost to you. Direct airline and visa concierge services are serviced by our Dhaka travel desk.',
 };
+
+export const AGENCY_CONFIG = AZRAQ_AGENCY_CONFIG;
+

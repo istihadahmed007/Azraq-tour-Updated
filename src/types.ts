@@ -567,6 +567,8 @@ export interface Destination {
   estimatedBudget?: string;
   priceRange?: string;
   popularAttractions?: string[];
+  attractions?: string[];
+  flightDuration?: string;
   activities?: string[];
   thingsToDo?: string[];
   localFood?: string[];

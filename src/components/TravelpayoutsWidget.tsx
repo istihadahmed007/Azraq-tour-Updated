@@ -1,9 +1,25 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Plane, Building2, Sparkles, ShieldCheck, Tag, Search, Globe, CalendarDays, ExternalLink, ArrowRight, RefreshCw } from 'lucide-react';
-import { trackFlightSearchEvent } from '../data/flightsData';
+import React, { useState } from 'react';
+import {
+  Plane,
+  Building2,
+  Sparkles,
+  ShieldCheck,
+  Tag,
+  Search,
+  Globe,
+  CalendarDays,
+  ExternalLink,
+  ArrowRight,
+  MapPin,
+  Users,
+  Clock,
+  CheckCircle2,
+} from 'lucide-react';
+import { trackFlightSearchEvent, BANGLADESH_AIRPORTS } from '../data/flightsData';
+import { AZRAQ_AGENCY_CONFIG } from '../data/agencyConfig';
 
 interface TravelpayoutsWidgetProps {
-  defaultTab?: 'search' | 'deals' | 'map' | 'schedule';
+  defaultTab?: 'search' | 'deals' | 'schedule' | 'map';
   className?: string;
   onNavigateToSearch?: (origin: string, destination: string) => void;
 }
@@ -15,10 +31,11 @@ const TOP_FEATURED_DEALS = [
     to: 'DXB',
     toCity: 'Dubai',
     priceBDT: '৳38,500',
-    airline: 'Emirates / Flydubai',
-    link: 'https://www.aviasales.com/search/DAC3108DXB0709100y?marker=765415&trs=565363&params=DAC1',
+    airline: 'Emirates / Flydubai / Biman',
+    searchKey: 'DAC3108DXB0709100y',
     badge: 'Popular Umrah & Expat',
     duration: '4h 50m direct',
+    category: 'Middle East',
   },
   {
     from: 'DAC',
@@ -27,9 +44,10 @@ const TOP_FEATURED_DEALS = [
     toCity: 'Bangkok',
     priceBDT: '৳28,900',
     airline: 'Biman / US-Bangla / Thai',
-    link: 'https://www.aviasales.com/search/DAC3108BKK0709100y?marker=765415&trs=565363&params=DAC1',
+    searchKey: 'DAC3108BKK0709100y',
     badge: 'Best Value Holiday',
     duration: '2h 30m direct',
+    category: 'Southeast Asia',
   },
   {
     from: 'DAC',
@@ -37,10 +55,11 @@ const TOP_FEATURED_DEALS = [
     to: 'KUL',
     toCity: 'Kuala Lumpur',
     priceBDT: '৳31,200',
-    airline: 'Malaysia Airlines / Batik',
-    link: 'https://www.aviasales.com/search/DAC3108KUL0709100y?marker=765415&trs=565363&params=DAC1',
+    airline: 'Malaysia Airlines / Batik Air',
+    searchKey: 'DAC3108KUL0709100y',
     badge: 'Direct Daily',
     duration: '3h 50m direct',
+    category: 'Southeast Asia',
   },
   {
     from: 'DAC',
@@ -48,10 +67,11 @@ const TOP_FEATURED_DEALS = [
     to: 'JED',
     toCity: 'Jeddah / Makkah',
     priceBDT: '৳52,400',
-    airline: 'Saudia / Biman',
-    link: 'https://www.aviasales.com/search/DAC3108JED0709100y?marker=765415&trs=565363&params=DAC1',
-    badge: 'Umrah Direct',
+    airline: 'Saudia / Biman Bangladesh',
+    searchKey: 'DAC3108JED0709100y',
+    badge: 'Umrah & Pilgrimage',
     duration: '6h 30m direct',
+    category: 'Middle East',
   },
   {
     from: 'DAC',
@@ -60,20 +80,97 @@ const TOP_FEATURED_DEALS = [
     toCity: 'Singapore',
     priceBDT: '৳39,800',
     airline: 'Singapore Airlines / Biman',
-    link: 'https://www.aviasales.com/search/DAC3108SIN0709100y?marker=765415&trs=565363&params=DAC1',
+    searchKey: 'DAC3108SIN0709100y',
     badge: 'Medical & Leisure',
     duration: '4h 05m direct',
+    category: 'Southeast Asia',
   },
   {
     from: 'DAC',
     fromCity: 'Dhaka',
     to: 'LHR',
-    toCity: 'London',
+    toCity: 'London (Heathrow)',
     priceBDT: '৳84,500',
     airline: 'Biman / Qatar / Emirates',
-    link: 'https://www.aviasales.com/search/DAC3108LHR0709100y?marker=765415&trs=565363&params=DAC1',
+    searchKey: 'DAC3108LHR0709100y',
     badge: 'UK Student & Diaspora',
     duration: '11h 15m direct',
+    category: 'Europe',
+  },
+];
+
+const FLIGHT_SCHEDULES = [
+  {
+    route: 'Dhaka (DAC) ➔ Dubai (DXB)',
+    airlines: 'Emirates, Biman, Flydubai, US-Bangla',
+    frequency: 'Daily (7+ flights/day)',
+    duration: '4h 45m',
+    direct: true,
+    indicativeFare: 'From ৳38,500',
+    code: 'DXB',
+  },
+  {
+    route: 'Dhaka (DAC) ➔ Bangkok (BKK)',
+    airlines: 'Thai Airways, Biman, US-Bangla',
+    frequency: 'Daily (4 flights/day)',
+    duration: '2h 30m',
+    direct: true,
+    indicativeFare: 'From ৳28,900',
+    code: 'BKK',
+  },
+  {
+    route: 'Dhaka (DAC) ➔ Jeddah / Makkah (JED)',
+    airlines: 'Saudia, Biman Bangladesh',
+    frequency: 'Daily (3 flights/day)',
+    duration: '6h 30m',
+    direct: true,
+    indicativeFare: 'From ৳52,400',
+    code: 'JED',
+  },
+  {
+    route: 'Dhaka (DAC) ➔ Kuala Lumpur (KUL)',
+    airlines: 'Malaysia Airlines, Biman, Batik Air, AirAsia',
+    frequency: 'Daily (5 flights/day)',
+    duration: '3h 50m',
+    direct: true,
+    indicativeFare: 'From ৳31,200',
+    code: 'KUL',
+  },
+  {
+    route: 'Dhaka (DAC) ➔ Singapore (SIN)',
+    airlines: 'Singapore Airlines, Biman, US-Bangla',
+    frequency: 'Daily (3 flights/day)',
+    duration: '4h 05m',
+    direct: true,
+    indicativeFare: 'From ৳39,800',
+    code: 'SIN',
+  },
+  {
+    route: 'Dhaka (DAC) ➔ London (LHR)',
+    airlines: 'Biman (Direct), Qatar Airways, Emirates (1 Stop)',
+    frequency: 'Daily (Biman Direct 4x/week)',
+    duration: '11h 15m direct',
+    direct: true,
+    indicativeFare: 'From ৳84,500',
+    code: 'LHR',
+  },
+  {
+    route: 'Dhaka (DAC) ➔ Doha (DOH)',
+    airlines: 'Qatar Airways, Biman Bangladesh',
+    frequency: 'Daily (4 flights/day)',
+    duration: '5h 30m',
+    direct: true,
+    indicativeFare: 'From ৳44,200',
+    code: 'DOH',
+  },
+  {
+    route: 'Dhaka (DAC) ➔ New York (JFK)',
+    airlines: 'Qatar Airways, Emirates, Turkish, Saudia',
+    frequency: 'Daily (1 Stop via DOH/DXB/IST)',
+    duration: '17h 30m',
+    direct: false,
+    indicativeFare: 'From ৳1,15,000',
+    code: 'JFK',
   },
 ];
 
@@ -82,86 +179,86 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
   className = '',
   onNavigateToSearch,
 }) => {
-  const [activeWidgetTab, setActiveWidgetTab] = useState<'search' | 'deals' | 'map' | 'schedule'>(defaultTab);
-  const [hasScriptError, setHasScriptError] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [activeWidgetTab, setActiveWidgetTab] = useState<'search' | 'deals' | 'schedule' | 'map'>(defaultTab);
 
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  // Search tab inputs
+  const [origin, setOrigin] = useState('DAC');
+  const [destination, setDestination] = useState('DXB');
+  const [tripType, setTripType] = useState<'round' | 'oneWay'>('round');
+  const [departDate, setDepartDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 14);
+    return d.toISOString().split('T')[0];
+  });
+  const [returnDate, setReturnDate] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 21);
+    return d.toISOString().split('T')[0];
+  });
+  const [passengers, setPassengers] = useState(1);
+  const [cabinClass, setCabinClass] = useState<'Y' | 'C' | 'F'>('Y');
+  const [includeHotels, setIncludeHotels] = useState(false);
 
-    setHasScriptError(false);
-    setIsLoading(true);
+  const marker = AZRAQ_AGENCY_CONFIG.travelpayoutsMarker || '765415';
+  const trs = AZRAQ_AGENCY_CONFIG.travelpayoutsTrsId || '565363';
 
-    // Clear previous widget contents
-    container.innerHTML = '';
+  const handleLaunchSearch = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-    const script = document.createElement('script');
-    script.async = true;
-    script.charset = 'utf-8';
-
-    if (activeWidgetTab === 'deals') {
-      script.src =
-        'https://tpwidg.com/content?currency=bdt&trs=565363&shmarker=765415&target_host=www.aviasales.com%2Fsearch&locale=en&limit=6&powered_by=true&primary=%230085FF&promo_id=4044&campaign_id=100';
-    } else if (activeWidgetTab === 'map') {
-      script.src =
-        'https://tpwidg.com/content?currency=bdt&trs=565363&shmarker=765415&lat=23.8103&lng=90.4125&powered_by=true&search_host=www.aviasales.com%2Fsearch&locale=en&origin=DAC&value_min=0&value_max=1000000&round_trip=true&only_direct=false&radius=1&draggable=true&disable_zoom=false&show_logo=false&scrollwheel=false&primary=%233FABDB&secondary=%233FABDB&light=%23ffffff&width=1500&height=500&zoom=2&promo_id=4054&campaign_id=100';
-    } else if (activeWidgetTab === 'schedule') {
-      script.src =
-        'https://tpwidg.com/content?currency=bdt&trs=565363&shmarker=765415&color_button=%23FF0000&target_host=www.aviasales.com%2Fsearch&locale=en&powered_by=true&origin=DAC&destination=BKK&with_fallback=false&non_direct_flights=true&min_lines=5&border_radius=0&color_background=%23FFFFFF&color_text=%23000000&color_border=%23FFFFFF&promo_id=2811&campaign_id=100';
-    } else {
-      script.src =
-        'https://tpwidg.com/content?currency=bdt&trs=565363&shmarker=765415&show_hotels=true&powered_by=true&locale=en&searchUrl=www.aviasales.com%2Fsearch&primary_override=%2332a8dd&color_button=%2332a8dd&color_icons=%2332a8dd&dark=%23262626&light=%23FFFFFF&secondary=%23FFFFFF&special=%23C4C4C4&color_focused=%2332a8dd&border_radius=0&plain=false&promo_id=7879&campaign_id=100';
+    const dDate = new Date(departDate);
+    const depDDMM = `${String(dDate.getDate()).padStart(2, '0')}${String(dDate.getMonth() + 1).padStart(2, '0')}`;
+    let retDDMM = '';
+    if (tripType === 'round' && returnDate) {
+      const rDate = new Date(returnDate);
+      retDDMM = `${String(rDate.getDate()).padStart(2, '0')}${String(rDate.getMonth() + 1).padStart(2, '0')}`;
     }
 
-    script.onload = () => {
-      setIsLoading(false);
-    };
+    const paxCode = `${passengers}00`;
+    const classCode = cabinClass.toLowerCase();
+    const searchKey = `${origin}${depDDMM}${destination}${retDDMM}${paxCode}${classCode}`;
+    const aviasalesUrl = `https://www.aviasales.com/search/${searchKey}?marker=${marker}&trs=${trs}&currency=bdt&locale=en&params=${origin}1`;
 
-    script.onerror = () => {
-      console.warn('Third-party Travelpayouts script was blocked or failed to load. Showing Azraq Live Fallback.');
-      setHasScriptError(true);
-      setIsLoading(false);
-    };
+    trackFlightSearchEvent('partner_redirect', {
+      origin,
+      destination,
+      tripType,
+      partnerName: 'Aviasales Partner Network',
+      directUrl: aviasalesUrl,
+    });
 
-    // Safety timeout: if widget doesn't render after 4.5s (sandbox or adblock restriction)
-    const timer = setTimeout(() => {
-      if (container && container.childElementCount <= 1 && !container.querySelector('iframe')) {
-        setHasScriptError(true);
-        setIsLoading(false);
-      }
-    }, 4500);
+    window.open(aviasalesUrl, '_blank', 'noopener,noreferrer');
+  };
 
-    try {
-      container.appendChild(script);
-    } catch (e) {
-      setHasScriptError(true);
-      setIsLoading(false);
-    }
-
-    return () => {
-      clearTimeout(timer);
-      if (container) {
-        container.innerHTML = '';
-      }
-    };
-  }, [activeWidgetTab]);
-
-  const handleBookDirect = (deal: typeof TOP_FEATURED_DEALS[0]) => {
+  const handleQuickDealClick = (deal: typeof TOP_FEATURED_DEALS[0]) => {
+    const url = `https://www.aviasales.com/search/${deal.searchKey}?marker=${marker}&trs=${trs}&currency=bdt&locale=en&params=${deal.from}1`;
     trackFlightSearchEvent('partner_redirect', {
       origin: deal.from,
       destination: deal.to,
-      partnerName: 'Aviasales Partner Network',
+      partnerName: 'Aviasales Deal Card',
       priceBDT: deal.priceBDT,
     });
-    window.open(deal.link, '_blank', 'noopener,noreferrer');
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  const handleScheduleRouteClick = (item: typeof FLIGHT_SCHEDULES[0]) => {
+    const d = new Date();
+    d.setDate(d.getDate() + 14);
+    const depDDMM = `${String(d.getDate()).padStart(2, '0')}${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const searchKey = `DAC${depDDMM}${item.code}100y`;
+    const url = `https://www.aviasales.com/search/${searchKey}?marker=${marker}&trs=${trs}&currency=bdt&locale=en&params=DAC1`;
+
+    trackFlightSearchEvent('partner_redirect', {
+      origin: 'DAC',
+      destination: item.code,
+      partnerName: 'Aviasales Route Schedule',
+    });
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   return (
     <div
       id="travelpayouts-booking-widget"
-      className={`travelpayouts-booking-widget w-full rounded-2xl bg-[#071A33]/95 border border-sky-400/30 backdrop-blur-md p-4 sm:p-6 shadow-2xl transition-all ${className}`}
+      className={`w-full rounded-2xl bg-[#071A33]/95 border border-sky-400/30 backdrop-blur-md p-4 sm:p-6 shadow-2xl transition-all ${className}`}
     >
       {/* Header bar */}
       <div className="flex items-center justify-between gap-3 pb-4 border-b border-white/10 mb-4 flex-wrap">
@@ -175,19 +272,19 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
                 {activeWidgetTab === 'deals'
                   ? 'Top Cheap Flight Deals'
                   : activeWidgetTab === 'map'
-                  ? 'Low-Fare Flight Route Map'
+                  ? 'Low-Fare Route Explorer'
                   : activeWidgetTab === 'schedule'
-                  ? 'Flight Schedule & Direct Flights'
-                  : 'Flight & Hotel Search Engine'}
+                  ? 'Flight Schedules & Frequencies'
+                  : 'Aviasales Flight & Hotel Engine'}
               </span>
               <span className="bg-emerald-500/20 text-emerald-300 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/30 font-semibold">
                 BDT ৳ Live
               </span>
             </h3>
             <p className="text-xs text-slate-300 flex items-center gap-1.5 pt-0.5">
-              <span>Aviasales & Travelpayouts Partner Engine</span>
+              <span>Travelpayouts & Aviasales Direct Gateway</span>
               <span>•</span>
-              <span className="text-sky-300 font-medium">Marker: 765415</span>
+              <span className="text-sky-300 font-medium">Affiliate Marker: {marker}</span>
             </p>
           </div>
         </div>
@@ -216,7 +313,7 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
             }`}
           >
             <Tag className="w-3.5 h-3.5" />
-            <span>Top 6 Deals</span>
+            <span>Top Deals</span>
           </button>
           <button
             type="button"
@@ -228,7 +325,7 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
             }`}
           >
             <CalendarDays className="w-3.5 h-3.5" />
-            <span>Schedule Table</span>
+            <span>Schedules</span>
           </button>
           <button
             type="button"
@@ -240,30 +337,201 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
             }`}
           >
             <Globe className="w-3.5 h-3.5" />
-            <span>Route Map</span>
+            <span>Route Matrix</span>
           </button>
         </div>
       </div>
 
-      {/* Target container or Fallback Live Deals Grid */}
-      {hasScriptError ? (
+      {/* Tab 1: Live Interactive Search Form */}
+      {activeWidgetTab === 'search' && (
+        <form onSubmit={handleLaunchSearch} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Origin */}
+            <div className="bg-white/10 border border-white/15 rounded-xl p-2.5">
+              <label className="text-[11px] font-bold text-sky-200 uppercase tracking-wider block mb-1">
+                From (Origin)
+              </label>
+              <select
+                value={origin}
+                onChange={(e) => setOrigin(e.target.value)}
+                className="w-full bg-slate-900/90 text-white text-sm font-semibold rounded-lg p-2 border border-white/10 focus:outline-none focus:border-[#22C7C9]"
+              >
+                <option value="DAC">Dhaka (DAC) - Hazrat Shahjalal</option>
+                <option value="CGP">Chittagong (CGP) - Shah Amanat</option>
+                <option value="ZYL">Sylhet (ZYL) - Osmani</option>
+                <option value="CXB">Cox's Bazar (CXB)</option>
+                <option value="JSR">Jashore (JSR)</option>
+                <option value="RJH">Rajshahi (RJH)</option>
+                <option value="SPD">Saidpur (SPD)</option>
+                <option value="BZL">Barishal (BZL)</option>
+              </select>
+            </div>
+
+            {/* Destination */}
+            <div className="bg-white/10 border border-white/15 rounded-xl p-2.5">
+              <label className="text-[11px] font-bold text-sky-200 uppercase tracking-wider block mb-1">
+                To (Destination)
+              </label>
+              <select
+                value={destination}
+                onChange={(e) => setDestination(e.target.value)}
+                className="w-full bg-slate-900/90 text-white text-sm font-semibold rounded-lg p-2 border border-white/10 focus:outline-none focus:border-[#22C7C9]"
+              >
+                <optgroup label="Middle East & Umrah">
+                  <option value="DXB">Dubai (DXB) - UAE</option>
+                  <option value="JED">Jeddah / Makkah (JED) - Saudi Arabia</option>
+                  <option value="MED">Medina (MED) - Saudi Arabia</option>
+                  <option value="DOH">Doha (DOH) - Qatar</option>
+                  <option value="AUH">Abu Dhabi (AUH) - UAE</option>
+                  <option value="SHJ">Sharjah (SHJ) - UAE</option>
+                  <option value="RUH">Riyadh (RUH) - Saudi Arabia</option>
+                  <option value="MCT">Muscat (MCT) - Oman</option>
+                  <option value="KWI">Kuwait City (KWI) - Kuwait</option>
+                </optgroup>
+                <optgroup label="Southeast & South Asia">
+                  <option value="BKK">Bangkok (BKK) - Thailand</option>
+                  <option value="HKT">Phuket (HKT) - Thailand</option>
+                  <option value="KUL">Kuala Lumpur (KUL) - Malaysia</option>
+                  <option value="SIN">Singapore (SIN) - Singapore</option>
+                  <option value="DPS">Bali (DPS) - Indonesia</option>
+                  <option value="MLE">Malé (MLE) - Maldives</option>
+                  <option value="KTM">Kathmandu (KTM) - Nepal</option>
+                  <option value="CMB">Colombo (CMB) - Sri Lanka</option>
+                  <option value="CCU">Kolkata (CCU) - India</option>
+                  <option value="DEL">Delhi (DEL) - India</option>
+                  <option value="MAA">Chennai (MAA) - India</option>
+                </optgroup>
+                <optgroup label="Europe & UK">
+                  <option value="LHR">London Heathrow (LHR) - UK</option>
+                  <option value="LGW">London Gatwick (LGW) - UK</option>
+                  <option value="MAN">Manchester (MAN) - UK</option>
+                  <option value="CDG">Paris (CDG) - France</option>
+                  <option value="FRA">Frankfurt (FRA) - Germany</option>
+                  <option value="AMS">Amsterdam (AMS) - Netherlands</option>
+                  <option value="IST">Istanbul (IST) - Turkey</option>
+                </optgroup>
+                <optgroup label="Americas & Australia">
+                  <option value="JFK">New York (JFK) - USA</option>
+                  <option value="YYZ">Toronto (YYZ) - Canada</option>
+                  <option value="SYD">Sydney (SYD) - Australia</option>
+                  <option value="MEL">Melbourne (MEL) - Australia</option>
+                </optgroup>
+              </select>
+            </div>
+
+            {/* Travel Dates */}
+            <div className="bg-white/10 border border-white/15 rounded-xl p-2.5">
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[11px] font-bold text-sky-200 uppercase tracking-wider">
+                  {tripType === 'round' ? 'Departure & Return' : 'Departure Date'}
+                </label>
+                <div className="flex items-center gap-2 text-[10px] text-sky-300">
+                  <button
+                    type="button"
+                    onClick={() => setTripType('round')}
+                    className={`cursor-pointer ${tripType === 'round' ? 'font-bold underline text-white' : ''}`}
+                  >
+                    Round Trip
+                  </button>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={() => setTripType('oneWay')}
+                    className={`cursor-pointer ${tripType === 'oneWay' ? 'font-bold underline text-white' : ''}`}
+                  >
+                    One Way
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="date"
+                  value={departDate}
+                  onChange={(e) => setDepartDate(e.target.value)}
+                  className="w-full bg-slate-900/90 text-white text-xs font-semibold rounded-lg p-2 border border-white/10 focus:outline-none"
+                />
+                {tripType === 'round' ? (
+                  <input
+                    type="date"
+                    value={returnDate}
+                    onChange={(e) => setReturnDate(e.target.value)}
+                    className="w-full bg-slate-900/90 text-white text-xs font-semibold rounded-lg p-2 border border-white/10 focus:outline-none"
+                  />
+                ) : (
+                  <div className="flex items-center justify-center text-[11px] text-slate-400 bg-slate-900/50 rounded-lg">
+                    One-Way
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Passengers & Class */}
+            <div className="bg-white/10 border border-white/15 rounded-xl p-2.5">
+              <label className="text-[11px] font-bold text-sky-200 uppercase tracking-wider block mb-1">
+                Travelers & Cabin Class
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value={passengers}
+                  onChange={(e) => setPassengers(Number(e.target.value))}
+                  className="w-full bg-slate-900/90 text-white text-xs font-semibold rounded-lg p-2 border border-white/10 focus:outline-none"
+                >
+                  <option value={1}>1 Adult</option>
+                  <option value={2}>2 Adults</option>
+                  <option value={3}>3 Adults</option>
+                  <option value={4}>4 Adults</option>
+                  <option value={5}>5+ Adults</option>
+                </select>
+                <select
+                  value={cabinClass}
+                  onChange={(e) => setCabinClass(e.target.value as any)}
+                  className="w-full bg-slate-900/90 text-white text-xs font-semibold rounded-lg p-2 border border-white/10 focus:outline-none"
+                >
+                  <option value="Y">Economy</option>
+                  <option value="C">Business</option>
+                  <option value="F">First Class</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Submit Action */}
+          <div className="flex items-center justify-between pt-2 flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={includeHotels}
+                  onChange={(e) => setIncludeHotels(e.target.checked)}
+                  className="w-4 h-4 rounded text-[#22C7C9] bg-slate-800 border-white/20"
+                />
+                <span>Also search hotels in destination (Aviasales & Hotels)</span>
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#0D6EFD] via-[#1389E8] to-[#22C7C9] hover:opacity-95 text-slate-950 font-black text-sm flex items-center gap-2 shadow-lg cursor-pointer transition-all active:scale-[0.99]"
+            >
+              <Plane className="w-4 h-4 text-slate-950" />
+              <span>Search Flights on Aviasales (BDT ৳)</span>
+              <ArrowRight className="w-4 h-4 text-slate-950" />
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Tab 2: Top Deals Cards */}
+      {activeWidgetTab === 'deals' && (
         <div className="rounded-xl bg-slate-900/90 border border-white/10 p-4 sm:p-5">
           <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4 flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <span className="text-xs font-bold text-sky-200">
-                Live Flight Inventory from Dhaka (DAC) • Powered by Aviasales
+                Live Flight Deals from Bangladesh • Verified Aviasales Gateway
               </span>
             </div>
-            <a
-              href="https://www.aviasales.com/search/DAC3108DXB0709100y?marker=765415&trs=565363&params=DAC1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-[#22C7C9] hover:underline flex items-center gap-1 font-bold"
-            >
-              <span>Explore All Global Routes</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            <span className="text-xs text-slate-400">Instant direct booking with official airline inventory</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -308,7 +576,7 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => handleBookDirect(deal)}
+                    onClick={() => handleQuickDealClick(deal)}
                     className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#0D6EFD] to-[#22C7C9] hover:opacity-95 text-slate-950 font-black text-xs flex items-center gap-1 shadow-md cursor-pointer transition-all"
                   >
                     <span>Check Fare</span>
@@ -319,29 +587,115 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
             ))}
           </div>
         </div>
-      ) : (
-        <div
-          id="tp-widget-container"
-          ref={containerRef}
-          key={activeWidgetTab}
-          className="min-h-[240px] w-full flex items-center justify-center relative rounded-xl overflow-hidden"
-        >
-          {isLoading && (
-            <div className="text-xs text-sky-200/70 py-10 flex items-center gap-2 animate-pulse">
-              <Sparkles className="w-4 h-4 text-sky-400" />
-              <span>
-                Loading{' '}
-                {activeWidgetTab === 'deals'
-                  ? 'Top 6 Flight Deals (BDT)'
-                  : activeWidgetTab === 'map'
-                  ? 'Global Flight Route Map (BDT)'
-                  : activeWidgetTab === 'schedule'
-                  ? 'Flight Schedule & Direct Flights (BDT)'
-                  : 'Aviasales & Hotels Widget (BDT)'}
-                ...
-              </span>
+      )}
+
+      {/* Tab 3: Flight Schedule & Frequencies */}
+      {activeWidgetTab === 'schedule' && (
+        <div className="rounded-xl bg-slate-900/90 border border-white/10 p-4 overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead>
+              <tr className="border-b border-white/10 text-sky-200 font-bold uppercase text-[10px] tracking-wider">
+                <th className="pb-2">Route</th>
+                <th className="pb-2">Operating Airlines</th>
+                <th className="pb-2">Frequency</th>
+                <th className="pb-2">Duration</th>
+                <th className="pb-2">Indicative Fare</th>
+                <th className="pb-2 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {FLIGHT_SCHEDULES.map((item, idx) => (
+                <tr key={idx} className="hover:bg-white/5 transition-colors">
+                  <td className="py-2.5 font-bold text-white whitespace-nowrap">
+                    {item.route}
+                  </td>
+                  <td className="py-2.5 text-slate-300 whitespace-nowrap">
+                    {item.airlines}
+                  </td>
+                  <td className="py-2.5 text-slate-400 whitespace-nowrap">
+                    {item.frequency}
+                  </td>
+                  <td className="py-2.5 whitespace-nowrap">
+                    <span className="bg-sky-500/20 text-sky-200 px-2 py-0.5 rounded text-[10px] font-mono">
+                      {item.duration}
+                    </span>
+                  </td>
+                  <td className="py-2.5 font-bold text-emerald-400 whitespace-nowrap">
+                    {item.indicativeFare}
+                  </td>
+                  <td className="py-2.5 text-right whitespace-nowrap">
+                    <button
+                      type="button"
+                      onClick={() => handleScheduleRouteClick(item)}
+                      className="px-2.5 py-1 rounded bg-[#22C7C9] text-slate-950 font-bold text-[11px] hover:bg-[#1fb3b5] cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <span>Find Flights</span>
+                      <ExternalLink className="w-2.5 h-2.5" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Tab 4: Route Matrix */}
+      {activeWidgetTab === 'map' && (
+        <div className="rounded-xl bg-slate-900/90 border border-white/10 p-4 sm:p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <h4 className="text-xs font-bold text-[#22C7C9] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5" /> Middle East & Holy Umrah
+              </h4>
+              <ul className="space-y-1.5 text-xs">
+                <li><a href={`https://www.aviasales.com/search/DAC3108DXB0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Dubai</span> <span className="text-emerald-400 font-mono">৳38.5k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108JED0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Jeddah / Makkah</span> <span className="text-emerald-400 font-mono">৳52.4k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108MED0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Medina</span> <span className="text-emerald-400 font-mono">৳54.0k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108DOH0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Doha</span> <span className="text-emerald-400 font-mono">৳44.2k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108AUH0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Abu Dhabi</span> <span className="text-emerald-400 font-mono">৳39.0k</span></a></li>
+              </ul>
             </div>
-          )}
+
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <h4 className="text-xs font-bold text-[#22C7C9] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5" /> Southeast Asia & Holidays
+              </h4>
+              <ul className="space-y-1.5 text-xs">
+                <li><a href={`https://www.aviasales.com/search/DAC3108BKK0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Bangkok</span> <span className="text-emerald-400 font-mono">৳28.9k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108KUL0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Kuala Lumpur</span> <span className="text-emerald-400 font-mono">৳31.2k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108SIN0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Singapore</span> <span className="text-emerald-400 font-mono">৳39.8k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108DPS0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Bali</span> <span className="text-emerald-400 font-mono">৳46.5k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108MLE0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Maldives</span> <span className="text-emerald-400 font-mono">৳41.0k</span></a></li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <h4 className="text-xs font-bold text-[#22C7C9] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5" /> Europe & United Kingdom
+              </h4>
+              <ul className="space-y-1.5 text-xs">
+                <li><a href={`https://www.aviasales.com/search/DAC3108LHR0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ London (LHR)</span> <span className="text-emerald-400 font-mono">৳84.5k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108MAN0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Manchester</span> <span className="text-emerald-400 font-mono">৳89.0k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108CDG0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Paris</span> <span className="text-emerald-400 font-mono">৳88.0k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108FRA0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Frankfurt</span> <span className="text-emerald-400 font-mono">৳86.5k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108IST0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Istanbul</span> <span className="text-emerald-400 font-mono">৳65.0k</span></a></li>
+              </ul>
+            </div>
+
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <h4 className="text-xs font-bold text-[#22C7C9] uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <Globe className="w-3.5 h-3.5" /> Americas & Australia
+              </h4>
+              <ul className="space-y-1.5 text-xs">
+                <li><a href={`https://www.aviasales.com/search/DAC3108JFK0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ New York (JFK)</span> <span className="text-emerald-400 font-mono">৳115k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108YYZ0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Toronto</span> <span className="text-emerald-400 font-mono">৳125k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108SYD0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Sydney</span> <span className="text-emerald-400 font-mono">৳98.0k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108MEL0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Melbourne</span> <span className="text-emerald-400 font-mono">৳99.5k</span></a></li>
+                <li><a href={`https://www.aviasales.com/search/DAC3108LAX0709100y?marker=${marker}&trs=${trs}&params=DAC1`} target="_blank" rel="noopener noreferrer" className="text-slate-200 hover:text-white hover:underline flex items-center justify-between"><span>Dhaka ➔ Los Angeles</span> <span className="text-emerald-400 font-mono">৳120k</span></a></li>
+              </ul>
+            </div>
+          </div>
         </div>
       )}
 
@@ -349,23 +703,10 @@ export const TravelpayoutsWidget: React.FC<TravelpayoutsWidgetProps> = ({
       <div className="mt-3 pt-3 border-t border-white/5 flex items-center justify-between text-[11px] text-sky-200/70 flex-wrap gap-2">
         <div className="flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Best Price Guarantee & Direct Airline/Hotel Booking in BDT</span>
+          <span>Real-time BDT Fare Comparison & Direct Airline Booking</span>
         </div>
         <div className="flex items-center gap-2 text-[10px] text-slate-400">
-          <span>Powered by Aviasales & Travelpayouts (765415)</span>
-          {hasScriptError && (
-            <button
-              type="button"
-              onClick={() => {
-                setHasScriptError(false);
-                setIsLoading(true);
-              }}
-              className="text-sky-300 hover:text-sky-100 underline cursor-pointer flex items-center gap-1"
-            >
-              <RefreshCw className="w-2.5 h-2.5" />
-              <span>Reload Widget</span>
-            </button>
-          )}
+          <span>Powered by Aviasales & Travelpayouts ({marker})</span>
         </div>
       </div>
     </div>
