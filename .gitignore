@@ -1,0 +1,22 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+# Local Database & Activity Logs (Sensitive Data)
+.users_db.json
+.admin_notifications.json
+.activity_logs.json
+.quotes_db.json
+.packages_db.json
+.blog_posts_db.json
+.user_activities.json
+.system_announcements.json
+.user_read_feeds.json
+*.local.json
+.*_db.json
+

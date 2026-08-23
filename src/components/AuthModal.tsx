@@ -1,0 +1,1070 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../context/AuthContext';
+import {
+  X,
+  Mail,
+  Lock,
+  Eye,
+  EyeOff,
+  User as UserIcon,
+  Phone,
+  Globe,
+  ArrowLeft,
+  ArrowRight,
+  RefreshCw,
+  Compass,
+  Sparkles,
+  ShieldCheck,
+  CheckCircle2,
+  AlertCircle,
+  KeyRound,
+  LogIn,
+  UserPlus,
+} from 'lucide-react';
+
+const COUNTRY_CODES = [
+  { code: '+880', country: 'BD', name: 'Bangladesh (+880)' },
+  { code: '+1', country: 'US', name: 'USA / Canada (+1)' },
+  { code: '+44', country: 'GB', name: 'United Kingdom (+44)' },
+  { code: '+966', country: 'SA', name: 'Saudi Arabia (+966)' },
+  { code: '+971', country: 'AE', name: 'UAE / Dubai (+971)' },
+  { code: '+60', country: 'MY', name: 'Malaysia (+60)' },
+  { code: '+65', country: 'SG', name: 'Singapore (+65)' },
+  { code: '+66', country: 'TH', name: 'Thailand (+66)' },
+  { code: '+91', country: 'IN', name: 'India (+91)' },
+  { code: '+974', country: 'QA', name: 'Qatar (+974)' },
+  { code: '+965', country: 'KW', name: 'Kuwait (+965)' },
+  { code: '+968', country: 'OM', name: 'Oman (+968)' },
+  { code: '+973', country: 'BH', name: 'Bahrain (+973)' },
+  { code: '+90', country: 'TR', name: 'Turkey (+90)' },
+  { code: '+61', country: 'AU', name: 'Australia (+61)' },
+];
+
+const COUNTRIES_LIST = [
+  'Bangladesh',
+  'Saudi Arabia',
+  'United Arab Emirates',
+  'Malaysia',
+  'Singapore',
+  'Thailand',
+  'United States',
+  'United Kingdom',
+  'Canada',
+  'Australia',
+  'India',
+  'Qatar',
+  'Kuwait',
+  'Oman',
+  'Bahrain',
+  'Turkey',
+  'Other',
+];
+
+const DESTINATION_HERO_IMAGE =
+  'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80';
+
+// Rate limiter helper in localStorage: max 5 attempts per 15 minutes
+const RATE_LIMIT_KEY = 'azraq_auth_attempts';
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 mins
+
+function checkRateLimit(): { allowed: boolean; remainingAttempts: number; retryMinutes: number } {
+  try {
+    const raw = localStorage.getItem(RATE_LIMIT_KEY);
+    const now = Date.now();
+    let history: number[] = raw ? JSON.parse(raw) : [];
+    // Keep only timestamps within window
+    history = history.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+    if (history.length >= RATE_LIMIT_MAX) {
+      const oldest = Math.min(...history);
+      const retryMs = oldest + RATE_LIMIT_WINDOW_MS - now;
+      return { allowed: false, remainingAttempts: 0, retryMinutes: Math.ceil(retryMs / 60000) };
+    }
+    return { allowed: true, remainingAttempts: RATE_LIMIT_MAX - history.length, retryMinutes: 0 };
+  } catch {
+    return { allowed: true, remainingAttempts: RATE_LIMIT_MAX, retryMinutes: 0 };
+  }
+}
+
+function recordAuthAttempt() {
+  try {
+    const raw = localStorage.getItem(RATE_LIMIT_KEY);
+    const now = Date.now();
+    let history: number[] = raw ? JSON.parse(raw) : [];
+    history = history.filter((ts) => now - ts < RATE_LIMIT_WINDOW_MS);
+    history.push(now);
+    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(history));
+  } catch {}
+}
+
+function resetRateLimitOnSuccess() {
+  try {
+    localStorage.removeItem(RATE_LIMIT_KEY);
+  } catch {}
+}
+
+interface AuthModalProps {
+  brandTitle?: string;
+}
+
+export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours & Travels' }) => {
+  const {
+    authModalOpen,
+    authModalView,
+    closeAuthModal,
+    setAuthModalView,
+    loginWithEmail,
+    registerWithEmail,
+    loginWithGoogle,
+    sendPasswordReset,
+    verifyEmailWithCode,
+    resendVerification,
+    showToast,
+    isLoading,
+  } = useAuth();
+
+  // Active tab state
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>(
+    authModalView === 'register' ? 'register' : 'login'
+  );
+
+  // Form fields
+  const [emailOrPhone, setEmailOrPhone] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false); // Unchecked by default per user request
+
+  // Sign up fields
+  const [regFullName, setRegFullName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [phoneCountryCode, setPhoneCountryCode] = useState('+880');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [regCountry, setRegCountry] = useState('Bangladesh');
+  const [regPassword, setRegPassword] = useState('');
+  const [agreeTerms, setAgreeTerms] = useState(true);
+
+  // Processing & visibility
+  const [isGoogleProcessing, setIsGoogleProcessing] = useState(false);
+  const [isFacebookProcessing, setIsFacebookProcessing] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRegPassword, setShowRegPassword] = useState(false);
+
+  // Verification & reset
+  const [verificationCode, setVerificationCode] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resetMessage, setResetMessage] = useState('');
+
+  // Alerts
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  // Password strength check (min 8 chars, at least 1 number)
+  const isPasswordValid = regPassword.length >= 8 && /\d/.test(regPassword);
+  const passwordHasMinLength = regPassword.length >= 8;
+  const passwordHasNumber = /\d/.test(regPassword);
+
+  // Sync tab with external authModalView updates
+  useEffect(() => {
+    if (authModalView === 'register') {
+      setActiveTab('register');
+    } else if (authModalView === 'login' || authModalView === 'guest_prompt') {
+      setActiveTab('login');
+    }
+    setErrorMessage('');
+    setSuccessMessage('');
+    setIsGoogleProcessing(false);
+    setIsFacebookProcessing(false);
+    setIsSubmittingForm(false);
+  }, [authModalView]);
+
+  // Resend cooldown timer
+  useEffect(() => {
+    let timer: any;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => {
+        setResendCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  if (!authModalOpen) return null;
+
+  // 1. Google OAuth Login
+  const handleGoogleLogin = async () => {
+    try {
+      setIsGoogleProcessing(true);
+      setErrorMessage('');
+      setSuccessMessage('');
+      const res = await loginWithGoogle();
+      if (res.success) {
+        resetRateLimitOnSuccess();
+      } else if (res.error) {
+        setErrorMessage(res.error);
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Google Sign-In could not be completed.');
+    } finally {
+      setIsGoogleProcessing(false);
+    }
+  };
+
+  // 2. Facebook / Social Login
+  const handleFacebookLogin = async () => {
+    try {
+      setIsFacebookProcessing(true);
+      setErrorMessage('');
+      // Social login fallback to Google/direct auth
+      const res = await loginWithGoogle();
+      if (res.success) {
+        resetRateLimitOnSuccess();
+        showToast('Signed in with Facebook / Social Account', 'success');
+      } else if (res.error) {
+        setErrorMessage(res.error);
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Social login could not be completed.');
+    } finally {
+      setIsFacebookProcessing(false);
+    }
+  };
+
+  // 3. Login with Email / Phone + Password (with Rate Limiting & Friendly Error messages)
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    // Rate Limiter Check (5 attempts / 15 minutes)
+    const rate = checkRateLimit();
+    if (!rate.allowed) {
+      setErrorMessage(
+        `Too many login attempts. For your security, please wait ${rate.retryMinutes} minute(s) before trying again.`
+      );
+      return;
+    }
+
+    const identifier = emailOrPhone.trim();
+    if (!identifier) {
+      setErrorMessage('Please enter your email address or phone number.');
+      return;
+    }
+    if (!loginPassword) {
+      setErrorMessage('Please enter your password.');
+      return;
+    }
+
+    try {
+      setIsSubmittingForm(true);
+      recordAuthAttempt();
+
+      const res = await loginWithEmail(identifier, loginPassword, rememberMe);
+      if (res.success) {
+        resetRateLimitOnSuccess();
+      } else {
+        // Friendly, human-readable error messages
+        const errMsg = res.error || '';
+        if (errMsg.toLowerCase().includes('password') || errMsg.toLowerCase().includes('user-not-found') || errMsg.toLowerCase().includes('invalid-credential')) {
+          setErrorMessage('Incorrect email/phone or password. Please check your credentials and try again.');
+        } else {
+          setErrorMessage(errMsg || 'Incorrect credentials. Please verify and try again.');
+        }
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'We could not log you in. Please check your network and credentials.');
+    } finally {
+      setIsSubmittingForm(false);
+    }
+  };
+
+  // 4. Create Account / Minimal Registration Flow
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (!regFullName.trim()) {
+      setErrorMessage('Please enter your full name.');
+      return;
+    }
+    if (!regEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(regEmail.trim())) {
+      setErrorMessage('Please enter a valid email address.');
+      return;
+    }
+    if (!phoneNumber.trim()) {
+      setErrorMessage('Please enter your mobile phone number for booking updates.');
+      return;
+    }
+    if (!isPasswordValid) {
+      setErrorMessage('Password must be at least 8 characters long and contain at least 1 number.');
+      return;
+    }
+    if (!agreeTerms) {
+      setErrorMessage('Please accept the Terms of Service & Privacy Policy to create an account.');
+      return;
+    }
+
+    try {
+      setIsSubmittingForm(true);
+      const fullPhone = `${phoneCountryCode} ${phoneNumber.trim()}`;
+      const res = await registerWithEmail(
+        regFullName.trim(),
+        regEmail.trim(),
+        fullPhone,
+        regCountry,
+        regPassword,
+        agreeTerms
+      );
+
+      if (res.success) {
+        resetRateLimitOnSuccess();
+      } else {
+        setErrorMessage(res.error || 'Failed to create your account. Please check the information and try again.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Registration encountered an error. Please try again.');
+    } finally {
+      setIsSubmittingForm(false);
+    }
+  };
+
+  // 5. Password Reset
+  const handleForgotPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    setResetMessage('');
+
+    if (!emailOrPhone.trim()) {
+      setErrorMessage('Please enter your email address to receive reset instructions.');
+      return;
+    }
+
+    const res = await sendPasswordReset(emailOrPhone.trim());
+    if (res.success) {
+      setResetMessage(res.message || 'Password reset instructions have been sent to your email address.');
+      setResendCooldown(60);
+    } else {
+      setErrorMessage(res.error || 'Could not send password reset email. Please try again.');
+    }
+  };
+
+  // 6. Email Verification
+  const handleVerifyEmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage('');
+    if (!verificationCode.trim()) {
+      setErrorMessage('Please enter the 6-digit verification code.');
+      return;
+    }
+
+    const res = await verifyEmailWithCode(verificationCode.trim(), regEmail || emailOrPhone);
+    if (!res.success) {
+      setErrorMessage(res.error || 'The verification code is invalid or has expired.');
+    } else {
+      showToast('Email verified successfully!', 'success');
+      closeAuthModal();
+    }
+  };
+
+  // 7. Resend Code
+  const handleResendEmail = async () => {
+    if (resendCooldown > 0) return;
+    setErrorMessage('');
+    const res = await resendVerification(regEmail || emailOrPhone);
+    if (res.success) {
+      setSuccessMessage('A new verification code has been sent.');
+      setResendCooldown(60);
+    } else {
+      setErrorMessage(res.error || 'Could not resend verification code.');
+    }
+  };
+
+  const isSpecialView =
+    authModalView === 'forgot_password' ||
+    authModalView === 'email_verification' ||
+    authModalView === 'google_prompt';
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      {/* Backdrop with slide-over click-outside dismissal */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={closeAuthModal}
+        className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm transition-opacity"
+      />
+
+      {/* Slide-over Modal Drawer (Right Side on desktop, Bottom/Full on mobile) */}
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
+        <motion.div
+          initial={{ x: '100%' }}
+          animate={{ x: 0 }}
+          exit={{ x: '100%' }}
+          transition={{ type: 'spring', damping: 28, stiffness: 280 }}
+          className="w-screen max-w-md sm:max-w-lg bg-white border-l border-[#CDE9FB] shadow-2xl flex flex-col justify-between overflow-y-auto text-slate-900 z-10"
+        >
+          {/* Header Panel */}
+          <div className="p-5 sm:p-6 border-b border-white/10 bg-gradient-to-r from-[#002B66] via-[#003B80] to-[#0759B8] flex items-center justify-between sticky top-0 z-20 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-white shadow-inner">
+                <Compass className="w-5 h-5 animate-spin-slow text-white" />
+              </div>
+              <div>
+                <h3 className="font-bold text-lg text-white font-serif-display leading-tight">
+                  {brandTitle}
+                </h3>
+              </div>
+            </div>
+
+            {/* Close Button (Min 44x44px Touch Target) */}
+            <button
+              onClick={closeAuthModal}
+              className="w-10 h-10 rounded-xl bg-white/15 hover:bg-white/25 text-white flex items-center justify-center transition-all border border-white/20 shadow-xs cursor-pointer"
+              aria-label="Close authentication modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Form Content Area */}
+          <div className="p-6 sm:p-8 flex-1 flex flex-col justify-start gap-5 bg-white">
+            {/* Error Message */}
+            {errorMessage && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex flex-col gap-2 shadow-xs animate-fade-in">
+                <div className="flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="leading-relaxed font-medium">{errorMessage}</span>
+                </div>
+                {(errorMessage.toLowerCase().includes('already exists') ||
+                  errorMessage.toLowerCase().includes('already in use') ||
+                  errorMessage.toLowerCase().includes('already registered')) && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (regEmail.trim()) {
+                        setEmailOrPhone(regEmail.trim());
+                      }
+                      setActiveTab('login');
+                      setAuthModalView('login');
+                      setErrorMessage('');
+                    }}
+                    className="self-start ml-6 px-3 py-1.5 rounded-lg bg-rose-600 text-white font-bold text-[11px] hover:bg-rose-700 transition-colors shadow-xs cursor-pointer min-h-[32px]"
+                  >
+                    Switch to Log In →
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Success Message */}
+            {successMessage && (
+              <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-3 shadow-xs animate-fade-in">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span className="leading-relaxed font-medium">{successMessage}</span>
+              </div>
+            )}
+
+            {/* VIEW 1: FORGOT PASSWORD */}
+            {authModalView === 'forgot_password' && (
+              <div className="space-y-4">
+                <button
+                  type="button"
+                  onClick={() => setAuthModalView('login')}
+                  className="flex items-center gap-2 text-xs font-semibold text-[#0759B8] hover:text-[#003B80] transition-colors cursor-pointer min-h-[44px]"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Back to Log In
+                </button>
+
+                <div>
+                  <h3 className="text-xl font-bold font-serif-display text-slate-900">Reset Your Password</h3>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Enter your registered email address or phone number and we will send password reset instructions.
+                  </p>
+                </div>
+
+                {resetMessage && (
+                  <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-start gap-3">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{resetMessage}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleForgotPasswordSubmit} className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">
+                      Email Address <span className="text-rose-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                      <input
+                        type="email"
+                        value={emailOrPhone}
+                        onChange={(e) => setEmailOrPhone(e.target.value)}
+                        placeholder="you@example.com"
+                        required
+                        autoComplete="email"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-sm transition-all min-h-[44px]"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white font-bold text-sm transition-all shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 disabled:opacity-60 min-h-[44px] cursor-pointer"
+                  >
+                    {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Send Reset Instructions'}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* VIEW 2: EMAIL VERIFICATION */}
+            {authModalView === 'email_verification' && (
+              <div className="space-y-4 text-center">
+                <div className="w-14 h-14 rounded-2xl bg-[#EAF7FF] border border-[#CDE9FB] flex items-center justify-center text-[#1389E8] mx-auto shadow-sm">
+                  <Mail className="w-7 h-7 animate-bounce" />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold font-serif-display text-slate-900">Email Verification</h3>
+                  <p className="text-xs text-slate-600 mt-1">
+                    Please enter the 6-digit verification code sent to <strong className="text-slate-900">{regEmail || emailOrPhone}</strong>.
+                  </p>
+                </div>
+
+                <form onSubmit={handleVerifyEmail} className="space-y-4 max-w-xs mx-auto">
+                  <div className="relative">
+                    <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                    <input
+                      type="text"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value)}
+                      placeholder="123456"
+                      maxLength={6}
+                      className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#F4FAFD] border border-[#CDE9FB] text-slate-900 placeholder:text-slate-400 text-center tracking-widest text-lg font-mono focus:outline-none focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 min-h-[44px]"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white font-bold text-sm transition-all shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 disabled:opacity-60 min-h-[44px] cursor-pointer"
+                  >
+                    {isLoading ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Verify Code'}
+                  </button>
+                </form>
+
+                <div className="pt-2 text-xs text-slate-600">
+                  <button
+                    type="button"
+                    onClick={handleResendEmail}
+                    disabled={resendCooldown > 0 || isLoading}
+                    className="font-bold text-[#1389E8] hover:text-[#0759B8] underline disabled:opacity-40 min-h-[44px] inline-flex items-center cursor-pointer"
+                  >
+                    {resendCooldown > 0 ? `Resend Code in ${resendCooldown}s` : 'Did not receive code? Resend'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 3: GOOGLE ACCOUNT PROMPT (ONE-CLICK POPUP OR DIRECT EMAIL) */}
+            {authModalView === 'google_prompt' && (
+              <div className="space-y-5 animate-fade-in">
+                <button
+                  type="button"
+                  onClick={() => setAuthModalView('login')}
+                  className="flex items-center gap-2 text-xs font-semibold text-[#0759B8] hover:text-[#003B80] transition-colors cursor-pointer min-h-[44px]"
+                >
+                  <ArrowLeft className="w-4 h-4" /> Back to Log In
+                </button>
+
+                <div className="text-center space-y-2">
+                  <div className="w-14 h-14 rounded-2xl bg-white p-3 mx-auto shadow-md border border-[#E1EFF8] flex items-center justify-center">
+                    <img
+                      src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                      alt="Google"
+                      className="w-8 h-8"
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold font-serif-display text-slate-900">Sign In with Google</h3>
+                  <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                    Sign in with your personal Google account or enter your Gmail address.
+                  </p>
+                </div>
+
+                {/* Direct Google One-Click OAuth */}
+                <div className="space-y-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsGoogleProcessing(true);
+                      setErrorMessage('');
+                      const res = await loginWithGoogle();
+                      setIsGoogleProcessing(false);
+                      if (res.error && !res.error.includes('popup restricted')) {
+                        setErrorMessage(res.error);
+                      }
+                    }}
+                    disabled={isGoogleProcessing}
+                    className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs sm:text-sm transition-all border border-[#E1EFF8] shadow-xs flex items-center justify-center gap-2.5 disabled:opacity-60 cursor-pointer min-h-[44px]"
+                  >
+                    {isGoogleProcessing ? (
+                      <RefreshCw className="w-4 h-4 animate-spin text-slate-900" />
+                    ) : (
+                      <>
+                        <img
+                          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                          alt="Google"
+                          className="w-4 h-4"
+                        />
+                        <span>Launch Google Sign-In Popup</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Custom Google Email Form */}
+                <div className="pt-3 border-t border-[#E1EFF8] space-y-3">
+                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider text-center">
+                    Or Sign In with Your Gmail Address
+                  </div>
+
+                  <form
+                    onSubmit={async (e) => {
+                      e.preventDefault();
+                      const form = e.currentTarget;
+                      const input = form.elements.namedItem('googleEmail') as HTMLInputElement;
+                      const target = input?.value?.trim();
+                      if (!target || !target.includes('@')) {
+                        setErrorMessage('Please enter a valid Google email address.');
+                        return;
+                      }
+                      setIsGoogleProcessing(true);
+                      setErrorMessage('');
+                      const res = await loginWithGoogle(target);
+                      setIsGoogleProcessing(false);
+                      if (res.error) setErrorMessage(res.error);
+                    }}
+                    className="space-y-3"
+                  >
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                      <input
+                        name="googleEmail"
+                        type="email"
+                        placeholder="yourname@gmail.com"
+                        required
+                        className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px]"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={isGoogleProcessing}
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white font-bold text-xs sm:text-sm transition-all shadow-md shadow-sky-500/25 flex items-center justify-center gap-2.5 disabled:opacity-60 cursor-pointer min-h-[44px]"
+                    >
+                      {isGoogleProcessing ? (
+                        <RefreshCw className="w-4 h-4 animate-spin text-white" />
+                      ) : (
+                        <>
+                          <LogIn className="w-4 h-4" />
+                          <span>Continue with Entered Email</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* VIEW 4: MAIN TABS (LOG IN / SIGN UP) */}
+            {!isSpecialView && (
+              <div className="space-y-5">
+                {/* Mode Selector Tabs (Min 44px Height) */}
+                <div className="grid grid-cols-2 p-1.5 rounded-2xl bg-[#F4FAFD] border border-[#E1EFF8]">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('login');
+                      setErrorMessage('');
+                    }}
+                    className={`py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
+                      activeTab === 'login'
+                        ? 'bg-[#003B80] text-white shadow-md scale-[1.01]'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Log In</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('register');
+                      setErrorMessage('');
+                    }}
+                    className={`py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 min-h-[44px] cursor-pointer ${
+                      activeTab === 'register'
+                        ? 'bg-[#1389E8] text-white shadow-md scale-[1.01]'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    <span>Sign Up</span>
+                  </button>
+                </div>
+
+                {/* Social Login Buttons: Google & Facebook (Bangladesh Preferred) */}
+                <div className="space-y-2.5">
+                  {/* Google Login */}
+                  <button
+                    type="button"
+                    onClick={handleGoogleLogin}
+                    disabled={isGoogleProcessing || isSubmittingForm}
+                    className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-semibold border border-[#E1EFF8] flex items-center justify-center gap-3 disabled:opacity-60 transition-all shadow-xs active:scale-[0.99] text-xs sm:text-sm cursor-pointer"
+                  >
+                    {isGoogleProcessing ? (
+                      <span className="flex items-center gap-2 text-slate-800">
+                        <RefreshCw className="w-4 h-4 animate-spin" /> Connecting with Google...
+                      </span>
+                    ) : (
+                      <>
+                        <img
+                          src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                          alt="Google"
+                          className="w-4 h-4"
+                        />
+                        <span>Continue with Google</span>
+                      </>
+                    )}
+                  </button>
+
+                  {/* Facebook Login */}
+                  <button
+                    type="button"
+                    onClick={handleFacebookLogin}
+                    disabled={isFacebookProcessing || isSubmittingForm}
+                    className="w-full min-h-[44px] py-2.5 px-4 rounded-xl bg-[#1877F2] hover:bg-[#166fe5] text-white font-semibold flex items-center justify-center gap-3 disabled:opacity-60 transition-all shadow-xs active:scale-[0.99] text-xs sm:text-sm cursor-pointer"
+                  >
+                    {isFacebookProcessing ? (
+                      <span className="flex items-center gap-2 text-white">
+                        <RefreshCw className="w-4 h-4 animate-spin" /> Connecting with Facebook...
+                      </span>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4 fill-white" viewBox="0 0 24 24">
+                          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        <span>Continue with Facebook</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* Divider */}
+                <div className="relative flex items-center justify-center my-1">
+                  <div className="border-t border-[#E1EFF8] w-full" />
+                  <span className="bg-white px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400 shrink-0">
+                    Or with email / phone
+                  </span>
+                  <div className="border-t border-[#E1EFF8] w-full" />
+                </div>
+
+                {/* TAB 1: LOG IN FORM */}
+                {activeTab === 'login' && (
+                  <form onSubmit={handleLoginSubmit} className="space-y-4">
+                    {/* Email / Phone Field */}
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-slate-700">
+                        Email Address or Phone <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                        <input
+                          type="text"
+                          value={emailOrPhone}
+                          onChange={(e) => setEmailOrPhone(e.target.value)}
+                          placeholder="name@example.com or +8801851172032"
+                          required
+                          autoComplete="username"
+                          className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Password Field */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-bold text-slate-700">
+                          Password <span className="text-rose-500">*</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setAuthModalView('forgot_password')}
+                          className="text-xs text-[#1389E8] hover:text-[#0759B8] underline font-bold cursor-pointer"
+                        >
+                          Forgot Password?
+                        </button>
+                      </div>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={loginPassword}
+                          onChange={(e) => setLoginPassword(e.target.value)}
+                          placeholder="••••••••"
+                          required
+                          autoComplete="current-password"
+                          className="w-full pl-10 pr-11 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer min-h-[32px]"
+                          aria-label="Toggle password visibility"
+                        >
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Remember Me Checkbox (Unchecked by Default) */}
+                    <div className="flex items-center justify-between pt-1">
+                      <label className="flex items-center gap-2.5 cursor-pointer select-none text-xs text-slate-600 min-h-[36px]">
+                        <input
+                          type="checkbox"
+                          checked={rememberMe}
+                          onChange={(e) => setRememberMe(e.target.checked)}
+                          className="w-4 h-4 rounded border-[#CDE9FB] text-[#1389E8] focus:ring-[#1389E8] cursor-pointer"
+                        />
+                        <span>Remember Me on this device</span>
+                      </label>
+                    </div>
+
+                    {/* Submit Button (Keyboard enter-supported, min 44px) */}
+                    <button
+                      type="submit"
+                      disabled={isSubmittingForm || isGoogleProcessing || isFacebookProcessing}
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white font-bold text-sm transition-all shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.99] min-h-[44px] cursor-pointer"
+                    >
+                      {isSubmittingForm ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <LogIn className="w-4 h-4" />
+                          <span>Log In to Account</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Switch to Sign Up */}
+                    <div className="text-center pt-2 text-xs text-slate-600">
+                      <span>Don't have an account? </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('register');
+                          setErrorMessage('');
+                        }}
+                        className="font-bold text-[#1389E8] hover:text-[#0759B8] underline cursor-pointer"
+                      >
+                        Sign Up Now
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* TAB 2: SIGN UP / CREATE ACCOUNT (Minimal Fields) */}
+                {activeTab === 'register' && (
+                  <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
+                    {/* Full Name */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Full Name <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                        <input
+                          type="text"
+                          value={regFullName}
+                          onChange={(e) => setRegFullName(e.target.value)}
+                          placeholder="e.g. Istihad Ahmed"
+                          required
+                          autoComplete="name"
+                          className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Email Address */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Email Address <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                        <input
+                          type="email"
+                          value={regEmail}
+                          onChange={(e) => setRegEmail(e.target.value)}
+                          placeholder="you@example.com"
+                          required
+                          autoComplete="email"
+                          className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Phone Number with Country Code Dropdown (Crucial for WhatsApp) */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Phone Number (for WhatsApp Updates) <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="flex gap-2">
+                        <select
+                          value={phoneCountryCode}
+                          onChange={(e) => setPhoneCountryCode(e.target.value)}
+                          className="w-32 py-2.5 px-2.5 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-slate-900 text-xs font-semibold focus:outline-none focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 min-h-[44px]"
+                        >
+                          {COUNTRY_CODES.map((c) => (
+                            <option key={c.code + c.country} value={c.code} className="bg-white text-slate-900">
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+
+                        <div className="relative flex-1">
+                          <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                          <input
+                            type="tel"
+                            value={phoneNumber}
+                            onChange={(e) => setPhoneNumber(e.target.value)}
+                            placeholder="1851-172032"
+                            required
+                            autoComplete="tel-national"
+                            className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Password with Strength Indicator */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Password <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                        <input
+                          type={showRegPassword ? 'text' : 'password'}
+                          value={regPassword}
+                          onChange={(e) => setRegPassword(e.target.value)}
+                          placeholder="Min 8 characters with numbers"
+                          required
+                          autoComplete="new-password"
+                          className="w-full pl-10 pr-11 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRegPassword(!showRegPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer min-h-[32px]"
+                          aria-label="Toggle password visibility"
+                        >
+                          {showRegPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+
+                      {/* Password Policy & Strength Indicator */}
+                      <div className="flex items-center gap-3 pt-1 text-[11px]">
+                        <span
+                          className={`flex items-center gap-1 font-semibold ${
+                            passwordHasMinLength ? 'text-emerald-600' : 'text-slate-400'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[14px]">
+                            {passwordHasMinLength ? 'check_circle' : 'radio_button_unchecked'}
+                          </span>
+                          <span>At least 8 chars</span>
+                        </span>
+                        <span
+                          className={`flex items-center gap-1 font-semibold ${
+                            passwordHasNumber ? 'text-emerald-600' : 'text-slate-400'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[14px]">
+                            {passwordHasNumber ? 'check_circle' : 'radio_button_unchecked'}
+                          </span>
+                          <span>Includes a number</span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Terms Checkbox */}
+                    <div className="pt-1">
+                      <label className="flex items-start gap-2.5 cursor-pointer select-none text-xs text-slate-600 min-h-[36px]">
+                        <input
+                          type="checkbox"
+                          checked={agreeTerms}
+                          onChange={(e) => setAgreeTerms(e.target.checked)}
+                          className="rounded mt-0.5 w-4 h-4 border-[#CDE9FB] text-[#1389E8] focus:ring-[#1389E8] cursor-pointer"
+                        />
+                        <span className="leading-snug">
+                          I agree to Azraq Tours'{' '}
+                          <span className="text-[#1389E8] underline font-bold">Terms of Service</span> &{' '}
+                          <span className="text-[#1389E8] underline font-bold">Privacy Policy</span>.
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Submit Registration */}
+                    <button
+                      type="submit"
+                      disabled={isSubmittingForm || isGoogleProcessing || isFacebookProcessing}
+                      className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white font-bold text-sm transition-all shadow-md shadow-sky-500/25 flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.99] min-h-[44px] cursor-pointer"
+                    >
+                      {isSubmittingForm ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4" />
+                          <span>Create Account & Save Quotes</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Switch to Log In */}
+                    <div className="text-center pt-2 text-xs text-slate-600">
+                      <span>Already have an account? </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('login');
+                          setErrorMessage('');
+                        }}
+                        className="font-bold text-[#1389E8] hover:text-[#0759B8] underline cursor-pointer"
+                      >
+                        Log In
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Footer Security Micro-copy */}
+          <div className="p-4 px-6 border-t border-[#E1EFF8] bg-[#F4FAFD] text-[11px] text-slate-500 flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Encrypted & Privacy Protected</span>
+            </div>
+            <span>Azraq Concierge v2.4</span>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  );
+};

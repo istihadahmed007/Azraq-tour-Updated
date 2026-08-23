@@ -1,0 +1,129 @@
+{
+  "entities": {
+    "users": {
+      "title": "User Profiles",
+      "description": "User profile records stored in Firestore",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "fullName": { "type": "string" },
+        "phone": { "type": "string" },
+        "country": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "emailVerified": { "type": "boolean" },
+        "phoneVerified": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "homeLocation": { "type": "string" },
+        "bio": { "type": "string" },
+        "travelPreferences": { "type": "array" }
+      },
+      "required": ["uid", "email"]
+    },
+    "feed_posts": {
+      "title": "Community Feed Posts",
+      "description": "Travel stories, photos, and insights posted by users and displayed in community feed and user profile",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorEmail": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorAvatar": { "type": "string" },
+        "location": { "type": "string" },
+        "badgeLabel": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "likes": { "type": "number" },
+        "commentsCount": { "type": "number" },
+        "caption": { "type": "string" },
+        "hashtags": { "type": "array" },
+        "timeAgo": { "type": "string" },
+        "isLiked": { "type": "boolean" },
+        "isBookmarked": { "type": "boolean" },
+        "commentsList": { "type": "array" },
+        "likedBy": { "type": "array" },
+        "bookmarkedBy": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "authorName", "caption"]
+    },
+    "quotes": {
+      "title": "Travel Quote Requests",
+      "description": "Customer flight and visa quote requests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "customerName": { "type": "string" },
+        "customerPhone": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userEmail"]
+    },
+    "buddy_profiles": {
+      "title": "Travel Buddy Profiles",
+      "description": "User profiles for finding travel companions and matching by destination, style, and travel dates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "displayName": { "type": "string" },
+        "avatarUrl": { "type": "string" },
+        "homeLocation": { "type": "string" },
+        "bio": { "type": "string" },
+        "destinations": { "type": "array" },
+        "travelStyles": { "type": "array" },
+        "languages": { "type": "array" },
+        "travelStart": { "type": "string" },
+        "travelEnd": { "type": "string" },
+        "groupSize": { "type": "number" },
+        "contactPreference": { "type": "string" },
+        "visibility": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "displayName", "destinations"]
+    },
+    "buddy_requests": {
+      "title": "Travel Buddy Connection Requests",
+      "description": "Connection requests between travelers with private messages and acceptance workflow",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "senderId": { "type": "string" },
+        "receiverId": { "type": "string" },
+        "message": { "type": "string" },
+        "status": { "type": "string" },
+        "senderProfile": { "type": "object" },
+        "receiverProfile": { "type": "object" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "senderId", "receiverId", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "users",
+      "description": "User profiles collection"
+    },
+    "/feed_posts/{postId}": {
+      "schema": "feed_posts",
+      "description": "Community travel stories and posts"
+    },
+    "/quotes/{quoteId}": {
+      "schema": "quotes",
+      "description": "Flight and visa quotation inquiries"
+    },
+    "/buddy_profiles/{userId}": {
+      "schema": "buddy_profiles",
+      "description": "Travel buddy profiles searchable by destination and travel dates"
+    },
+    "/buddy_requests/{requestId}": {
+      "schema": "buddy_requests",
+      "description": "Private connection requests between travel companions"
+    }
+  }
+}
