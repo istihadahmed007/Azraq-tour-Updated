@@ -141,6 +141,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours 
   const [phoneNumber, setPhoneNumber] = useState('');
   const [regCountry, setRegCountry] = useState('Bangladesh');
   const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(true);
 
   // Processing & visibility
@@ -149,6 +150,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours 
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showRegPassword, setShowRegPassword] = useState(false);
+  const [showRegConfirmPassword, setShowRegConfirmPassword] = useState(false);
 
   // Verification & reset
   const [verificationCode, setVerificationCode] = useState('');
@@ -159,10 +161,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours 
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Password strength check (min 8 chars, at least 1 number)
-  const isPasswordValid = regPassword.length >= 8 && /\d/.test(regPassword);
+  // Password strength & match check (min 8 chars, at least 1 number)
   const passwordHasMinLength = regPassword.length >= 8;
   const passwordHasNumber = /\d/.test(regPassword);
+  const isPasswordValid = passwordHasMinLength && passwordHasNumber;
+  const doPasswordsMatch = regConfirmPassword.length > 0 && regPassword === regConfirmPassword;
+  const hasPasswordMismatch = regConfirmPassword.length > 0 && regPassword !== regConfirmPassword;
 
   // Sync tab with external authModalView updates
   useEffect(() => {
@@ -296,8 +300,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours 
       setErrorMessage('Please enter your mobile phone number for booking updates.');
       return;
     }
+
+    // Bangladeshi phone validation check
+    const cleanPhone = phoneNumber.replace(/[\s\-()]/g, '');
+    if (phoneCountryCode === '+880' || regCountry === 'Bangladesh') {
+      const isBdValid = /^01[3-9]\d{8}$/.test(cleanPhone) || /^1[3-9]\d{8}$/.test(cleanPhone) || /^\+8801[3-9]\d{8}$/.test(cleanPhone);
+      if (!isBdValid) {
+        setErrorMessage('Please enter a valid 11-digit Bangladeshi mobile number (e.g. 01712345678 or 1851172032).');
+        return;
+      }
+    }
+
     if (!isPasswordValid) {
       setErrorMessage('Password must be at least 8 characters long and contain at least 1 number.');
+      return;
+    }
+    if (regPassword !== regConfirmPassword) {
+      setErrorMessage('Passwords do not match. Please ensure both passwords match.');
       return;
     }
     if (!agreeTerms) {
@@ -307,7 +326,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours 
 
     try {
       setIsSubmittingForm(true);
-      const fullPhone = `${phoneCountryCode} ${phoneNumber.trim()}`;
+      const normalizedPhone = cleanPhone.startsWith('0') ? cleanPhone : cleanPhone.startsWith('+880') ? cleanPhone : `0${cleanPhone}`;
+      const fullPhone = phoneCountryCode === '+880' ? `+880 ${normalizedPhone.replace(/^0/, '')}` : `${phoneCountryCode} ${cleanPhone}`;
+
       const res = await registerWithEmail(
         regFullName.trim(),
         regEmail.trim(),
@@ -951,6 +972,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours 
                       </div>
                     </div>
 
+                    {/* Country of Residence */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Country of Residence <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                        <select
+                          value={regCountry}
+                          onChange={(e) => setRegCountry(e.target.value)}
+                          className="w-full pl-10 pr-3 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20 text-slate-900 text-xs sm:text-sm font-medium transition-all min-h-[44px]"
+                        >
+                          {COUNTRIES_LIST.map((c) => (
+                            <option key={c} value={c} className="bg-white text-slate-900">
+                              {c}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
                     {/* Password with Strength Indicator */}
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-700">
@@ -1000,6 +1042,54 @@ export const AuthModal: React.FC<AuthModalProps> = ({ brandTitle = 'Azraq Tours 
                           <span>Includes a number</span>
                         </span>
                       </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700">
+                        Confirm Password <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#1389E8]" />
+                        <input
+                          type={showRegConfirmPassword ? 'text' : 'password'}
+                          value={regConfirmPassword}
+                          onChange={(e) => setRegConfirmPassword(e.target.value)}
+                          placeholder="Re-enter your password"
+                          required
+                          autoComplete="new-password"
+                          className={`w-full pl-10 pr-11 py-2.5 rounded-xl bg-[#F4FAFD] hover:bg-white focus:bg-white border text-slate-900 placeholder:text-slate-400 text-xs sm:text-sm transition-all min-h-[44px] ${
+                            hasPasswordMismatch
+                              ? 'border-rose-400 focus:border-rose-500 focus:ring-2 focus:ring-rose-200'
+                              : doPasswordsMatch
+                              ? 'border-emerald-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200'
+                              : 'border-[#E1EFF8] focus:border-[#1389E8] focus:ring-2 focus:ring-[#1389E8]/20'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowRegConfirmPassword(!showRegConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1 cursor-pointer min-h-[32px]"
+                          aria-label="Toggle confirm password visibility"
+                        >
+                          {showRegConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                      </div>
+
+                      {/* Realtime match indicator */}
+                      {regConfirmPassword.length > 0 && (
+                        <div className="pt-0.5 text-[11px]">
+                          {doPasswordsMatch ? (
+                            <span className="text-emerald-600 font-semibold flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Passwords match
+                            </span>
+                          ) : (
+                            <span className="text-rose-500 font-semibold flex items-center gap-1">
+                              <AlertCircle className="w-3.5 h-3.5" /> Passwords do not match
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Terms Checkbox */}

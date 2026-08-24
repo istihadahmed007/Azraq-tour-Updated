@@ -92,15 +92,9 @@ export const TravelBuddyCard: React.FC<TravelBuddyCardProps> = ({
                 <h3 className="font-semibold text-slate-900 dark:text-white text-base">
                   {buddy.displayName}
                 </h3>
-                {buddy.isDemo ? (
-                  <span className="inline-flex items-center rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:text-amber-400 border border-amber-300/60 dark:border-amber-700/50">
-                    Sample Profile
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center rounded-md bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-400 border border-sky-300/60 dark:border-sky-700/50">
-                    <ShieldCheck className="mr-0.5 h-2.5 w-2.5" /> Verified
-                  </span>
-                )}
+                <span className="inline-flex items-center rounded-md bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-400 border border-sky-300/60 dark:border-sky-700/50">
+                  <ShieldCheck className="mr-0.5 h-2.5 w-2.5" /> Verified
+                </span>
               </div>
               <p className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 <MapPin className="h-3 w-3 shrink-0 text-slate-400" />

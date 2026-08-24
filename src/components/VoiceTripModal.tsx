@@ -5,6 +5,7 @@ import {
   Sparkles,
   X,
   Volume2,
+  VolumeX,
   Calendar,
   MapPin,
   Users,
@@ -20,6 +21,11 @@ import {
   Search,
   ArrowRightLeft,
   Briefcase,
+  Activity,
+  Radio,
+  Sliders,
+  ShieldCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import { useVoiceSpeech } from '../hooks/useVoiceSpeech';
 import { FlightSearchParams } from './AzraqTripFinder';
@@ -93,14 +99,24 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
   const {
     isSupported,
     isListening,
+    micInitState,
+    micDeviceName,
+    audioStreamActive,
+    audioLevel,
+    rawDecibels,
+    speechEngineState,
+    hasMicPermission,
     transcript,
     interimTranscript,
     error: speechError,
-    audioLevel,
+    lastEvent,
+    eventLogs,
     startListening,
     stopListening,
     resetTranscript,
     setTranscriptManual,
+    testMicrophone,
+    clearEventLogs,
   } = useVoiceSpeech();
 
   const [activeTab, setActiveTab] = useState<'flight' | 'itinerary'>(initialMode);
@@ -109,12 +125,16 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
   const [parsedData, setParsedData] = useState<StructuredVoiceTripData | null>(null);
   const [isEditingPrompt, setIsEditingPrompt] = useState(false);
   const [editablePrompt, setEditablePrompt] = useState('');
+  const [isTestingMic, setIsTestingMic] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
+  const [showDiagnostics, setShowDiagnostics] = useState(false);
 
   // When modal opens, initialize
   useEffect(() => {
     if (isOpen) {
       setParsedData(null);
       setParseError(null);
+      setTestResult(null);
       setIsEditingPrompt(false);
       setActiveTab(initialMode);
       if (initialTranscript) {
@@ -133,6 +153,23 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
       stopListening();
     }
   }, [isOpen, initialTranscript, initialMode]);
+
+  const handleTestMicClick = async () => {
+    setIsTestingMic(true);
+    setTestResult(null);
+    try {
+      const ok = await testMicrophone();
+      if (ok) {
+        setTestResult('Microphone connected successfully and audio stream is responsive.');
+      } else {
+        setTestResult('Microphone test failed. Please verify browser permissions.');
+      }
+    } catch {
+      setTestResult('Error accessing microphone.');
+    } finally {
+      setIsTestingMic(false);
+    }
+  };
 
   // When speech stops or user has spoken a substantial prompt, automatically trigger parsing
   const handleToggleListening = () => {
@@ -410,32 +447,249 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
               </p>
             </div>
 
-            {/* Live Audio Level Soundwave Bars */}
-            {isListening && (
-              <div className="flex items-center gap-1.5 mt-4 h-6">
-                {[...Array(12)].map((_, i) => {
-                  const height = Math.max(
-                    6,
-                    Math.min(24, Math.round((audioLevel / 100) * 24 * (0.6 + Math.sin(i * 0.8) * 0.4)))
-                  );
-                  return (
-                    <div
-                      key={i}
-                      className="w-1 bg-[#0D6EFD] rounded-full transition-all duration-75"
-                      style={{ height: `${height}px` }}
+            {/* Visual Hardware Status & Audio Stream Activity Monitor */}
+            <div className="mt-4 w-full max-w-lg p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs text-left space-y-2.5 relative z-10">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                {/* State Pill */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hardware Status:</span>
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                      micInitState === 'listening' || audioStreamActive
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : micInitState === 'requesting'
+                        ? 'bg-amber-50 text-amber-700 border-amber-200 animate-pulse'
+                        : micInitState === 'denied'
+                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                        : micInitState === 'ready'
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : 'bg-slate-100 text-slate-600 border-slate-200'
+                    }`}
+                  >
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        audioStreamActive ? 'bg-emerald-500 animate-ping' : 'bg-slate-400'
+                      }`}
                     />
-                  );
-                })}
+                    {micInitState === 'listening'
+                      ? 'Streaming Audio'
+                      : micInitState === 'requesting'
+                      ? 'Requesting Mic Access...'
+                      : micInitState === 'denied'
+                      ? 'Mic Permission Blocked'
+                      : micInitState === 'ready'
+                      ? 'Mic Initialized & Ready'
+                      : 'Standby'}
+                  </span>
+                </div>
+
+                {/* Device Name Label & Test Button */}
+                <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                  <span className="truncate max-w-[160px] text-slate-600 font-normal" title={micDeviceName}>
+                    {micDeviceName}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleTestMicClick}
+                    disabled={isTestingMic}
+                    className="px-2 py-0.5 rounded-md bg-slate-100 hover:bg-slate-200 text-slate-700 text-[10px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                    title="Test microphone connection"
+                  >
+                    <Activity className={`w-3 h-3 ${isTestingMic ? 'animate-spin text-blue-600' : 'text-slate-500'}`} />
+                    <span>{isTestingMic ? 'Testing...' : 'Test Mic'}</span>
+                  </button>
+                </div>
               </div>
-            )}
+
+              {/* Audio Stream Activity VU Level Meter */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-semibold text-slate-600 flex items-center gap-1">
+                    <Radio className={`w-3 h-3 ${audioStreamActive ? 'text-emerald-600 animate-pulse' : 'text-slate-400'}`} />
+                    <span>Live Input Signal Level</span>
+                  </span>
+                  <span className="font-mono text-[10px] font-bold text-slate-500">
+                    {audioLevel}% {rawDecibels > -100 ? `(${rawDecibels} dB)` : '(Quiet)'}
+                  </span>
+                </div>
+
+                {/* Meter Bar */}
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex">
+                  <div
+                    className={`h-full transition-all duration-75 rounded-full ${
+                      audioLevel > 75
+                        ? 'bg-rose-500'
+                        : audioLevel > 40
+                        ? 'bg-amber-500'
+                        : audioLevel > 5
+                        ? 'bg-emerald-500'
+                        : 'bg-blue-300'
+                    }`}
+                    style={{ width: `${Math.max(audioLevel, audioStreamActive ? 4 : 0)}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* Live Audio Level Soundwave Equalizer Bars when Recording */}
+              {isListening && (
+                <div className="flex items-center justify-center gap-1 pt-1 h-7">
+                  {[...Array(16)].map((_, i) => {
+                    const dynamicHeight = Math.max(
+                      4,
+                      Math.min(26, Math.round((audioLevel / 100) * 26 * (0.4 + Math.sin(i * 0.6) * 0.6)))
+                    );
+                    return (
+                      <div
+                        key={i}
+                        className={`w-1 rounded-full transition-all duration-75 ${
+                          audioLevel > 50
+                            ? 'bg-emerald-500'
+                            : audioLevel > 10
+                            ? 'bg-[#0D6EFD]'
+                            : 'bg-slate-300'
+                        }`}
+                        style={{ height: `${dynamicHeight}px` }}
+                      />
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Test Result Banner */}
+              {testResult && (
+                <div className="p-2 rounded-lg bg-blue-50/70 border border-blue-200 text-blue-800 text-[11px] flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>{testResult}</span>
+                </div>
+              )}
+
+              {/* Inactivity / Zero-level Notice */}
+              {isListening && audioLevel === 0 && (
+                <p className="text-[10px] text-slate-400 italic text-center">
+                  Mic stream active. Speak clearly or check your hardware input volume if level stays at 0%.
+                </p>
+              )}
+
+              {/* Web Speech API Real-Time Status & Event Inspector */}
+              <div className="pt-2 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
+                    <Sliders className="w-3.5 h-3.5 text-[#0D6EFD]" />
+                    <span>Web Speech API Live Engine State:</span>
+                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 font-bold">
+                      {lastEvent}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowDiagnostics(!showDiagnostics)}
+                    className="text-[10px] font-bold text-[#0D6EFD] hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <span>{showDiagnostics ? 'Hide Event Stream' : 'Inspect Speech Events'}</span>
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 font-mono font-bold">
+                      {eventLogs.length}
+                    </span>
+                  </button>
+                </div>
+
+                {/* Expanded Event Log Visualizer */}
+                {showDiagnostics && (
+                  <div className="mt-2.5 space-y-2">
+                    <div className="flex items-center justify-between text-[10px] text-slate-500">
+                      <span className="font-medium">Real-Time onresult / onerror stream:</span>
+                      {eventLogs.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={clearEventLogs}
+                          className="text-slate-400 hover:text-slate-600 underline cursor-pointer"
+                        >
+                          Clear Logs
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="max-h-36 overflow-y-auto space-y-1.5 p-2 rounded-lg bg-slate-900 text-slate-100 font-mono text-[10px]">
+                      {eventLogs.length === 0 ? (
+                        <div className="text-slate-500 italic py-2 text-center">
+                          No events captured yet. Tap microphone or speak to trigger events.
+                        </div>
+                      ) : (
+                        eventLogs.map((log) => (
+                          <div
+                            key={log.id}
+                            className={`p-1.5 rounded flex flex-col gap-0.5 border ${
+                              log.type === 'onresult'
+                                ? 'bg-emerald-950/60 border-emerald-800/80 text-emerald-200'
+                                : log.type === 'onerror'
+                                ? log.isError
+                                  ? 'bg-rose-950/80 border-rose-800 text-rose-200'
+                                  : 'bg-amber-950/60 border-amber-800 text-amber-200'
+                                : log.type === 'onstart'
+                                ? 'bg-blue-950/60 border-blue-800 text-blue-200'
+                                : 'bg-slate-800 border-slate-700 text-slate-300'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between text-[9px] opacity-80">
+                              <span className="font-bold tracking-wide uppercase">[{log.type}]</span>
+                              <span>{log.timestamp}</span>
+                            </div>
+                            <div className="font-medium text-xs text-white break-words">{log.message}</div>
+                            {log.details && (
+                              <div className="text-[9px] opacity-75 break-words">{log.details}</div>
+                            )}
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Error message if speech failed */}
             {speechError && (
-              <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2 text-left">
+              <div className="mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2 text-left w-full max-w-lg">
                 <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
                 <span>{speechError}</span>
               </div>
             )}
+          </div>
+
+          {/* Quick Manual Text Input Fallback Bar */}
+          <div className="p-3.5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
+            <label htmlFor="voice-text-fallback-input" className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#0D6EFD]" />
+              <span>Or type / edit your travel prompt directly:</span>
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="voice-text-fallback-input"
+                type="text"
+                value={transcript}
+                onChange={(e) => setTranscriptManual(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && transcript.trim().length > 2) {
+                    parseSpokenSpeech(transcript);
+                  }
+                }}
+                placeholder={
+                  activeTab === 'flight'
+                    ? 'e.g. 2 flights from Dhaka to Bangkok on next Friday for 5 days'
+                    : 'e.g. 5 days honeymoon trip to Bali for couple in luxury resort'
+                }
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#0D6EFD] focus:ring-2 focus:ring-blue-100 text-xs text-slate-800 placeholder-slate-400 font-medium outline-none bg-slate-50/50"
+              />
+              <button
+                type="button"
+                id="submit-typed-voice-btn"
+                disabled={!transcript.trim() || isParsing}
+                onClick={() => parseSpokenSpeech(transcript)}
+                className="px-4 py-2.5 rounded-xl bg-[#0D6EFD] hover:bg-blue-600 disabled:opacity-40 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Process with AI</span>
+              </button>
+            </div>
           </div>
 
           {/* 2. Real-Time Transcript Display */}

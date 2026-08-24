@@ -152,6 +152,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
         onConfirmPlan={handleConfirmVoicePlan}
+        onSearchFlights={(params) => {
+          if (onSearchFlights) {
+            onSearchFlights(params);
+          } else if (onNavigateToView) {
+            onNavigateToView('flights', { params });
+          }
+        }}
         initialTranscript={voiceInitialTranscript}
       />
     </div>

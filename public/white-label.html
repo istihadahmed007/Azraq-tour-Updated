@@ -1,0 +1,858 @@
+<!--
+  Azraq Trips White Label Page — Product-First Flight Comparison Edition
+  Paste this complete file into Travelpayouts → White Label → WL Web → Custom HTML code.
+  Keep the provider-script and cookie-policy placeholders unchanged.
+-->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Search and compare flight options from Bangladesh with Azraq Trips." />
+  <title>Azraq Trips | Search and compare flights[:route_info:]</title>
+
+  <!-- Preconnect & Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Consolidated Stylesheet -->
+  <style>
+    :root {
+      --navy: #072d5a;
+      --navy-2: #0b417f;
+      --blue: #0d6bcc;
+      --gold: #e3ae38;
+      --gold-soft: #fff5dc;
+      --aqua: #16a6ae;
+      --bg: #f8f9fa;
+      --paper: #ffffff;
+      --ink: #172b4d;
+      --muted: #63748a;
+      --line: #e4e9ef;
+      --main-accent: var(--navy);
+      --main-accent-contrast-color: #ffffff;
+      --font-main: "DM Sans", system-ui, -apple-system, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--font-main);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .az-shell {
+      width: min(100% - 2.4rem, 1180px);
+      margin: 0 auto;
+    }
+
+    /* Top Navigation */
+    .az-topbar {
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .az-nav {
+      display: flex;
+      align-items: center;
+      min-height: 66px;
+      gap: 1rem;
+    }
+
+    .az-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.48rem;
+      flex: none;
+      font-family: "Manrope", system-ui, sans-serif;
+      color: #ffffff;
+      font-size: 1.08rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .az-brand-mark {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border: 1.5px solid var(--gold);
+      border-radius: 7px;
+      color: var(--gold);
+      font-size: 0.74rem;
+    }
+
+    .az-nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.05rem;
+      margin-left: 1.2rem;
+    }
+
+    .az-nav-links a {
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.72rem;
+      font-weight: 700;
+      transition: color 0.15s ease;
+    }
+
+    .az-nav-links a:first-child {
+      color: #ffffff;
+    }
+
+    .az-nav-links a:hover {
+      color: var(--gold);
+    }
+
+    .az-main-link {
+      margin-left: auto;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid rgba(255, 255, 255, 0.34);
+      border-radius: 4px;
+      color: #ffffff;
+      font-size: 0.67rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: all 0.15s ease;
+    }
+
+    .az-main-link:hover {
+      border-color: var(--gold);
+      color: var(--gold);
+    }
+
+    /* Hero Search Area */
+    .az-search-hero {
+      padding: 2.25rem 0 3.05rem;
+      background: linear-gradient(125deg, var(--navy) 0%, var(--navy-2) 100%);
+      color: #ffffff;
+    }
+
+    .az-search-intro {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .az-kicker {
+      margin: 0 0 0.45rem;
+      color: #f4cf70;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .az-search-intro h1 {
+      max-width: 680px;
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      font-size: clamp(2rem, 4.8vw, 3.45rem);
+      font-weight: 800;
+      letter-spacing: -0.055em;
+      line-height: 1.05;
+    }
+
+    .az-search-intro p {
+      max-width: 290px;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .az-search-card {
+      padding: 1.15rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background: #ffffff;
+      box-shadow: 0 22px 44px rgba(0, 24, 56, 0.24);
+      color: var(--ink);
+    }
+
+    .az-form-heading {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.65rem;
+      padding-bottom: 0.9rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .az-form-heading strong {
+      font-size: 0.85rem;
+    }
+
+    .az-form-heading span {
+      padding: 0.36rem 0.55rem;
+      border-radius: 99px;
+      background: var(--gold-soft);
+      color: #7a5710;
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    #tpwl-search {
+      min-height: 105px;
+      padding-top: 1rem;
+    }
+
+    #tpwl-search > * {
+      width: 100%;
+    }
+
+    .az-form-footnote {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem 1rem;
+      padding-top: 0.7rem;
+      color: var(--muted);
+      font-size: 0.68rem;
+      line-height: 1.45;
+    }
+
+    .az-form-footnote span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.32rem;
+    }
+
+    .az-form-footnote span::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--aqua);
+      content: "";
+    }
+
+    /* Content & Results */
+    .az-content {
+      padding: 2.5rem 0 3rem;
+    }
+
+    .az-section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.95rem;
+    }
+
+    .az-section-label {
+      margin: 0 0 0.3rem;
+      color: var(--blue);
+      font-size: 0.64rem;
+      font-weight: 800;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .az-section-head h2 {
+      margin: 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      font-size: 1.42rem;
+      letter-spacing: -0.04em;
+    }
+
+    .az-section-head p {
+      max-width: 390px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.55;
+      text-align: right;
+    }
+
+    .az-results {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+      box-shadow: 0 8px 20px rgba(20, 47, 77, 0.05);
+    }
+
+    .az-results-top {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.6rem 1rem;
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--line);
+      background: #fbfcfe;
+      color: var(--muted);
+      font-size: 0.7rem;
+      line-height: 1.45;
+    }
+
+    .az-results-top strong {
+      color: var(--ink);
+    }
+
+    .az-provider-note {
+      color: #0c7c81;
+      font-weight: 700;
+    }
+
+    #tpwl-tickets {
+      min-height: 90px;
+      padding: 1rem;
+    }
+
+    #tpwl-tickets > * {
+      width: 100%;
+    }
+
+    /* Popular Routes */
+    .az-routes {
+      margin-top: 2rem;
+    }
+
+    .az-route-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+
+    .az-route {
+      position: relative;
+      display: flex;
+      min-height: 105px;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow: hidden;
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: #ffffff;
+      color: var(--ink);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .az-route::after {
+      position: absolute;
+      right: -18px;
+      top: -40px;
+      width: 95px;
+      height: 95px;
+      border: 16px solid #eaf3fc;
+      border-radius: 50%;
+      content: "";
+    }
+
+    .az-route:hover {
+      transform: translateY(-2px);
+      border-color: #b5d7f4;
+      box-shadow: 0 10px 22px rgba(20, 71, 113, 0.1);
+    }
+
+    .az-route small,
+    .az-route b,
+    .az-route span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .az-route small {
+      color: var(--blue);
+      font-size: 0.61rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .az-route b {
+      font-family: "Manrope", system-ui, sans-serif;
+      font-size: 1.06rem;
+      letter-spacing: -0.035em;
+    }
+
+    .az-route span {
+      color: var(--blue);
+      font-size: 0.68rem;
+      font-weight: 800;
+    }
+
+    .az-route span::after {
+      content: " →";
+    }
+
+    /* Why Compare Grid */
+    .az-why {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      margin-top: 2rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--line);
+    }
+
+    .az-why article {
+      min-height: 144px;
+      padding: 1rem;
+      background: #ffffff;
+    }
+
+    .az-why b {
+      display: block;
+      color: #b27900;
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .az-why h3 {
+      margin: 0.9rem 0 0.38rem;
+      font-family: "Manrope", system-ui, sans-serif;
+      font-size: 0.92rem;
+      letter-spacing: -0.03em;
+    }
+
+    .az-why p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.7rem;
+      line-height: 1.55;
+    }
+
+    /* Secondary Cards */
+    .az-secondary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin-top: 2rem;
+    }
+
+    .az-secondary article {
+      padding: 1.3rem;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #ffffff;
+    }
+
+    .az-secondary h3 {
+      margin: 0.18rem 0 0.55rem;
+      font-family: "Manrope", system-ui, sans-serif;
+      font-size: 1.25rem;
+      letter-spacing: -0.04em;
+    }
+
+    .az-secondary p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.76rem;
+      line-height: 1.6;
+    }
+
+    .az-secondary a {
+      display: inline-flex;
+      gap: 0.3rem;
+      margin-top: 0.9rem;
+      color: var(--blue);
+      font-size: 0.7rem;
+      font-weight: 800;
+      transition: color 0.15s ease;
+    }
+
+    .az-secondary a::after {
+      content: " →";
+    }
+
+    .az-secondary a:hover {
+      color: var(--aqua);
+    }
+
+    /* WhatsApp Desk Banner */
+    .az-desk {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.4rem;
+      margin-top: 2rem;
+      padding: 1.35rem;
+      border-radius: 10px;
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    .az-desk p {
+      margin: 0;
+      color: #bed5e9;
+      font-size: 0.75rem;
+      line-height: 1.55;
+    }
+
+    .az-desk h2 {
+      margin: 0.22rem 0 0;
+      font-family: "Manrope", system-ui, sans-serif;
+      font-size: 1.35rem;
+      letter-spacing: -0.04em;
+    }
+
+    .az-desk a {
+      display: inline-flex;
+      flex: none;
+      align-items: center;
+      padding: 0.7rem 0.85rem;
+      border-radius: 6px;
+      background: var(--gold);
+      color: #342300;
+      font-size: 0.68rem;
+      font-weight: 800;
+      transition: background 0.15s ease;
+    }
+
+    .az-desk a:hover {
+      background: #f2c65b;
+    }
+
+    /* Footer */
+    .az-footer {
+      padding: 1.7rem 0;
+      background: #061d3a;
+      color: #95aec3;
+    }
+
+    .az-footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .az-footer p {
+      margin: 0;
+      font-size: 0.68rem;
+    }
+
+    .az-footer a {
+      color: #d6e9f7;
+      font-size: 0.7rem;
+      font-weight: 700;
+      transition: color 0.15s ease;
+    }
+
+    .az-footer a:hover {
+      color: #ffffff;
+    }
+
+    .tpwl-cookie-banner {
+      font-family: var(--font-main);
+    }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 760px) {
+      .az-shell {
+        width: min(100% - 1.25rem, 1180px);
+      }
+
+      .az-nav {
+        min-height: 58px;
+      }
+
+      .az-brand {
+        font-size: 0.96rem;
+      }
+
+      .az-nav-links {
+        display: none;
+      }
+
+      .az-main-link {
+        margin-left: auto;
+        font-size: 0.61rem;
+      }
+
+      .az-search-hero {
+        padding: 1.65rem 0 2.1rem;
+      }
+
+      .az-search-intro {
+        display: block;
+      }
+
+      .az-search-intro p {
+        margin-top: 0.8rem;
+      }
+
+      .az-search-card {
+        padding: 0.85rem;
+      }
+
+      .az-form-heading strong {
+        font-size: 0.76rem;
+      }
+
+      .az-form-footnote {
+        font-size: 0.63rem;
+      }
+
+      .az-content {
+        padding-top: 1.6rem;
+      }
+
+      .az-section-head {
+        display: block;
+      }
+
+      .az-section-head p {
+        margin-top: 0.45rem;
+        text-align: left;
+      }
+
+      .az-route-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.6rem;
+      }
+
+      .az-route {
+        min-height: 95px;
+        padding: 0.8rem;
+      }
+
+      .az-why {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .az-why article {
+        min-height: 130px;
+        padding: 0.85rem;
+      }
+
+      .az-secondary {
+        grid-template-columns: 1fr;
+      }
+
+      .az-desk {
+        display: block;
+      }
+
+      .az-desk a {
+        margin-top: 1rem;
+      }
+
+      .az-footer-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+    }
+  </style>
+
+  <!-- Travelpayouts Injected Template Tags -->
+  [:embed_script:]
+  [:cookie_policy_script:]
+
+  <!-- Travelpayouts Drive Integration (Non-blocking async load) -->
+  <script
+    async
+    data-cmp-ab="2"
+    src="https://tpembars.com/NTY1NzA5.js?t=565709"
+  ></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <header class="az-topbar">
+    <nav class="az-shell az-nav" aria-label="Azraq Navigation">
+      <a class="az-brand" href="https://www.azraqtrips.com/">
+        <span class="az-brand-mark">A</span>Azraq Trips
+      </a>
+      <div class="az-nav-links">
+        <a href="#tpwl-search">Flights</a>
+        <a href="https://www.azraqtrips.com/">Hotels</a>
+        <a href="https://www.azraqtrips.com/">Packages</a>
+        <a href="https://www.azraqtrips.com/">Visa</a>
+      </div>
+      <a class="az-main-link" href="https://www.azraqtrips.com/">Azraq Home</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Flight Search Hero -->
+    <section class="az-search-hero">
+      <div class="az-shell">
+        <div class="az-search-intro">
+          <div>
+            <p class="az-kicker">Flight search · Dhaka and beyond</p>
+            <h1>Search and compare flights from Bangladesh.</h1>
+          </div>
+          <p>Set your route, dates, travellers, and cabin class in the live search form below.</p>
+        </div>
+
+        <section class="az-search-card" aria-label="Live flight search">
+          <div class="az-form-heading">
+            <strong>Find flights that fit your journey</strong>
+            <span>Live provider availability</span>
+          </div>
+          <!-- Travelpayouts Search Container -->
+          <div id="tpwl-search"></div>
+          <div class="az-form-footnote">
+            <span>Compare available provider options</span>
+            <span>Review fare rules and baggage before booking</span>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Flight Results & Directory -->
+    <section class="az-content">
+      <div class="az-shell">
+        <!-- Live Results Target -->
+        <section aria-labelledby="results-title">
+          <div class="az-section-head">
+            <div>
+              <p class="az-section-label">Flight results</p>
+              <h2 id="results-title">Compare, filter, and choose.</h2>
+            </div>
+            <p>
+              Use the live results controls to compare stops, schedule, baggage details, fare terms, and provider offers.
+            </p>
+          </div>
+          <div class="az-results">
+            <div class="az-results-top">
+              <strong>Live flight results from selected providers</strong>
+              <span class="az-provider-note">Checkout is completed with the provider you select.</span>
+            </div>
+            <!-- Travelpayouts Tickets Container -->
+            <div id="tpwl-tickets"></div>
+          </div>
+        </section>
+
+        <!-- Popular Routes from Dhaka -->
+        <section class="az-routes" aria-labelledby="routes-title">
+          <div class="az-section-head">
+            <div>
+              <p class="az-section-label">Popular routes from Dhaka</p>
+              <h2 id="routes-title">Start with a destination.</h2>
+            </div>
+            <p>Select a route cue, then complete the live search form with your own dates and traveller details.</p>
+          </div>
+          <div class="az-route-grid">
+            <a class="az-route" href="#tpwl-search">
+              <small>From DAC</small>
+              <b>Bangkok</b>
+              <span>Search route</span>
+            </a>
+            <a class="az-route" href="#tpwl-search">
+              <small>From DAC</small>
+              <b>Dubai</b>
+              <span>Search route</span>
+            </a>
+            <a class="az-route" href="#tpwl-search">
+              <small>From DAC</small>
+              <b>Kuala Lumpur</b>
+              <span>Search route</span>
+            </a>
+            <a class="az-route" href="#tpwl-search">
+              <small>From DAC</small>
+              <b>Singapore</b>
+              <span>Search route</span>
+            </a>
+            <a class="az-route" href="#tpwl-search">
+              <small>From DAC</small>
+              <b>Kathmandu</b>
+              <span>Search route</span>
+            </a>
+            <a class="az-route" href="#tpwl-search">
+              <small>From DAC</small>
+              <b>Malé</b>
+              <span>Search route</span>
+            </a>
+          </div>
+        </section>
+
+        <!-- Trust & Value Proposition -->
+        <section class="az-why" aria-label="Why compare with Azraq">
+          <article>
+            <b>Compare</b>
+            <h3>More than one option.</h3>
+            <p>Review the live options returned by connected travel providers.</p>
+          </article>
+          <article>
+            <b>Details</b>
+            <h3>Check what matters.</h3>
+            <p>Review stops, timing, baggage, and fare conditions before choosing.</p>
+          </article>
+          <article>
+            <b>Transparency</b>
+            <h3>Know who handles checkout.</h3>
+            <p>The provider you select completes payment and booking outside Azraq.</p>
+          </article>
+          <article>
+            <b>Dhaka support</b>
+            <h3>Ask for help when needed.</h3>
+            <p>Azraq can assist with route planning, packages, and visa documentation guidance.</p>
+          </article>
+        </section>
+
+        <!-- Secondary Services -->
+        <section class="az-secondary" aria-label="Visa and package planning">
+          <article>
+            <p class="az-section-label">Visa assistance</p>
+            <h3>Need documents too?</h3>
+            <p>
+              Find country-requirement checks and documentation guidance for popular Bangladesh-origin routes. Confirm
+              current rules with the relevant authority before travel.
+            </p>
+            <a href="https://www.azraqtrips.com/">Explore visa assistance</a>
+          </article>
+          <article>
+            <p class="az-section-label">Packages</p>
+            <h3>Plan beyond the flight.</h3>
+            <p>Ask Azraq about holiday planning with stays, transfers, excursions, and day-by-day itinerary support.</p>
+            <a href="https://www.azraqtrips.com/">Explore packages</a>
+          </article>
+        </section>
+
+        <!-- Direct WhatsApp Concierge Desk -->
+        <section class="az-desk" aria-label="Azraq Travel Desk">
+          <div>
+            <p>Azraq Travel Desk</p>
+            <h2>Need help with your trip?</h2>
+          </div>
+          <a
+            href="https://wa.me/8801851172032?text=Hello%20Azraq!%20I%20would%20like%20assistance%20with%20travel%20planning."
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp Azraq
+          </a>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="az-footer">
+    <div class="az-shell az-footer-inner">
+      <p>Azraq Trips · Flight comparison, holiday planning, and visa documentation guidance from Dhaka.</p>
+      <a href="mailto:info@azraqtrips.com">info@azraqtrips.com</a>
+    </div>
+  </footer>
+</body>
+</html>

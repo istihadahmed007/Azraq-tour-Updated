@@ -31,7 +31,6 @@ import {
   filterBuddyProfiles,
   AVAILABLE_DESTINATIONS,
   AVAILABLE_TRAVEL_STYLES,
-  DEMO_BUDDY_PROFILES,
 } from '../../lib/travelBuddyQueries';
 import { useAuth } from '../../context/AuthContext';
 import { TravelBuddyCard } from './TravelBuddyCard';
@@ -82,13 +81,11 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
           user ? fetchUserRequests(user.uid) : Promise.resolve([]),
         ]);
 
-      setProfiles(
-        fetchedProfiles.length > 0 ? fetchedProfiles : DEMO_BUDDY_PROFILES
-      );
+      setProfiles(fetchedProfiles || []);
       setMyProfile(fetchedMyProfile);
-      setRequests(fetchedRequests);
+      setRequests(fetchedRequests || []);
     } catch {
-      setProfiles(DEMO_BUDDY_PROFILES);
+      setProfiles([]);
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -483,6 +480,34 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                     className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
                   />
                 ))}
+              </div>
+            ) : profiles.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 mb-4">
+                  <Users className="h-8 w-8" />
+                </div>
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">
+                  No Travel Buddy Profiles Published Yet
+                </h3>
+                <p className="mt-2 max-w-md text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                  Be the first traveler to create and publish your profile! Connect with other Bangladeshi globetrotters heading to Thailand, Malaysia, UAE, Maldives, and more.
+                </p>
+                <button
+                  id="btn-be-first-travel-buddy"
+                  type="button"
+                  onClick={() => {
+                    if (isGuest || !user) {
+                      openAuthModal();
+                      showToast('Please sign in to set up your Travel Buddy profile.', 'info');
+                    } else {
+                      setActiveTab('profile');
+                    }
+                  }}
+                  className="mt-6 flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-sky-500 min-h-[44px] cursor-pointer"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Create Your Travel Buddy Profile</span>
+                </button>
               </div>
             ) : filteredBuddies.length === 0 ? (
               <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">

@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Globe,
+  Mic,
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -31,6 +32,7 @@ interface NavigationProps {
   savedTripsCount: number;
   onOpenQuote?: () => void;
   onOpenLocationFinder?: () => void;
+  onOpenVoiceModal?: (initialTranscript?: string) => void;
 }
 
 export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
@@ -39,6 +41,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
       currentView,
       onViewChange,
       savedTripsCount,
+      onOpenVoiceModal,
     },
     ref
   ) => {
@@ -158,6 +161,19 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
             {/* Right Utilities Container - ALWAYS visible with shrink-0 */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
               
+              {/* Voice AI Planner Button */}
+              {onOpenVoiceModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenVoiceModal()}
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shrink-0 bg-gradient-to-r from-sky-400/25 to-blue-500/25 hover:from-sky-400/40 hover:to-blue-500/40 text-sky-100 border-sky-300/40 shadow-xs"
+                  title="Voice AI Trip & Flight Planner"
+                >
+                  <Mic className="w-3.5 h-3.5 text-sky-300 animate-pulse" />
+                  <span className="hidden md:inline font-bold">Voice AI</span>
+                </button>
+              )}
+
               {/* Smart Search Button */}
               <button
                 type="button"

@@ -30,6 +30,7 @@ import { Footer } from './components/Footer';
 import { FloatingWhatsAppButton } from './components/FloatingWhatsAppButton';
 import { VisaQuoteModal } from './components/VisaQuoteModal';
 import { AiLocationFinderModal } from './components/AiLocationFinderModal';
+import { VoiceTripModal, StructuredVoiceTripData } from './components/VoiceTripModal';
 import { FlightSearchParams } from './components/AzraqTripFinder';
 import AuthCallback from './pages/AuthCallback';
 import { AZRAQ_AGENCY_CONFIG } from './data/agencyConfig';
@@ -204,6 +205,8 @@ function AppContent() {
   const [visaModalCountry, setVisaModalCountry] = useState<string | undefined>(undefined);
   const [isLocationFinderOpen, setIsLocationFinderOpen] = useState(false);
   const [locationFinderQuery, setLocationFinderQuery] = useState('');
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [voiceModalTranscript, setVoiceModalTranscript] = useState('');
 
   // Handle browser back/forward buttons
   useEffect(() => {
@@ -429,6 +432,10 @@ function AppContent() {
           onOpenLocationFinder={() => {
             setLocationFinderQuery('');
             setIsLocationFinderOpen(true);
+          }}
+          onOpenVoiceModal={(text) => {
+            setVoiceModalTranscript(text || '');
+            setIsVoiceModalOpen(true);
           }}
         />
       )}
@@ -659,6 +666,22 @@ function AppContent() {
           setLocationFinderQuery('');
         }}
         initialQuery={locationFinderQuery}
+      />
+
+      {/* Global Voice Trip & Flight Modal */}
+      <VoiceTripModal
+        isOpen={isVoiceModalOpen}
+        onClose={() => {
+          setIsVoiceModalOpen(false);
+          setVoiceModalTranscript('');
+        }}
+        onConfirmPlan={(planData: StructuredVoiceTripData) => {
+          handlePlanTripPrompt(planData.structuredPrompt);
+        }}
+        onSearchFlights={(flightParams: FlightSearchParams) => {
+          handleSearchFlights(flightParams);
+        }}
+        initialTranscript={voiceModalTranscript}
       />
 
       {/* Persistent Floating WhatsApp Chat Widget */}

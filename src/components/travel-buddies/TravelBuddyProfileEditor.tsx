@@ -219,7 +219,7 @@ export const TravelBuddyProfileEditor: React.FC<TravelBuddyProfileEditorProps> =
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="e.g. Tanvir Hossain"
+                placeholder="e.g. Istihad Ahmed"
                 className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
               />
               {errors.displayName && (

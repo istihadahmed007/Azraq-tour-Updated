@@ -309,18 +309,6 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
           <Sparkles className="w-4 h-4 text-sky-500" />
           <span>AI Trip Planner</span>
         </button>
-
-        {/* Voice Trip Planner Quick Trigger */}
-        {onOpenVoiceModal && (
-          <button
-            type="button"
-            onClick={() => onOpenVoiceModal()}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white shadow-md hover:scale-105 active:scale-95 ml-auto border border-white/30"
-          >
-            <Mic className="w-4 h-4 text-sky-200 animate-pulse" />
-            <span>Voice Search</span>
-          </button>
-        )}
       </div>
 
       {/* 2. Main Search Container: Floating White Card with Soft Blue Border & Shadow */}
@@ -493,19 +481,6 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                 />
                 <span>Direct flights only</span>
               </label>
-
-              {/* Voice Flight Search Shortcut */}
-              {onOpenVoiceModal && (
-                <button
-                  type="button"
-                  onClick={() => onOpenVoiceModal('Find flights from Dhaka to Bangkok next Friday for 2 adults')}
-                  className="ml-auto flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAF7FF] hover:bg-[#DDF4FD] text-[#0759B8] font-bold text-xs border border-[#CDE9FB] transition-all hover:scale-105 cursor-pointer"
-                  title="Search flights by voice"
-                >
-                  <Mic className="w-3.5 h-3.5 text-[#1389E8] animate-pulse" />
-                  <span>Voice Flight Search</span>
-                </button>
-              )}
             </div>
 
             {/* Main Primary Search Row (Connected Field Grid) */}

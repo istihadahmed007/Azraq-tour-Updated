@@ -21,89 +21,8 @@ import {
 const LOCAL_PROFILES_KEY = 'azraq_travel_buddy_profiles_cache';
 const LOCAL_REQUESTS_KEY = 'azraq_travel_buddy_requests_cache';
 
-// Clearly labeled demo profiles for Bangladeshi travelers
-export const DEMO_BUDDY_PROFILES: TravelBuddyProfile[] = [
-  {
-    id: 'demo-tanvir-hossain',
-    displayName: 'Tanvir Hossain',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
-    homeLocation: 'Dhaka, Bangladesh',
-    bio: 'Food enthusiast & urban photographer. Planning street food crawls, night markets, and temple exploration.',
-    destinations: ['Bangkok', 'Pattaya', 'Phuket'],
-    travelStyles: ['Food & Culture', 'Photography', 'Backpacking / Budget'],
-    languages: ['Bangla', 'English'],
-    travelStart: '2026-11-12',
-    travelEnd: '2026-11-18',
-    groupSize: 2,
-    contactPreference: 'WhatsApp',
-    visibility: 'public',
-    isActive: true,
-    createdAt: '2026-08-01T10:00:00.000Z',
-    updatedAt: '2026-08-01T10:00:00.000Z',
-    isDemo: true,
-  },
-  {
-    id: 'demo-nusrat-jahan',
-    displayName: 'Nusrat Jahan',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
-    homeLocation: 'Chattogram, Bangladesh',
-    bio: 'Family trip planner looking for fellow travelers to share chartered transfers and island hopping in Malaysia.',
-    destinations: ['Kuala Lumpur', 'Langkawi', 'Penang'],
-    travelStyles: ['Family', 'Beach & Relaxation', 'Shopping'],
-    languages: ['Bangla', 'English'],
-    travelStart: '2026-12-02',
-    travelEnd: '2026-12-08',
-    groupSize: 4,
-    contactPreference: 'In-app only',
-    visibility: 'public',
-    isActive: true,
-    createdAt: '2026-08-05T12:00:00.000Z',
-    updatedAt: '2026-08-05T12:00:00.000Z',
-    isDemo: true,
-  },
-  {
-    id: 'demo-rahat-chowdhury',
-    displayName: 'Rahat Chowdhury',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
-    homeLocation: 'Dhaka, Bangladesh',
-    bio: 'Tech entrepreneur on luxury weekend escapes. Interested in desert safaris, fine dining, and overwater villas.',
-    destinations: ['Dubai', 'Maldives', 'Abu Dhabi'],
-    travelStyles: ['Luxury', 'Adventure & Nature', 'Beach & Relaxation'],
-    languages: ['Bangla', 'English', 'Arabic'],
-    travelStart: '2026-11-20',
-    travelEnd: '2026-11-27',
-    groupSize: 1,
-    contactPreference: 'WhatsApp',
-    visibility: 'public',
-    isActive: true,
-    createdAt: '2026-08-10T14:00:00.000Z',
-    updatedAt: '2026-08-10T14:00:00.000Z',
-    isDemo: true,
-  },
-  {
-    id: 'demo-samira-ahmed',
-    displayName: 'Samira Ahmed',
-    avatarUrl:
-      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=400&q=80',
-    homeLocation: 'Sylhet, Bangladesh',
-    bio: 'Solo traveler seeking female travel companions for cafe hopping, yoga retreats, and museum tours in Bali & Singapore.',
-    destinations: ['Bali', 'Singapore', 'Bangkok'],
-    travelStyles: ['Solo Travel', 'Food & Culture', 'Photography'],
-    languages: ['Bangla', 'English'],
-    travelStart: '2026-12-15',
-    travelEnd: '2026-12-22',
-    groupSize: 1,
-    contactPreference: 'In-app only',
-    visibility: 'public',
-    isActive: true,
-    createdAt: '2026-08-12T16:00:00.000Z',
-    updatedAt: '2026-08-12T16:00:00.000Z',
-    isDemo: true,
-  },
-];
+// No fake or mock buddy profiles; real profiles stored in Firestore
+export const DEMO_BUDDY_PROFILES: TravelBuddyProfile[] = [];
 
 export const AVAILABLE_DESTINATIONS = [
   'Bangkok',
@@ -425,7 +344,8 @@ export async function fetchBuddyProfiles(): Promise<TravelBuddyProfile[]> {
     // Ignore parse errors
   }
 
-  return DEMO_BUDDY_PROFILES;
+  // Return empty array when no real profiles exist in database
+  return [];
 }
 
 /**

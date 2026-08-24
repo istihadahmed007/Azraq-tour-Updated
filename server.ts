@@ -63,8 +63,8 @@ function getGenAI(): GoogleGenAI {
 }
 
 // Supported Gemini Models with Multi-Tier Fast-Response Hierarchy
-const GEMINI_PRIMARY_MODEL = "gemini-3.1-flash-lite";
-const GEMINI_FALLBACK_MODELS = ["gemini-flash-latest", "gemini-3.7-flash"];
+const GEMINI_PRIMARY_MODEL = "gemini-3.7-flash";
+const GEMINI_FALLBACK_MODELS = ["gemini-flash-latest", "gemini-3.1-flash-lite"];
 
 interface GenerateGeminiOptions {
   prompt?: string;
@@ -108,7 +108,7 @@ function isTransientError(errMsg: string): boolean {
   );
 }
 
-// Ultra-Fast & Resilient Gemini Content Generator with fast fallback
+// Ultra-Fast & Resilient Gemini Content Generator with multi-tier fallback
 async function generateGeminiContentWithRetry(options: GenerateGeminiOptions): Promise<string> {
   const ai = getGenAI();
   const modelsToTry = [GEMINI_PRIMARY_MODEL, ...GEMINI_FALLBACK_MODELS];
@@ -118,9 +118,6 @@ async function generateGeminiContentWithRetry(options: GenerateGeminiOptions): P
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
         const config: any = {};
-        if (model.includes("3.7") || model.includes("thinking")) {
-          config.thinkingConfig = { thinkingBudget: 0 };
-        }
         if (options.systemInstruction) config.systemInstruction = options.systemInstruction;
         if (options.responseMimeType) config.responseMimeType = options.responseMimeType;
         if (options.responseSchema) config.responseSchema = options.responseSchema;
@@ -128,14 +125,14 @@ async function generateGeminiContentWithRetry(options: GenerateGeminiOptions): P
 
         const contents = options.contents || options.prompt;
         
-        // Fast timeout race (5.5s) to avoid any stalling
+        // 30s timeout race to allow complete generation
         const callPromise = ai.models.generateContent({
           model,
           contents,
           config,
         });
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout on model ${model}`)), 5500)
+          setTimeout(() => reject(new Error(`Timeout on model ${model}`)), 30000)
         );
 
         const response: any = await Promise.race([callPromise, timeoutPromise]);
@@ -153,7 +150,7 @@ async function generateGeminiContentWithRetry(options: GenerateGeminiOptions): P
         }
 
         if (attempt < 2 && isTransient) {
-          await new Promise((r) => setTimeout(r, 100));
+          await new Promise((r) => setTimeout(r, 250));
           continue;
         }
         break;
@@ -182,9 +179,6 @@ async function sendGeminiChatWithRetry(
           systemInstruction,
           temperature,
         };
-        if (model.includes("3.7") || model.includes("thinking")) {
-          config.thinkingConfig = { thinkingBudget: 0 };
-        }
 
         const chat = ai.chats.create({
           model,
@@ -201,7 +195,7 @@ async function sendGeminiChatWithRetry(
 
         const callPromise = chat.sendMessage({ message });
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Chat timeout on ${model}`)), 4500)
+          setTimeout(() => reject(new Error(`Chat timeout on ${model}`)), 30000)
         );
 
         const result: any = await Promise.race([callPromise, timeoutPromise]);
@@ -218,7 +212,7 @@ async function sendGeminiChatWithRetry(
         }
 
         if (attempt < 2 && isTransient) {
-          await new Promise((r) => setTimeout(r, 100));
+          await new Promise((r) => setTimeout(r, 250));
           continue;
         }
         break;
@@ -512,7 +506,7 @@ app.get("/api/auth/me", (req, res) => {
 // 1. Register Endpoint
 app.post("/api/auth/register", (req, res) => {
   try {
-    const { fullName, email, phone, country, password, agreeTerms, photoURL } = req.body;
+    const { fullName, email, phone, country, password, confirmPassword, agreeTerms, photoURL } = req.body;
 
     if (!fullName || !fullName.trim()) {
       return res.status(400).json({ error: "Full Name is required." });
@@ -523,8 +517,21 @@ app.post("/api/auth/register", (req, res) => {
     if (!phone || phone.trim().length < 6) {
       return res.status(400).json({ error: "Please enter a valid Phone / WhatsApp number." });
     }
+    
+    // Bangladeshi phone format validation
+    const cleanedPhone = phone.replace(/[\s\-()]/g, "");
+    if (country === "Bangladesh" || cleanedPhone.startsWith("+880") || cleanedPhone.startsWith("01")) {
+      const isBdValid = /^\+8801[3-9]\d{8}$/.test(cleanedPhone) || /^01[3-9]\d{8}$/.test(cleanedPhone) || /^8801[3-9]\d{8}$/.test(cleanedPhone);
+      if (!isBdValid) {
+        return res.status(400).json({ error: "Please enter a valid 11-digit Bangladeshi mobile number (e.g. 01712345678 or +8801712345678)." });
+      }
+    }
+
     if (!country || !country.trim()) {
       return res.status(400).json({ error: "Please select or enter your Country." });
+    }
+    if (confirmPassword !== undefined && confirmPassword !== password) {
+      return res.status(400).json({ error: "Passwords do not match. Please ensure both passwords match." });
     }
     if (!agreeTerms) {
       return res.status(400).json({ error: "You must agree to the Terms of Service & Privacy Policy to register." });
@@ -1411,7 +1418,7 @@ async function generateGeminiWithMapsGrounding({
         config,
       });
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error(`Maps grounding timeout on ${model}`)), 6000)
+        setTimeout(() => reject(new Error(`Maps grounding timeout on ${model}`)), 30000)
       );
 
       const response: any = await Promise.race([callPromise, timeoutPromise]);
