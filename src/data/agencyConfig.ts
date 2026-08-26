@@ -44,8 +44,9 @@ export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
   travelpayoutsPartnerId: '565363',
   travelpayoutsMarker: '765415',
   travelpayoutsTrsId: '565363',
-  aviasalesAffiliateUrl: 'https://www.aviasales.com/?marker=765415&trs=565363&currency=bdt',
-  aviasalesBaseUrl: 'https://www.aviasales.com/?marker=765415&trs=565363&currency=bdt&params=DAC1',
+  // Compatibility fields retained for existing components; the White Label subdomain owns the user journey.
+  aviasalesAffiliateUrl: 'https://flights.azraqtrips.com/',
+  aviasalesBaseUrl: 'https://flights.azraqtrips.com/',
   officialAffiliateDisclosure:
     'Flight search and booking services are provided through our travel partners. We may earn a commission when you complete a booking through our affiliate links.',
   currencies: [

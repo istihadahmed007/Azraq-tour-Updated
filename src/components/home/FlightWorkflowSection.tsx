@@ -67,18 +67,19 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
         ))}
       </div>
 
-      {onNavigateToFlights && (
-        <div className="text-center pt-2">
-          <button
-            type="button"
-            onClick={onNavigateToFlights}
-            className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#0D6EFD] hover:text-blue-700 transition-colors cursor-pointer"
-          >
-            <span>Start flight search</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </div>
-      )}
+      <div className="text-center pt-2">
+        <button
+          type="button"
+          onClick={() => {
+            if (onNavigateToFlights) onNavigateToFlights();
+            else window.location.href = 'https://flights.azraqtrips.com/';
+          }}
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#0D6EFD] hover:text-blue-700 transition-colors cursor-pointer"
+        >
+          <span>Start flight search</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </section>
   );
 };

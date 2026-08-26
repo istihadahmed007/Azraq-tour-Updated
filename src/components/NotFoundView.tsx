@@ -61,10 +61,10 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigateToView }) 
           </button>
           <button
             type="button"
-            onClick={() => onNavigateToView('flights')}
+            onClick={() => onNavigateToView('packages')}
             className="p-2.5 rounded-xl hover:bg-slate-50 hover:text-[#0D6EFD] transition-colors cursor-pointer"
           >
-            Dhaka Flights
+            Tour Packages
           </button>
           <button
             type="button"

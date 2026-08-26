@@ -214,13 +214,14 @@ export interface VisaQuoteRequest {
   internalNotes?: InternalNote[];
   quotedPrice?: string;
   visaFee?: string;
+  flightOptions?: string;
   assignedStaff?: string;
   assignedStaffId?: string;
   isArchived?: boolean;
   acknowledgmentSent?: boolean;
 }
 
-export type QuoteRequest = FlightQuoteRequest | VisaQuoteRequest;
+export type QuoteRequest = FlightQuoteRequest | VisaQuoteRequest | PackageQuoteRequest;
 
 export type TimelineDotColor = 'yellow' | 'green' | 'red' | 'blue';
 
@@ -518,6 +519,7 @@ export interface TourPackage {
   terms_conditions: string[];
   source_pdf: string;
   status: 'published' | 'draft' | 'archived';
+  is_published?: boolean;
   created_at: string;
   updated_at: string;
   images: string[];
@@ -535,6 +537,7 @@ export interface PackageQuoteRequest {
   email: string;
   phone: string;
   destination: string;
+  destinationCountry?: string;
   package_id: string;
   package_name: string;
   travelDate: string;
@@ -542,11 +545,19 @@ export interface PackageQuoteRequest {
   children: number;
   specialRequirements?: string;
   message?: string;
+  preferredContactMethod?: 'WhatsApp' | 'Email' | 'Phone Call';
   status: QuoteStatus;
   createdAt: string;
+  updatedAt?: string;
   staffNote?: string;
+  internalNotes?: InternalNote[];
   quotedPrice?: string;
   visaFee?: string;
+  flightOptions?: string;
+  assignedStaff?: string;
+  assignedStaffId?: string;
+  isArchived?: boolean;
+  acknowledgmentSent?: boolean;
 }
 
 export interface Destination {
@@ -663,7 +674,8 @@ export interface PendingAction {
     | 'write_review'
     | 'send_message'
     | 'save_itinerary'
-    | 'generate_itinerary';
+    | 'generate_itinerary'
+    | 'submit_quote';
   label: string;
   payload?: any;
   onExecute?: () => void;

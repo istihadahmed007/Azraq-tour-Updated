@@ -3,6 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        var isPartnerUrlError = function(str) {
+          if (!str) return false;
+          var s = String(str).toLowerCase();
+          return s.includes('partner url') || s.includes('partner urls') || s.includes('tpembars') || s.includes('tpwidg') || s.includes('travelpayouts');
+        };
+
+        var origError = console.error;
+        console.error = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var joined = args.map(function(a) { return String(a && a.message ? a.message : a); }).join(' ');
+          if (isPartnerUrlError(joined)) {
+            console.warn('[Handled external partner network notice]:', joined);
+            return;
+          }
+          origError.apply(console, arguments);
+        };
+
+        window.addEventListener('unhandledrejection', function(event) {
+          var reasonStr = String(event && event.reason && event.reason.message ? event.reason.message : event && event.reason ? event.reason : '');
+          if (isPartnerUrlError(reasonStr)) {
+            event.preventDefault();
+            console.warn('[Handled external partner network notice]:', reasonStr);
+          }
+        });
+
+        window.addEventListener('error', function(event) {
+          var msg = String(event && event.message ? event.message : '');
+          if (isPartnerUrlError(msg)) {
+            event.preventDefault();
+          }
+        });
+      })();
+    </script>
     <title>AzraqTrips – AI Travel Planner & Travel Services for Bangladesh</title>
     <meta
       name="description"

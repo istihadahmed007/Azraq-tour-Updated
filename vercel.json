@@ -1,5 +1,27 @@
 {
   "version": 2,
+  "redirects": [
+    {
+      "source": "/flights",
+      "destination": "https://flights.azraqtrips.com/",
+      "permanent": true
+    },
+    {
+      "source": "/flight",
+      "destination": "https://flights.azraqtrips.com/",
+      "permanent": true
+    },
+    {
+      "source": "/flights/:path*",
+      "destination": "https://flights.azraqtrips.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/flight/:path*",
+      "destination": "https://flights.azraqtrips.com/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     {
       "source": "/(.*)",

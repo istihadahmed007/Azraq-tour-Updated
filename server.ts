@@ -6,6 +6,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { v2 as cloudinary } from "cloudinary";
 import { INITIAL_TOUR_PACKAGES } from "./src/data/initialPackagesData";
 import { INITIAL_SOCIAL_PROOF_ACTIVITIES } from "./src/data/socialProofData";
+import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
 
 const INITIAL_BLOG_POSTS: any[] = [];
 
@@ -6287,7 +6288,15 @@ app.get(["/healthz", "/api/health"], (req, res) => {
   res.status(200).json({ status: "ok", time: new Date().toISOString() });
 });
 
-import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
+// 301 Permanent Redirect for /flights and /flight to https://flights.azraqtrips.com/
+app.get(["/flights", "/flight", "/flights/", "/flight/", "/flights/*", "/flight/*"], (req, res) => {
+  const flightSearch = req.query.flightSearch;
+  if (flightSearch) {
+    return res.redirect(301, `https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(String(flightSearch))}`);
+  }
+  const queryString = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
+  return res.redirect(301, `https://flights.azraqtrips.com${queryString ? "/" + queryString : "/"}`);
+});
 
 // 301 Permanent Redirects for non-www and trailing slashes
 app.use((req, res, next) => {

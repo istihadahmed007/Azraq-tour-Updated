@@ -143,17 +143,21 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
             <span>Required Documents Checklist (Bangladeshi Passport)</span>
           </h2>
           <div className="space-y-3">
-            {visa.requiredDocuments.map((doc, idx) => (
-              <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
-                <div className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center font-bold text-xs text-[#0D6EFD] shrink-0">
-                  {idx + 1}
+            {visa.requiredDocuments?.map((doc: any, idx: number) => {
+              const name = typeof doc === 'string' ? doc : doc.name || '';
+              const details = typeof doc === 'string' ? '' : doc.details || '';
+              return (
+                <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center font-bold text-xs text-[#0D6EFD] shrink-0">
+                    {idx + 1}
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-slate-800 text-xs sm:text-sm">{name}</h3>
+                    {details && <p className="text-xs text-slate-600 mt-0.5">{details}</p>}
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-bold text-slate-800 text-xs sm:text-sm">{doc.name}</h3>
-                  <p className="text-xs text-slate-600 mt-0.5">{doc.details}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 

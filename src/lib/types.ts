@@ -5,6 +5,7 @@ export interface Profile {
   username: string;
   full_name?: string;
   avatar_url: string;
+  photoURL?: string;
   bio?: string;
   created_at: string;
   is_verified?: boolean;

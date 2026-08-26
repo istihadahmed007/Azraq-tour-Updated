@@ -166,7 +166,7 @@ describe('Aviasales Affiliate Search Key & URL', () => {
     expect(key).toBe('DAC3108BKK1');
   });
 
-  it('includes affiliate marker 563001 in URL', () => {
+  it('routes legacy flight links through the White Label subdomain', () => {
     const url = buildAviasalesSearchUrl({
       origin: 'DAC',
       destination: 'DXB',
@@ -174,8 +174,45 @@ describe('Aviasales Affiliate Search Key & URL', () => {
       adults: 1,
     });
 
-    expect(url).toContain('https://www.aviasales.com/search/');
-    expect(url).toContain('marker=563001');
-    expect(url).toContain('DAC3108DXB1');
+    expect(url).toBe('https://flights.azraqtrips.com/?flightSearch=DAC3108DXB1');
+  });
+
+  it('generates correct search URLs for all required scenarios', () => {
+    // 1. DAC -> BKK One-way 1 adult Economy
+    const dacBkkOneWay = buildAviasalesSearchUrl({
+      origin: 'DAC',
+      destination: 'BKK',
+      departDate: '2026-08-31',
+      tripType: 'oneway',
+      adults: 1,
+      cabin: 'Economy',
+    });
+    expect(dacBkkOneWay).toBe('https://flights.azraqtrips.com/?flightSearch=DAC3108BKK1');
+
+    // 2. BKK -> DAC Round-trip 2 adults Business
+    const bkkDacRound = buildAviasalesSearchUrl({
+      origin: 'BKK',
+      destination: 'DAC',
+      departDate: '2026-08-31',
+      returnDate: '2026-09-07',
+      tripType: 'round',
+      adults: 2,
+      cabin: 'Business',
+    });
+    expect(bkkDacRound).toBe('https://flights.azraqtrips.com/?flightSearch=BKK3108DAC0709200c');
+
+    // 3. DAC -> BKK Round-trip 3 adults, 1 child, 1 infant First Class
+    const multiPax = buildAviasalesSearchUrl({
+      origin: 'DAC',
+      destination: 'BKK',
+      departDate: '2026-09-15',
+      returnDate: '2026-09-22',
+      tripType: 'round',
+      adults: 3,
+      children: 1,
+      infants: 1,
+      cabin: 'First',
+    });
+    expect(multiPax).toBe('https://flights.azraqtrips.com/?flightSearch=DAC1509BKK2209311f');
   });
 });

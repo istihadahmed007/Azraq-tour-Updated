@@ -62,16 +62,17 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-sky-200">
-              {onNavigateToFlights && (
-                <button
-                  type="button"
-                  onClick={onNavigateToFlights}
-                  className="hover:text-white hover:underline flex items-center gap-1.5 cursor-pointer py-1"
-                >
-                  <Plane className="w-3.5 h-3.5" />
-                  <span>Search Flights</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onNavigateToFlights) onNavigateToFlights();
+                  else window.location.href = 'https://flights.azraqtrips.com/';
+                }}
+                className="hover:text-white hover:underline flex items-center gap-1.5 cursor-pointer py-1"
+              >
+                <Plane className="w-3.5 h-3.5" />
+                <span>Search Flights</span>
+              </button>
               <span className="text-white/30 hidden sm:inline">•</span>
               <a
                 href="https://wa.me/8801851172032?text=Hello%20Azraq!%20I%20would%20like%20assistance%20with%20travel%20planning."

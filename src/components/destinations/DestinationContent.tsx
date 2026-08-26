@@ -241,7 +241,13 @@ export function DestinationContent({
               Compare live airfares from Dhaka (DAC) on Emirates, Singapore Airlines, Thai Airways, and Biman Bangladesh.
             </p>
             <button
-              onClick={() => onNavigateToFlights && onNavigateToFlights(destination.name)}
+              onClick={() => {
+                if (onNavigateToFlights) {
+                  onNavigateToFlights(destination.name);
+                } else {
+                  window.location.href = 'https://flights.azraqtrips.com/';
+                }
+              }}
               className="mt-4 w-full bg-[#006ce4] hover:bg-[#0057b8] text-white text-xs font-semibold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"
             >
               <Plane className="w-4 h-4" />

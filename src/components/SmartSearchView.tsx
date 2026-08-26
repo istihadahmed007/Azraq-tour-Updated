@@ -137,7 +137,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
     } else if (targetUrl === 'packages') {
       onNavigateToView('packages');
     } else if (targetUrl === 'flights') {
-      onNavigateToView('flights');
+      window.location.href = 'https://flights.azraqtrips.com/';
     } else if (targetUrl === 'planner') {
       onNavigateToView('planner');
     } else if (targetUrl === 'feed') {

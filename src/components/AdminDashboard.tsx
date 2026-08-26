@@ -1399,7 +1399,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <div><span className="text-slate-400">Visa Type:</span> <strong className="text-white">{(selectedQuote as any).visaType} Visa</strong></div>
                     <div><span className="text-slate-400">Travel Date:</span> <strong className="text-white">{(selectedQuote as any).intendedTravelDate}</strong></div>
                     <div><span className="text-slate-400">Applicants:</span> <strong className="text-white">{(selectedQuote as any).applicantsCount} Person(s)</strong></div>
-                    <div><span className="text-slate-400">Embassy Fee:</span> <strong className="text-teal-300">{(selectedQuote as any).visaFee || getVisaFeeForDestination(selectedQuote.destinationCountry)}</strong></div>
+                    <div><span className="text-slate-400">Embassy Fee:</span> <strong className="text-teal-300">{(selectedQuote as any).visaFee || getVisaFeeForDestination((selectedQuote as any).destinationCountry || (selectedQuote as any).destination || '')}</strong></div>
                   </>
                 )}
               </div>

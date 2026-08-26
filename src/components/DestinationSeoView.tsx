@@ -384,7 +384,9 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
               <div className="space-y-2">
                 <button
                   type="button"
-                  onClick={() => onNavigateToView('flights', { params: { origin: 'DAC', destination: destination.name } })}
+                  onClick={() => {
+                    window.location.href = 'https://flights.azraqtrips.com/';
+                  }}
                   className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-blue-50/60 text-xs font-semibold text-slate-700 hover:text-[#0D6EFD] transition-colors text-left cursor-pointer"
                 >
                   <span className="flex items-center gap-2">

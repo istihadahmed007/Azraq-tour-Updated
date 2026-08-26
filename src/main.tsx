@@ -5,13 +5,27 @@ import './index.css';
 
 // Gracefully handle external third-party script fetch rejections (e.g. Travelpayouts widget partner URL fetches)
 if (typeof window !== 'undefined') {
+  const isPartnerError = (str: string) => {
+    if (!str) return false;
+    const s = str.toLowerCase();
+    return s.includes('partner url') || s.includes('partner urls') || s.includes('tpembars') || s.includes('tpwidg') || s.includes('travelpayouts');
+  };
+
+  const originalConsoleError = console.error;
+  console.error = function (...args: any[]) {
+    const joined = args.map((a) => String(a?.message || a)).join(' ');
+    if (isPartnerError(joined)) {
+      console.warn('[Handled external partner network notice]:', joined);
+      return;
+    }
+    originalConsoleError.apply(console, args);
+  };
+
   window.addEventListener('unhandledrejection', (event) => {
     const reasonStr = String(event?.reason?.message || event?.reason || '');
     if (
-      reasonStr.includes('partner URLs') ||
-      reasonStr.includes('Failed to fetch') ||
-      reasonStr.includes('tpwidg') ||
-      reasonStr.includes('travelpayouts')
+      isPartnerError(reasonStr) ||
+      reasonStr.includes('Failed to fetch')
     ) {
       // Prevent console crash/error overlay for non-critical third-party analytics/partner URL requests
       event.preventDefault();
@@ -21,7 +35,7 @@ if (typeof window !== 'undefined') {
 
   window.addEventListener('error', (event) => {
     const msg = String(event?.message || '');
-    if (msg.includes('partner URLs') || msg.includes('tpwidg')) {
+    if (isPartnerError(msg)) {
       event.preventDefault();
     }
   });

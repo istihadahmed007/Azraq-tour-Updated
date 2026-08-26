@@ -1078,6 +1078,15 @@ export interface AviasalesSearchParams {
 }
 
 /**
+ * Builds the existing Azraq Trips White Label search URL.
+ * The subdomain owns search, results, filtering, and provider handoff.
+ */
+export function buildWhiteLabelSearchUrl(params: AviasalesSearchParams = {}): string {
+  const searchKey = getAviasalesSearchKey(params);
+  return `https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(searchKey)}`;
+}
+
+/**
  * Computes the exact Aviasales live search query key (e.g. "DAC3108CGP1" for DAC to CGP on 31-Aug for 1 adult).
  */
 export function getAviasalesSearchKey(params: AviasalesSearchParams = {}): string {
@@ -1122,14 +1131,11 @@ export function getAviasalesSearchKey(params: AviasalesSearchParams = {}): strin
 }
 
 /**
- * Builds official Aviasales affiliate search deep links and direct search URLs.
- * Example result: https://www.aviasales.com/search/DAC3108CGP1?marker=760251
+ * Backward-compatible alias for legacy flight cards.
+ * All user-facing main-domain flight searches now go through White Label.
  */
 export function buildAviasalesSearchUrl(params: AviasalesSearchParams = {}): string {
-  const searchKey = getAviasalesSearchKey(params);
-  const originCode = (params.origin || 'DAC').toUpperCase();
-  // Standard Aviasales direct search page with affiliate marker and exact route params in BDT
-  return `https://www.aviasales.com/search/${searchKey}?marker=765415&trs=565363&currency=bdt&locale=en&params=${originCode}1`;
+  return buildWhiteLabelSearchUrl(params);
 }
 
 /**

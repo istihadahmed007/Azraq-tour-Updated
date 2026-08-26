@@ -1,18 +1,27 @@
 export interface VisaRequirementItem {
   id: string;
   country: string;
+  title?: string;
+  seoTitle?: string;
+  metaDescription?: string;
+  lastUpdated?: string;
   visaType: 'Tourist' | 'Business' | 'Medical' | 'Student' | 'Transit' | 'Other';
   entryType: string; // e.g. E-Visa, Sticker Visa, ETA, VOA
   validity?: string;
   processingTime?: string;
   deliveryTime?: string;
   minBankBalance?: string;
+  minimumBankBalanceBDT?: string;
   photoSpec?: string;
   passportValidity?: string;
   embassyFeeBDT?: string;
+  governmentFeeBDT?: string;
   serviceChargeBDT?: string;
   totalEstimatedBDT?: string;
+  submissionCenter?: string;
   generalRequirements: string[];
+  requiredDocuments?: string[];
+  stepsToApply?: string[];
   occupationRequirements?: {
     businessPerson?: string[];
     jobHolder?: string[];
@@ -21,6 +30,8 @@ export interface VisaRequirementItem {
   };
   notes?: string[];
   termsAndConditions?: string[];
+  faqs?: Array<{ question: string; answer: string }>;
+  disclaimer?: string;
 }
 
 export type VisaRequirement = VisaRequirementItem;

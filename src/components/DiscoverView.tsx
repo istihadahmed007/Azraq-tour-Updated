@@ -74,8 +74,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         onSearchFlights={(params) => {
           if (onSearchFlights) {
             onSearchFlights(params);
-          } else if (onNavigateToView) {
-            onNavigateToView('flights', { searchParams: params });
+          } else {
+            window.location.href = 'https://flights.azraqtrips.com/';
           }
         }}
         onNavigateToView={onNavigateToView}
@@ -112,7 +112,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
 
       {/* 5. Flight Booking & Quotation Workflow */}
       <FlightWorkflowSection
-        onNavigateToFlights={() => onNavigateToView && onNavigateToView('flights')}
+        onNavigateToFlights={() => {
+          window.location.href = 'https://flights.azraqtrips.com/';
+        }}
       />
 
       {/* 6. Primary Service Grid */}
@@ -143,7 +145,9 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         onNavigateToPackages={() => {
           if (onNavigateToView) onNavigateToView('packages');
         }}
-        onNavigateToFlights={() => onNavigateToView && onNavigateToView('flights')}
+        onNavigateToFlights={() => {
+          window.location.href = 'https://flights.azraqtrips.com/';
+        }}
         onNavigateToContact={() => onNavigateToView && onNavigateToView('contact')}
       />
 
@@ -155,8 +159,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         onSearchFlights={(params) => {
           if (onSearchFlights) {
             onSearchFlights(params);
-          } else if (onNavigateToView) {
-            onNavigateToView('flights', { params });
+          } else {
+            window.location.href = 'https://flights.azraqtrips.com/';
           }
         }}
         initialTranscript={voiceInitialTranscript}

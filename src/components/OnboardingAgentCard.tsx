@@ -191,7 +191,7 @@ export const OnboardingAgentCard: React.FC<OnboardingAgentCardProps> = ({
         onNavigateToView('visa');
       }
     } else if (normalizedTarget.includes('flight')) {
-      onNavigateToView('flights');
+      window.location.href = 'https://flights.azraqtrips.com/';
     } else if (normalizedTarget.includes('planner') || normalizedTarget.includes('concierge') || normalizedTarget.includes('itinerary')) {
       onNavigateToView('planner');
     } else if (normalizedTarget.includes('feed') || normalizedTarget.includes('budd') || normalizedTarget.includes('community')) {

@@ -16,7 +16,9 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
       cta: 'Search Flights',
       bg: 'bg-blue-50/70',
       border: 'hover:border-blue-300',
-      action: () => onNavigateToView && onNavigateToView('flights'),
+      action: () => {
+        window.location.href = 'https://flights.azraqtrips.com/';
+      },
     },
     {
       id: 'packages',

@@ -14,7 +14,6 @@ import { Navigation } from './components/Navigation';
 import { ClientLayout } from './components/ClientLayout';
 import { DiscoverView } from './components/DiscoverView';
 import { DestinationsView } from './components/DestinationsView';
-import { FlightsView } from './components/FlightsView';
 import { VisaView } from './components/VisaView';
 import { AboutView } from './components/AboutView';
 import { ContactView } from './components/ContactView';
@@ -34,7 +33,7 @@ import { VoiceTripModal, StructuredVoiceTripData } from './components/VoiceTripM
 import { FlightSearchParams } from './components/AzraqTripFinder';
 import AuthCallback from './pages/AuthCallback';
 import { AZRAQ_AGENCY_CONFIG } from './data/agencyConfig';
-import { parseFlightSearchParamsFromUrl } from './utils/flightSearchEngine';
+import { POPULAR_AIRPORTS, buildWhiteLabelSearchUrl } from './data/flightsData';
 import { SEOHead } from './components/SEOHead';
 import { getOrganizationSchema, getWebSiteSchema } from './lib/seo';
 
@@ -60,14 +59,19 @@ function parseUrlToRoute(): RouteState {
   const search = window.location.search;
 
   if (
-    search.includes('origin=') ||
-    search.includes('destination=') ||
-    search.includes('departDate=') ||
-    search.includes('departureDate=') ||
-    search.includes('view=flights') ||
-    pathname === '/flights'
+    pathname === '/flights' ||
+    pathname === '/flight' ||
+    pathname.startsWith('/flights/') ||
+    pathname.startsWith('/flight/') ||
+    search.includes('view=flights')
   ) {
-    return { view: 'flights' };
+    const flightSearch = new URLSearchParams(search).get('flightSearch');
+    if (flightSearch) {
+      window.location.replace(`https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(flightSearch)}`);
+    } else {
+      window.location.replace(`https://flights.azraqtrips.com/${search ? search : ''}`);
+    }
+    return { view: 'discover' };
   }
 
   if (pathname === '/' || pathname === '') {
@@ -135,6 +139,35 @@ function parseUrlToRoute(): RouteState {
   return { view: 'discover' };
 }
 
+function resolveFlightAirportCode(value: unknown, fallback: string): string {
+  const rawValue = typeof value === 'string' ? value : (value as any)?.code;
+  if (!rawValue) return fallback;
+
+  const normalized = String(rawValue).trim();
+  if (/^[A-Za-z]{3}$/.test(normalized)) return normalized.toUpperCase();
+
+  const match = POPULAR_AIRPORTS.find((airport) => {
+    const haystack = `${airport.code} ${airport.city} ${airport.name}`.toLowerCase();
+    return haystack.includes(normalized.toLowerCase());
+  });
+
+  return match?.code || fallback;
+}
+
+function buildWhiteLabelUrlFromFlightParams(raw?: any): string {
+  return buildWhiteLabelSearchUrl({
+    origin: resolveFlightAirportCode(raw?.origin, 'DAC'),
+    destination: resolveFlightAirportCode(raw?.destination, 'BKK'),
+    departDate: raw?.departureDate || raw?.departDate,
+    returnDate: raw?.returnDate,
+    adults: raw?.adults,
+    children: raw?.children,
+    infants: raw?.infants,
+    cabin: raw?.cabinClass || raw?.cabin,
+    tripType: raw?.tripType || 'round',
+  });
+}
+
 function getViewUrl(view: NavView, slug?: string): string {
   switch (view) {
     case 'discover':
@@ -158,7 +191,7 @@ function getViewUrl(view: NavView, slug?: string): string {
     case 'ai-planner':
       return '/ai-travel-planner';
     case 'flights':
-      return '/flights';
+      return '/';
     case 'packages':
       return '/packages';
     case 'planner':
@@ -189,16 +222,6 @@ function AppContent() {
 
   const currentView = routeState.view;
   const currentSlug = routeState.slug;
-
-  const [activeFlightParams, setActiveFlightParams] = useState<FlightSearchParams | undefined>(() => {
-    if (typeof window !== 'undefined' && window.location) {
-      const parsed = parseFlightSearchParamsFromUrl();
-      if (parsed.origin || parsed.destination || parsed.departureDate) {
-        return parsed as FlightSearchParams;
-      }
-    }
-    return undefined;
-  });
 
   const [brandTheme, setBrandTheme] = useState<BrandTheme>('azraq');
   const [isVisaModalOpen, setIsVisaModalOpen] = useState(false);
@@ -242,9 +265,6 @@ function AppContent() {
   };
 
   const handleNavigate = useCallback((view: NavView | string, extra?: any) => {
-    if (extra?.params) {
-      setActiveFlightParams(extra.params);
-    }
     if (extra?.query) {
       setActiveSearchQuery(extra.query);
     } else if (view !== 'search') {
@@ -275,6 +295,15 @@ function AppContent() {
       targetSlug = extra?.slug;
     }
 
+    if (targetView === 'flights' && typeof window !== 'undefined') {
+      const requestedFlightParams = extra?.params || extra?.searchParams;
+      const redirectUrl = requestedFlightParams
+        ? buildWhiteLabelUrlFromFlightParams(requestedFlightParams)
+        : 'https://flights.azraqtrips.com/';
+      window.location.href = redirectUrl;
+      return;
+    }
+
     setRouteState({ view: targetView, slug: targetSlug });
 
     // Update browser URL without full page reload
@@ -287,8 +316,10 @@ function AppContent() {
   }, []);
 
   const handleSearchFlights = (params: FlightSearchParams) => {
-    setActiveFlightParams(params);
-    handleNavigate('flights');
+    const redirectUrl = buildWhiteLabelUrlFromFlightParams(params);
+    if (typeof window !== 'undefined') {
+      window.location.href = redirectUrl;
+    }
   };
 
   // Quick prompt handler from Discover Search Bar & Voice Trip Planner
@@ -466,15 +497,6 @@ function AppContent() {
               setLocationFinderQuery('');
               setIsLocationFinderOpen(true);
             }}
-          />
-        )}
-
-        {currentView === 'flights' && (
-          <FlightsView
-            initialParams={activeFlightParams}
-            onOpenFlightModal={() => {}}
-            onNavigateToView={handleNavigate}
-            onOpenVisaQuote={handleOpenVisaQuote}
           />
         )}
 

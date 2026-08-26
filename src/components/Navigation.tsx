@@ -6,7 +6,6 @@ import {
   Compass,
   Package,
   FileCheck2,
-  Plane,
   Users,
   MapPin,
   Sparkles,
@@ -54,7 +53,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
       { id: 'discover', label: 'Explore', icon: <Compass className="w-4 h-4" /> },
       { id: 'packages', label: 'Packages', icon: <Package className="w-4 h-4" /> },
       { id: 'destinations', label: 'Destinations', icon: <MapPin className="w-4 h-4" /> },
-      { id: 'flights', label: 'Flights', icon: <Plane className="w-4 h-4" /> },
       { id: 'visa', label: 'Visa Assistance', icon: <FileCheck2 className="w-4 h-4" /> },
       { id: 'planner', label: 'AI Planner', icon: <Sparkles className="w-4 h-4 text-amber-300" />, badge: 'AI' },
       { id: 'feed', label: 'Travel Buddies', icon: <Users className="w-4 h-4" /> },
@@ -311,8 +309,8 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         {/* Mobile / Dropdown Drawer */}
         {mobileMenuOpen && (
           <div className="2xl:hidden border-t border-white/15 bg-[#002f6c] px-4 pt-3 pb-6 space-y-3 shadow-2xl animate-fadeIn">
-            {/* Navigation Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {/* Navigation Grid (6 items = 2 cols mobile, 3 cols tablet) */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {navItems.map((item) => {
                 const isActive = currentView === item.id;
                 return (

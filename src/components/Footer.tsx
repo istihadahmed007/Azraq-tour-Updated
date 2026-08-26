@@ -137,15 +137,6 @@ export const Footer: React.FC<FooterProps> = ({
             <ul className="space-y-2 text-xs">
               <li>
                 <button
-                  onClick={() => handleNav('flights')}
-                  className="hover:text-white text-sky-300 font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
-                >
-                  <span>Flight Search & Compare</span>
-                  <span className="text-[9px] px-1 py-0.5 rounded bg-sky-400/20 text-sky-300">New</span>
-                </button>
-              </li>
-              <li>
-                <button
                   onClick={() => handleNav('destinations')}
                   className="hover:text-white transition-colors cursor-pointer"
                 >
