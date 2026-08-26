@@ -1,6 +1,6 @@
 {
   "name": "Azraq",
   "description": "Luxury AI Concierge and travel platform for Bangladeshi and international travelers with verified visa assistance, curated tour packages, and bespoke Asian itineraries.",
-  "requestFramePermissions": ["geolocation", "microphone"],
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
