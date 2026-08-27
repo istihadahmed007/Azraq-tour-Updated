@@ -22,8 +22,14 @@ import {
   HelpCircle,
   Share2,
   CheckCircle2,
+  Ticket,
+  Car,
+  Wifi,
+  Smartphone,
+  ExternalLink,
 } from 'lucide-react';
 import { CURATED_ITINERARIES } from '../data/itinerariesData';
+import { AZRAQ_AFFILIATE_LINKS } from '../data/agencyConfig';
 
 interface TravelGuideDetailViewProps {
   guide: TravelGuide;
@@ -180,19 +186,42 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
           </div>
 
           {/* Section: Top Attractions */}
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">
-            Top Attractions to Visit in {guide.destination}
-          </h2>
-          <div className="not-prose space-y-3 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8 mb-4">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900">
+              Top Attractions to Visit in {guide.destination}
+            </h2>
+            <a
+              href={AZRAQ_AFFILIATE_LINKS.klook}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition shadow-2xs self-start sm:self-auto not-prose"
+            >
+              <Ticket className="w-3.5 h-3.5 text-amber-600" />
+              <span>Book Tickets on Klook</span>
+              <ExternalLink className="w-3 h-3 text-amber-600" />
+            </a>
+          </div>
+          <div className="not-prose space-y-3 mb-6">
             {guide.topAttractions.map((attr, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
-                <span className="w-6 h-6 rounded-md bg-[#0D6EFD] text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                  {idx + 1}
-                </span>
-                <div>
-                  <h3 className="font-bold text-slate-900 text-sm">{attr.name}</h3>
-                  <p className="text-xs sm:text-sm text-slate-600 mt-1">{attr.description}</p>
+              <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-start justify-between gap-3">
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-md bg-[#0D6EFD] text-white flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    {idx + 1}
+                  </span>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">{attr.name}</h3>
+                    <p className="text-xs sm:text-sm text-slate-600 mt-1">{attr.description}</p>
+                  </div>
                 </div>
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="text-[11px] font-bold text-amber-700 hover:text-amber-800 bg-amber-50 px-2 py-1 rounded border border-amber-200/80 inline-flex items-center gap-1 shrink-0"
+                >
+                  <span>Passes</span>
+                  <ExternalLink className="w-2.5 h-2.5" />
+                </a>
               </div>
             ))}
           </div>
@@ -201,21 +230,87 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-3">
             Getting Around & Local Transportation
           </h2>
-          <p className="text-sm sm:text-base text-slate-700 leading-relaxed mb-8">
+          <p className="text-sm sm:text-base text-slate-700 leading-relaxed mb-4">
             {guide.localTransportation}
           </p>
+          <div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
+            <a
+              href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="p-3.5 rounded-xl bg-blue-50/60 hover:bg-blue-100/60 border border-blue-200 flex items-center justify-between text-xs transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <Car className="w-4 h-4 text-blue-600" />
+                <div>
+                  <span className="font-bold text-slate-900 block">Kiwitaxi Airport Pickup</span>
+                  <span className="text-[10px] text-slate-500">Terminal meetup with nameplate</span>
+                </div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
+            </a>
+            <a
+              href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+              target="_blank"
+              rel="noopener noreferrer sponsored"
+              className="p-3.5 rounded-xl bg-emerald-50/60 hover:bg-emerald-100/60 border border-emerald-200 flex items-center justify-between text-xs transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <Car className="w-4 h-4 text-emerald-600" />
+                <div>
+                  <span className="font-bold text-slate-900 block">GetTransfer Private Cars</span>
+                  <span className="text-[10px] text-slate-500">Compare driver quotes</span>
+                </div>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+            </a>
+          </div>
 
           {/* Section: Practical Tips for Bangladesh Travelers */}
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 mt-8 mb-4">
             Essential Travel Tips for Bangladeshi Tourists
           </h2>
-          <div className="not-prose space-y-2.5 mb-8">
+          <div className="not-prose space-y-2.5 mb-6">
             {guide.bangladeshTravelTips.map((tip, idx) => (
               <div key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>{tip}</span>
               </div>
             ))}
+          </div>
+
+          {/* Stay Connected Abroad Box */}
+          <div className="not-prose p-5 rounded-2xl bg-sky-50/70 border border-sky-200 mb-8 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Wifi className="w-4 h-4 text-sky-600" />
+                <h3 className="font-bold text-slate-900 text-sm">Stay Connected in {guide.destination} (Digital eSIM)</h3>
+              </div>
+              <span className="text-[10px] font-bold bg-sky-600 text-white px-2 py-0.5 rounded-full">Instant 4G/5G</span>
+            </div>
+            <p className="text-xs text-slate-600">
+              Never worry about high roaming fees. Activate high-speed mobile data immediately upon landing while keeping your Bangladeshi SIM for WhatsApp & OTPs.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <a
+                href={AZRAQ_AFFILIATE_LINKS.yesim}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="py-2 px-3 rounded-lg bg-[#006ce4] hover:bg-[#0057b8] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition"
+              >
+                <span>Yesim Unlimited eSIM (Recommended)</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+              <a
+                href={AZRAQ_AFFILIATE_LINKS.airalo}
+                target="_blank"
+                rel="noopener noreferrer sponsored"
+                className="py-2 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition"
+              >
+                <span>Airalo Regional eSIM</span>
+                <ExternalLink className="w-3 h-3 text-slate-400" />
+              </a>
+            </div>
           </div>
 
           {/* Interactive AI Trip Planner Callout */}

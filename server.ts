@@ -2,7 +2,7 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import crypto from "crypto";
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { v2 as cloudinary } from "cloudinary";
 import { INITIAL_TOUR_PACKAGES } from "./src/data/initialPackagesData";
 import { INITIAL_SOCIAL_PROOF_ACTIVITIES } from "./src/data/socialProofData";
@@ -11,7 +11,7 @@ import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
 const INITIAL_BLOG_POSTS: any[] = [];
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 // Ensure public/uploads directory exists for permanent media storage
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
@@ -176,10 +176,9 @@ async function sendGeminiChatWithRetry(
   for (const model of modelsToTry) {
     for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        const config: any = {
-          systemInstruction,
-          temperature,
-        };
+        const config: any = {};
+        if (systemInstruction) config.systemInstruction = systemInstruction;
+        if (temperature !== undefined) config.temperature = temperature;
 
         const chat = ai.chats.create({
           model,
@@ -1399,9 +1398,6 @@ async function generateGeminiWithMapsGrounding({
       const config: any = {
         tools: [{ googleMaps: {} }],
       };
-      if (model.includes("3.7") || model.includes("thinking")) {
-        config.thinkingConfig = { thinkingBudget: 0 };
-      }
       if (typeof userLat === "number" && typeof userLng === "number") {
         config.toolConfig = {
           retrievalConfig: {
@@ -6407,9 +6403,24 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`AzraqTrips Server running on http://0.0.0.0:${PORT}`);
   });
+
+  const shutdown = (signal: string) => {
+    console.log(`Received ${signal}. Shutting down gracefully...`);
+    server.close(() => {
+      console.log("HTTP server closed.");
+      process.exit(0);
+    });
+    setTimeout(() => {
+      console.error("Forcefully terminating after timeout.");
+      process.exit(1);
+    }, 10000).unref();
+  };
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 startServer();

@@ -22,9 +22,15 @@ import {
   CheckCircle2,
   HelpCircle,
   Share2,
+  Ticket,
+  Car,
+  Wifi,
+  Smartphone,
+  ExternalLink,
 } from 'lucide-react';
 import { TRAVEL_GUIDES } from '../data/travelGuidesData';
 import { CURATED_ITINERARIES } from '../data/itinerariesData';
+import { AZRAQ_AFFILIATE_LINKS } from '../data/agencyConfig';
 
 interface DestinationSeoViewProps {
   destination: Destination;
@@ -251,11 +257,23 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
             </section>
 
             {/* Things to Do & Top Attractions */}
-            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-                <CheckCircle2 className="w-6 h-6 text-emerald-600" />
-                <span>Top Attractions & Things to Do in {destination.name}</span>
-              </h2>
+            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                  <span>Top Attractions & Things to Do in {destination.name}</span>
+                </h2>
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition shadow-2xs self-start sm:self-auto"
+                >
+                  <Ticket className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Book on Klook</span>
+                  <ExternalLink className="w-3 h-3 text-amber-600" />
+                </a>
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {(destination.popularAttractions || destination.thingsToDo || ['Sightseeing Tour', 'City Landmark Walk', 'Shopping', 'Local Culture Experience']).map((item, idx) => (
                   <div
@@ -271,6 +289,139 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Klook Activity CTA Strip */}
+              <div className="p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-amber-500/5 border border-amber-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h4 className="text-xs font-bold text-amber-950 uppercase tracking-wider">Book Tours, Entry Tickets & Day Passes</h4>
+                  <p className="text-xs text-slate-600 mt-0.5">Explore skip-the-line passes, museum admissions, and excursion deals in {destination.name}.</p>
+                </div>
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition shrink-0 flex items-center justify-center gap-1.5"
+                >
+                  <span>Explore on Klook</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            </section>
+
+            {/* Airport Transfers & Local Transportation */}
+            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <Car className="w-6 h-6 text-blue-600" />
+                <span>Airport Transfers & Private Rides in {destination.name}</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Ensure hassle-free arrival from Dhaka by pre-booking guaranteed airport pickups or comparing private chauffeur quotes.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-slate-900 text-sm">Kiwitaxi Airport Transfer</h3>
+                      <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded">Arrival Pickup</span>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      English-speaking driver with nameplate waiting at terminal, free 1-hour flight delay wait time.
+                    </p>
+                  </div>
+                  <a
+                    href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="mt-4 w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <span>Book Kiwitaxi Transfer</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-bold text-slate-900 text-sm">GetTransfer Private Chauffeur</h3>
+                      <span className="text-[10px] font-bold bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded">Best Price Match</span>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      Compare bids from local drivers for luxury sedans, family vans, and intercity road trips.
+                    </p>
+                  </div>
+                  <a
+                    href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="mt-4 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <span>Get Transfer Quotes</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+              </div>
+            </section>
+
+            {/* Stay Connected Abroad / eSIM Section */}
+            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-4">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
+                <Wifi className="w-6 h-6 text-sky-600" />
+                <span>Stay Connected in {destination.name}: Instant eSIM</span>
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                Avoid roaming charges and airport SIM queues by setting up an international digital eSIM before boarding in Dhaka.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                {/* Yesim Primary */}
+                <div className="p-4 rounded-xl bg-sky-50/70 border-2 border-sky-200 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Smartphone className="w-4 h-4 text-sky-600" />
+                        <h3 className="font-bold text-slate-900 text-sm">Yesim Unlimited eSIM</h3>
+                      </div>
+                      <span className="text-[10px] font-extrabold bg-sky-600 text-white px-2 py-0.5 rounded-full">Recommended</span>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      Instant QR activation, high-speed 5G data, and keep your Bangladesh WhatsApp active smoothly.
+                    </p>
+                  </div>
+                  <a
+                    href={AZRAQ_AFFILIATE_LINKS.yesim}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="mt-4 w-full py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <span>Get Yesim eSIM</span>
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                {/* Airalo Secondary */}
+                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex flex-col justify-between">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <Smartphone className="w-4 h-4 text-slate-600" />
+                        <h3 className="font-bold text-slate-900 text-sm">Airalo Global Packs</h3>
+                      </div>
+                      <span className="text-[10px] font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">Secondary Option</span>
+                    </div>
+                    <p className="text-xs text-slate-600">
+                      Prepaid data cards for light browsing and navigation starting from $4.50 in 200+ regions.
+                    </p>
+                  </div>
+                  <a
+                    href={AZRAQ_AFFILIATE_LINKS.airalo}
+                    target="_blank"
+                    rel="noopener noreferrer sponsored"
+                    className="mt-4 w-full py-2 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs transition flex items-center justify-center gap-1.5"
+                  >
+                    <span>View Airalo Plans</span>
+                    <ExternalLink className="w-3 h-3 text-slate-500" />
+                  </a>
+                </div>
               </div>
             </section>
 

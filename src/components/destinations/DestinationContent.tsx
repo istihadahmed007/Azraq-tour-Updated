@@ -14,10 +14,16 @@ import {
   HelpCircle,
   Share2,
   Package,
+  Ticket,
+  Car,
+  Wifi,
+  Smartphone,
+  ExternalLink,
 } from 'lucide-react';
 import { Destination } from '../../types';
 import { SEO } from '../shared/SEO';
 import { getTouristDestinationSchema, getBreadcrumbSchema, getFAQSchema, SITE_URL } from '../../lib/seo';
+import { AZRAQ_AFFILIATE_LINKS } from '../../data/agencyConfig';
 
 interface DestinationContentProps {
   destination: Destination;
@@ -153,10 +159,22 @@ export function DestinationContent({
           {/* Top Attractions */}
           {((destination.attractions && destination.attractions.length > 0) ||
             (destination.popularAttractions && destination.popularAttractions.length > 0)) && (
-            <section className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs">
-              <h2 className="text-2xl font-bold text-slate-900 mb-4">
-                Top Attractions & Landmarks
-              </h2>
+            <section className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h2 className="text-2xl font-bold text-slate-900">
+                  Top Attractions & Landmarks
+                </h2>
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition shadow-2xs self-start sm:self-auto"
+                >
+                  <Ticket className="w-3.5 h-3.5 text-amber-600" />
+                  <span>Book on Klook</span>
+                  <ExternalLink className="w-3 h-3 text-amber-600" />
+                </a>
+              </div>
               <div className="space-y-3">
                 {(destination.attractions || destination.popularAttractions || []).map((att, i) => (
                   <div
@@ -172,6 +190,21 @@ export function DestinationContent({
                     <span className="text-xs text-slate-500 font-medium">Must Visit</span>
                   </div>
                 ))}
+              </div>
+
+              <div className="pt-2">
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="w-full p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-200/80 hover:border-amber-300 flex items-center justify-between text-xs font-bold text-amber-900 transition"
+                >
+                  <span className="flex items-center gap-2">
+                    <Ticket className="w-4 h-4 text-amber-600" />
+                    <span>Explore tickets, city passes & excursions on Klook</span>
+                  </span>
+                  <ArrowRight className="w-4 h-4 text-amber-600" />
+                </a>
               </div>
             </section>
           )}
@@ -274,6 +307,76 @@ export function DestinationContent({
               <span>Explore Tour Packages</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
+          </div>
+
+          {/* Travel Essentials & Connectivity Card */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div className="space-y-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-sky-600 font-mono">Travel Essentials</span>
+              <h4 className="font-bold text-slate-900 text-base">Transfers & Stay Connected</h4>
+            </div>
+
+            {/* Airport Transfer (Kiwitaxi & GetTransfer) */}
+            <div className="space-y-2 pt-1 border-t border-slate-100">
+              <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Car className="w-3.5 h-3.5 text-blue-600" />
+                <span>Airport & Private Transfers</span>
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition text-center"
+                >
+                  <span className="text-xs font-bold text-slate-900 block">Kiwitaxi</span>
+                  <span className="text-[10px] text-slate-500">Airport Taxi</span>
+                </a>
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 transition text-center"
+                >
+                  <span className="text-xs font-bold text-slate-900 block">GetTransfer</span>
+                  <span className="text-[10px] text-slate-500">Private Cars</span>
+                </a>
+              </div>
+            </div>
+
+            {/* Stay Connected (Yesim & Airalo) */}
+            <div className="space-y-2 pt-2 border-t border-slate-100">
+              <span className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                <Wifi className="w-3.5 h-3.5 text-sky-600" />
+                <span>Stay Connected with eSIM</span>
+              </span>
+              <div className="space-y-1.5">
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.yesim}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="p-2.5 rounded-xl bg-sky-50/70 hover:bg-sky-100/70 border border-sky-200 transition flex items-center justify-between text-xs"
+                >
+                  <div>
+                    <span className="font-bold text-sky-950 block">Yesim Unlimited eSIM</span>
+                    <span className="text-[10px] text-sky-700">Instant activation & 5G speed</span>
+                  </div>
+                  <ExternalLink className="w-3 h-3 text-sky-600" />
+                </a>
+                <a
+                  href={AZRAQ_AFFILIATE_LINKS.airalo}
+                  target="_blank"
+                  rel="noopener noreferrer sponsored"
+                  className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition flex items-center justify-between text-xs"
+                >
+                  <div>
+                    <span className="font-bold text-slate-800 block text-[11px]">Airalo Global eSIM</span>
+                    <span className="text-[10px] text-slate-500">Regional packs from $4.50</span>
+                  </div>
+                  <ExternalLink className="w-3 h-3 text-slate-400" />
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </div>

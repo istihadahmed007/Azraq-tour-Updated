@@ -69,13 +69,19 @@ export const PackageQuotationModal: React.FC<PackageQuotationModalProps> = ({ pk
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
-      <div className="relative w-full max-w-2xl bg-slate-900 border border-sky-500/30 rounded-3xl shadow-2xl overflow-hidden my-8 flex flex-col">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-sky-950 via-slate-900 to-slate-950 p-6 border-b border-sky-500/20 relative">
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div className="relative w-full max-w-2xl bg-slate-900 border border-sky-500/30 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col">
+        {/* Header - Fixed at Top */}
+        <div className="shrink-0 bg-gradient-to-r from-sky-950 via-slate-900 to-slate-950 p-4 sm:p-6 border-b border-sky-500/20 relative">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+            className="absolute top-3 sm:top-4 right-3 sm:right-4 p-2 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+            aria-label="Close modal"
           >
             <X className="w-5 h-5" />
           </button>
@@ -85,9 +91,9 @@ export const PackageQuotationModal: React.FC<PackageQuotationModalProps> = ({ pk
             Official Package Quotation Request
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-extrabold text-white">{pkg.package_name}</h2>
+          <h2 className="text-lg sm:text-2xl font-extrabold text-white pr-8">{pkg.package_name}</h2>
 
-          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs font-medium text-sky-200/90">
+          <div className="mt-2 flex flex-wrap items-center gap-2 sm:gap-3 text-xs font-medium text-sky-200/90">
             <span className="flex items-center gap-1 bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700">
               <MapPin className="w-3.5 h-3.5 text-sky-400" />
               {pkg.destination_name} ({pkg.country})
@@ -106,8 +112,8 @@ export const PackageQuotationModal: React.FC<PackageQuotationModalProps> = ({ pk
           </div>
         </div>
 
-        {/* Body Form */}
-        <div className="p-6 sm:p-8 space-y-6">
+        {/* Body Form - Scrollable Content */}
+        <div className="overflow-y-auto p-4 sm:p-7 space-y-5">
           {successMessage ? (
             <div className="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-center space-y-3">
               <CheckCircle2 className="w-12 h-12 text-emerald-400 mx-auto animate-bounce" />

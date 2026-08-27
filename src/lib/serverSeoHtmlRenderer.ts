@@ -1,4 +1,4 @@
-import { ALL_DESTINATIONS } from '../data/destinationsData';
+import { ALL_DESTINATIONS, findDestinationBySlug } from '../data/destinationsData';
 import { TRAVEL_GUIDES } from '../data/travelGuidesData';
 import { CURATED_ITINERARIES } from '../data/itinerariesData';
 import { OFFICIAL_VISA_REQUIREMENTS } from '../data/visaRequirementsData';
@@ -212,16 +212,13 @@ export function renderSeoPage(pathname: string, htmlTemplate: string): SeoRender
     };
   }
 
-  // 4. Destination Detail Page (/destinations/:slug)
-  if (cleanPath.startsWith('/destinations/')) {
-    const slug = cleanPath.replace('/destinations/', '').toLowerCase();
-    const dest = ALL_DESTINATIONS.find(
-      (d) =>
-        d.id.toLowerCase() === slug ||
-        d.name.toLowerCase() === slug ||
-        d.country.toLowerCase() === slug ||
-        d.id.toLowerCase() === slug.replace(/-/g, '_')
-    );
+  // 4. Destination Detail Page (/destinations/:slug or /destination/:slug)
+  if (cleanPath.startsWith('/destinations/') || cleanPath.startsWith('/destination/')) {
+    const rawSlug = cleanPath.startsWith('/destinations/')
+      ? cleanPath.replace('/destinations/', '')
+      : cleanPath.replace('/destination/', '');
+    
+    const dest = findDestinationBySlug(rawSlug, ALL_DESTINATIONS);
 
     if (!dest) {
       return render404Page(cleanPath, htmlTemplate);

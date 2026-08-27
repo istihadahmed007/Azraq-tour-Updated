@@ -1,5 +1,5 @@
 import React from 'react';
-import { VisaRequirement } from '../data/visaRequirementsData';
+import { VisaRequirement, OFFICIAL_VISA_DISCLAIMER } from '../data/visaRequirementsData';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SEOHead } from './SEOHead';
 import {
@@ -17,9 +17,9 @@ import {
   HelpCircle,
   ArrowRight,
   Sparkles,
-  Phone,
-  Plane,
   Building,
+  ExternalLink,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface VisaSeoDetailViewProps {
@@ -42,14 +42,14 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
       { name: 'Visa Requirements', url: '/visa' },
       { name: `${visa.country} Visa`, url: visaUrl },
     ]),
-    getFAQSchema(visa.faqs),
+    getFAQSchema(visa.faqs || []),
   ];
 
   return (
     <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
       <SEOHead
-        title={visa.seoTitle}
-        description={visa.metaDescription}
+        title={visa.seoTitle || `${visa.country} Visa Requirements for Bangladeshi Citizens – AzraqTrips`}
+        description={visa.metaDescription || `Official ${visa.country} visa requirements for Bangladeshi passport holders. Check fees, processing time, bank balance, and required documents.`}
         canonical={canonicalUrl}
         keywords={[
           `${visa.country} visa for Bangladeshi`,
@@ -79,7 +79,7 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
           </div>
 
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white">
-            {visa.title}
+            {visa.title || `${visa.country} Visa Requirements`}
           </h1>
 
           <p className="mt-3 text-sm sm:text-base text-blue-100 leading-relaxed">
@@ -89,11 +89,11 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
           <div className="mt-6 flex flex-wrap gap-4 text-xs font-semibold text-white/90">
             <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-xs">
               <Calendar className="w-3.5 h-3.5 text-sky-300" />
-              <span>Last Verified: {visa.lastUpdated}</span>
+              <span>Last Verified: {visa.lastUpdated || 'August 2026'}</span>
             </span>
             <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1.5 rounded-lg backdrop-blur-xs">
               <Clock className="w-3.5 h-3.5 text-emerald-300" />
-              <span>Processing Time: {visa.processingTime}</span>
+              <span>Processing Time: {visa.processingTime || '3–5 Working Days'}</span>
             </span>
           </div>
         </div>
@@ -110,30 +110,50 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
 
           <div>
             <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-600">Validity / Stay</p>
-            <p className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">{visa.validity}</p>
+            <p className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">{visa.validity || '30–90 Days'}</p>
           </div>
 
           <div>
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-600">Embassy / Gov Fee</p>
-            <p className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">{visa.governmentFeeBDT}</p>
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-600">Total Est. Cost</p>
+            <p className="text-xs sm:text-sm font-bold text-[#0759B8] mt-0.5 font-mono">{visa.totalEstimatedBDT || visa.governmentFeeBDT || 'Contact'}</p>
           </div>
 
           <div>
-            <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-600">Required Bank Balance</p>
-            <p className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">{visa.minimumBankBalanceBDT}</p>
+            <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-600">Min Bank Balance</p>
+            <p className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">{visa.minimumBankBalanceBDT || visa.minBankBalance || 'BDT 100,000+'}</p>
           </div>
         </div>
 
         {/* Application Submission Center */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0D6EFD] mb-2">
-            <Building className="w-4 h-4" />
-            <span>Submission Center in Bangladesh</span>
+        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-3">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0D6EFD]">
+              <Building className="w-4 h-4" />
+              <span>Submission Center in Bangladesh</span>
+            </div>
+            {visa.lastUpdated && (
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                Verified: {visa.lastUpdated}
+              </span>
+            )}
           </div>
-          <h2 className="text-lg font-bold text-slate-900">{visa.submissionCenter}</h2>
-          <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-            Applications for Bangladeshi citizens are processed either online (e-Visa portal) or via authorized VAC centres / official embassy in Dhaka.
+          <h2 className="text-lg font-bold text-slate-900">{visa.submissionCenter || 'Authorized Embassy / VFS Centre in Dhaka'}</h2>
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+            Applications for Bangladeshi citizens are processed either online (official e-Visa portal) or via authorized VAC centres / official embassy in Dhaka.
           </p>
+          {visa.officialSourceUrl && (
+            <div className="pt-1">
+              <a
+                href={visa.officialSourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs text-[#0759B8] hover:text-[#064B9C] font-bold hover:underline"
+              >
+                <span>Official Consular Authority: {visa.officialAuthorityName || 'Official Immigration Website'}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Required Documents Checklist */}
@@ -143,9 +163,8 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
             <span>Required Documents Checklist (Bangladeshi Passport)</span>
           </h2>
           <div className="space-y-3">
-            {visa.requiredDocuments?.map((doc: any, idx: number) => {
+            {(visa.requiredDocuments || visa.generalRequirements || []).map((doc: any, idx: number) => {
               const name = typeof doc === 'string' ? doc : doc.name || '';
-              const details = typeof doc === 'string' ? '' : doc.details || '';
               return (
                 <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
                   <div className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center font-bold text-xs text-[#0D6EFD] shrink-0">
@@ -153,7 +172,6 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
                   </div>
                   <div>
                     <h3 className="font-bold text-slate-800 text-xs sm:text-sm">{name}</h3>
-                    {details && <p className="text-xs text-slate-600 mt-0.5">{details}</p>}
                   </div>
                 </div>
               );
@@ -161,23 +179,17 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
           </div>
         </section>
 
-        {/* Step-by-Step Application Process */}
-        <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
-          <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-600" />
-            <span>Step-by-Step Application Guide</span>
-          </h2>
-          <div className="space-y-4">
-            {visa.stepsToApply.map((step, idx) => (
-              <div key={idx} className="flex items-start gap-3">
-                <span className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-xs shrink-0 mt-0.5">
-                  {idx + 1}
-                </span>
-                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed pt-0.5">{step}</p>
-              </div>
-            ))}
+        {/* Photo & Passport Specs */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 mb-1">📸 Photo Specification</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">{visa.photoSpec || 'Standard passport photo (35mm x 45mm, white background).'}</p>
           </div>
-        </section>
+          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 mb-1">🛂 Passport Validity</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">{visa.passportValidity || 'Minimum 6 months validity from travel date.'}</p>
+          </div>
+        </div>
 
         {/* Professional Visa Support CTA Card */}
         <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-[#002B66] to-[#0759B8] text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -202,26 +214,28 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
         </div>
 
         {/* FAQs */}
-        <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-            <HelpCircle className="w-5 h-5 text-amber-500" />
-            <span>Frequently Asked Questions ({visa.country} Visa)</span>
-          </h2>
-          <div className="space-y-4">
-            {visa.faqs.map((faq, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                <h3 className="font-bold text-slate-900 text-sm">{faq.question}</h3>
-                <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">{faq.answer}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        {visa.faqs && visa.faqs.length > 0 && (
+          <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+              <HelpCircle className="w-5 h-5 text-amber-500" />
+              <span>Frequently Asked Questions ({visa.country} Visa)</span>
+            </h2>
+            <div className="space-y-4">
+              {visa.faqs.map((faq, idx) => (
+                <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                  <h3 className="font-bold text-slate-900 text-sm">{faq.question}</h3>
+                  <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">{faq.answer}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Official Legal Disclaimer */}
         <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
-            <strong>Disclaimer:</strong> {visa.disclaimer}
+            <strong>Disclaimer:</strong> {visa.disclaimer || OFFICIAL_VISA_DISCLAIMER}
           </p>
         </div>
       </main>

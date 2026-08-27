@@ -1,3 +1,11 @@
+export const AZRAQ_AFFILIATE_LINKS = {
+  klook: 'https://klook.tp.st/aXDQ3uLD',
+  yesim: 'https://yesim.tp.st/Y1ph3dlm',
+  kiwitaxi: 'https://kiwitaxi.tp.st/hffw13VN',
+  gettransfer: 'https://gettransfer.tp.st/L24TtJvV',
+  airalo: 'https://airalo.tp.st/tsOiboPM',
+} as const;
+
 export interface AgencyConfig {
   agencyName: string;
   tagline: string;
@@ -23,6 +31,7 @@ export interface AgencyConfig {
   currencies: { code: string; symbol: string; rateAgainstBDT: number }[];
   partnerDisclaimer: string;
   affiliateDisclosureText: string;
+  affiliateLinks: typeof AZRAQ_AFFILIATE_LINKS;
 }
 
 export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
@@ -60,6 +69,7 @@ export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
     'Flight search results, prices, availability, booking conditions, payment, ticket issuance, changes, and refunds may be handled by the selected travel partner. Azraq provides travel guidance and concierge assistance according to the applicable service terms.',
   affiliateDisclosureText:
     'Azraq collaborates with licensed global travel distribution partners and Travelpayouts to provide comprehensive flight and lodging rate comparisons. When you search or book through partner links, Azraq may earn an affiliate commission at no additional cost to you. Direct airline and visa concierge services are serviced by our Dhaka travel desk.',
+  affiliateLinks: AZRAQ_AFFILIATE_LINKS,
 };
 
 export const AGENCY_CONFIG = AZRAQ_AGENCY_CONFIG;

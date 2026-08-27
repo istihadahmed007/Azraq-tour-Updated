@@ -64,7 +64,7 @@
       "name": "WhatsApp Travel Desk",
       "short_name": "WhatsApp 24/7",
       "description": "Connect directly with Azraq 24/7 travel desk on WhatsApp",
-      "url": "https://wa.me/8801851172032",
+      "url": "/?intent=contact",
       "icons": [
         {
           "src": "/icons/icon-192.png",

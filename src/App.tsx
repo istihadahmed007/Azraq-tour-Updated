@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { BrandTheme, Destination, Itinerary, NavView, Spot } from './types';
 import { INITIAL_DESTINATIONS, INITIAL_KYOTO_ITINERARY } from './data/mockData';
+import { findDestinationBySlug } from './data/destinationsData';
 import { TRAVEL_GUIDES, TravelGuide } from './data/travelGuidesData';
 import { CURATED_ITINERARIES, CuratedItinerary } from './data/itinerariesData';
-import { VISA_REQUIREMENTS, VisaRequirement } from './data/visaRequirementsData';
+import {
+  VISA_REQUIREMENTS,
+  VisaRequirement,
+  getVisaRequirement,
+  getCanonicalVisaByCountry,
+} from './data/visaRequirementsData';
 
 import { AuthProvider } from './context/AuthContext';
 import { PackageProvider } from './context/PackageContext';
@@ -77,50 +83,87 @@ function parseUrlToRoute(): RouteState {
   if (pathname === '/' || pathname === '') {
     return { view: 'discover' };
   }
-  if (pathname === '/destinations') {
+  if (pathname === '/destinations' || pathname === '/destination') {
     return { view: 'destinations' };
   }
   if (pathname.startsWith('/destinations/')) {
-    const slug = pathname.replace('/destinations/', '');
-    return { view: 'destination-detail', slug };
+    const raw = pathname.slice('/destinations/'.length).trim();
+    try {
+      const slug = decodeURIComponent(raw).replace(/\/+$/, '').trim();
+      return slug ? { view: 'destination-detail', slug } : { view: 'destinations' };
+    } catch {
+      return raw ? { view: 'destination-detail', slug: raw } : { view: 'destinations' };
+    }
   }
-  if (pathname === '/travel-guides' || pathname === '/guides') {
+  if (pathname.startsWith('/destination/')) {
+    const raw = pathname.slice('/destination/'.length).trim();
+    try {
+      const slug = decodeURIComponent(raw).replace(/\/+$/, '').trim();
+      return slug ? { view: 'destination-detail', slug } : { view: 'destinations' };
+    } catch {
+      return raw ? { view: 'destination-detail', slug: raw } : { view: 'destinations' };
+    }
+  }
+  if (pathname === '/travel-guides' || pathname === '/guides' || pathname === '/guide') {
     return { view: 'guides' };
   }
   if (pathname.startsWith('/travel-guides/')) {
     const slug = pathname.replace('/travel-guides/', '');
     return { view: 'guide-detail', slug };
   }
-  if (pathname === '/itineraries') {
+  if (pathname.startsWith('/guides/')) {
+    const slug = pathname.replace('/guides/', '');
+    return { view: 'guide-detail', slug };
+  }
+  if (pathname.startsWith('/guide/')) {
+    const slug = pathname.replace('/guide/', '');
+    return { view: 'guide-detail', slug };
+  }
+  if (pathname === '/itineraries' || pathname === '/itinerary') {
     return { view: 'itineraries' };
   }
   if (pathname.startsWith('/itineraries/')) {
     const slug = pathname.replace('/itineraries/', '');
     return { view: 'itinerary-detail', slug };
   }
-  if (pathname === '/visa') {
+  if (pathname.startsWith('/itinerary/')) {
+    const slug = pathname.replace('/itinerary/', '');
+    return { view: 'itinerary-detail', slug };
+  }
+  if (pathname === '/visa' || pathname === '/visa-requirements' || pathname === '/visas') {
     return { view: 'visa' };
   }
   if (pathname.startsWith('/visa/')) {
     const slug = pathname.replace('/visa/', '');
     return { view: 'visa-detail', slug };
   }
-  if (pathname === '/ai-travel-planner' || pathname === '/ai-planner') {
+  if (pathname.startsWith('/visas/')) {
+    const slug = pathname.replace('/visas/', '');
+    return { view: 'visa-detail', slug };
+  }
+  if (pathname.startsWith('/visa-requirements/')) {
+    const slug = pathname.replace('/visa-requirements/', '');
+    return { view: 'visa-detail', slug };
+  }
+  if (pathname === '/ai-travel-planner' || pathname === '/ai-planner' || pathname === '/ai') {
     return { view: 'ai-planner' };
   }
-  if (pathname === '/packages') {
+  if (pathname === '/packages' || pathname === '/package' || pathname === '/tours' || pathname === '/tour') {
     return { view: 'packages' };
   }
-  if (pathname === '/planner') {
+  if (pathname.startsWith('/packages/') || pathname.startsWith('/package/') || pathname.startsWith('/tours/') || pathname.startsWith('/tour/')) {
+    return { view: 'packages' };
+  }
+  if (pathname === '/planner' || pathname === '/trip-planner') {
     return { view: 'planner' };
   }
   if (pathname === '/buddies' || pathname === '/feed' || pathname === '/community') {
     return { view: 'feed' };
   }
-  if (pathname === '/about') {
+  if (pathname === '/about' || pathname === '/about-us') {
     return { view: 'about' };
   }
-  if (pathname === '/contact') {
+  if (pathname === '/contact' || pathname === '/contact-us') {
     return { view: 'contact' };
   }
   if (pathname === '/map') {
@@ -134,6 +177,9 @@ function parseUrlToRoute(): RouteState {
   }
   if (pathname === '/admin') {
     return { view: 'admin' };
+  }
+  if (pathname === '/404' || pathname === '/not-found') {
+    return { view: 'not-found' };
   }
 
   return { view: 'discover' };
@@ -274,7 +320,19 @@ function AppContent() {
     let targetView: NavView = 'discover';
     let targetSlug: string | undefined = undefined;
 
-    if (view.startsWith('guide-')) {
+    if (view === 'destination-detail') {
+      targetView = 'destination-detail';
+      targetSlug = extra?.slug;
+    } else if (view === 'guide-detail') {
+      targetView = 'guide-detail';
+      targetSlug = extra?.slug;
+    } else if (view === 'itinerary-detail') {
+      targetView = 'itinerary-detail';
+      targetSlug = extra?.slug;
+    } else if (view === 'visa-detail') {
+      targetView = 'visa-detail';
+      targetSlug = extra?.slug;
+    } else if (view.startsWith('guide-')) {
       targetView = 'guide-detail';
       targetSlug = view.replace('guide-', '');
     } else if (view.startsWith('itinerary-')) {
@@ -410,11 +468,7 @@ function AppContent() {
 
   // Select destination by name (from hashtags or feed)
   const handleSelectDestinationByName = (name: string) => {
-    const found = destinations.find(
-      (d) =>
-        d.name.toLowerCase().includes(name.toLowerCase()) ||
-        d.country.toLowerCase().includes(name.toLowerCase())
-    );
+    const found = findDestinationBySlug(name, destinations);
     if (found) {
       handleNavigate('destination-detail', { slug: found.id });
     } else {
@@ -429,21 +483,48 @@ function AppContent() {
 
   const isCurrentItinerarySaved = savedItineraries.some((i) => i.id === currentItinerary.id);
 
-  // Selected SEO data models
+  // Selected SEO data models with resilient lookup
   const activeGuide: TravelGuide | undefined = currentSlug
-    ? TRAVEL_GUIDES.find((g) => g.slug === currentSlug)
+    ? TRAVEL_GUIDES.find((g) => {
+        const s = currentSlug.toLowerCase();
+        return (
+          g.slug.toLowerCase() === s ||
+          g.slug.replace('-travel-guide', '').toLowerCase() === s.replace('-travel-guide', '') ||
+          g.country.toLowerCase() === s ||
+          g.country.toLowerCase().replace(/[^a-z0-9]+/g, '-') === s ||
+          g.destination.toLowerCase().includes(s) ||
+          s.includes(g.country.toLowerCase())
+        );
+      })
     : undefined;
 
   const activeItinerary: CuratedItinerary | undefined = currentSlug
-    ? CURATED_ITINERARIES.find((it) => it.slug === currentSlug)
+    ? CURATED_ITINERARIES.find((it) => {
+        const s = currentSlug.toLowerCase();
+        return (
+          it.slug.toLowerCase() === s ||
+          it.country.toLowerCase() === s ||
+          it.country.toLowerCase().replace(/[^a-z0-9]+/g, '-') === s ||
+          it.destination.toLowerCase().includes(s) ||
+          s.includes(it.country.toLowerCase()) ||
+          it.slug.split('-')[0] === s.split('-')[0]
+        );
+      })
     : undefined;
 
   const activeDestination: Destination | undefined = currentSlug
-    ? destinations.find((d) => d.id === currentSlug || d.name.toLowerCase() === currentSlug.toLowerCase())
+    ? findDestinationBySlug(currentSlug, destinations)
     : undefined;
 
   const activeVisa: VisaRequirement | undefined = currentSlug
-    ? VISA_REQUIREMENTS.find((v) => v.id === currentSlug || v.country.toLowerCase() === currentSlug.toLowerCase())
+    ? (getVisaRequirement(currentSlug) as any) ||
+      (getCanonicalVisaByCountry(currentSlug) as any) ||
+      VISA_REQUIREMENTS.find((v) => {
+        const s = currentSlug.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const vId = v.id.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const vCountry = v.country.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return vId === s || vCountry === s || vCountry.includes(s) || s.includes(vCountry);
+      })
     : undefined;
 
   return (
