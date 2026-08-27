@@ -53,11 +53,6 @@ function getGenAI(): GoogleGenAI {
   if (!_genAIClient) {
     _genAIClient = new GoogleGenAI({
       apiKey,
-      httpOptions: {
-        headers: {
-          "User-Agent": "aistudio-build",
-        },
-      },
     });
   }
   return _genAIClient;
@@ -6333,6 +6328,9 @@ app.get("/sitemap.xml", (req, res) => {
     res.status(404).send("Not found");
   }
 });
+
+// Serve static files from public directory
+app.use(express.static(path.join(process.cwd(), "public")));
 
 // --- Vite Middleware / Static Server with Server-Side SEO Injection ---
 async function startServer() {

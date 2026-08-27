@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2b59ff" />
+      <stop offset="100%" stop-color="#1940e6" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background Squircle / Rounded Square -->
+  <rect width="512" height="512" rx="120" fill="url(#blueGrad)" />
+
+  <!-- White Outlined Airplane Icon angled pointing top-right (45 deg) -->
+  <g transform="translate(256, 256) rotate(45) translate(-256, -256)">
+    <path
+      d="M256,86 C240,86 230,102 230,126 L230,224 L108,284 C92,292 88,310 96,322 C104,334 118,336 132,328 L230,286 L230,374 L186,404 C174,412 172,424 178,432 C184,440 196,442 206,436 L256,412 L306,436 C316,442 328,440 334,432 C340,424 338,412 326,404 L282,374 L282,286 L380,328 C394,336 408,334 416,322 C424,310 420,292 404,284 L282,224 L282,126 C282,102 272,86 256,86 Z"
+      fill="none"
+      stroke="#ffffff"
+      stroke-width="36"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
+</svg>
