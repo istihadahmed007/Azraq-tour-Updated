@@ -25,23 +25,23 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <>
-      <footer className="w-full bg-[#12304A] border-t border-sky-900/40 text-slate-300 pt-16 pb-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-12 border-b border-sky-900/40">
+      <footer className="w-full bg-[#073B4C] border-t border-white/10 text-slate-300 pt-16 pb-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-12 border-b border-white/10">
           {/* Column 1: Brand & Company Bio (Span 2) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden bg-white shadow-sm flex items-center justify-center p-1 border border-white/20">
+              <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-[#086788] to-[#17BEBB] shadow-sm flex items-center justify-center p-1.5 border border-white/20">
                 <img
                   src={BRAND_LOGOS.azraq}
                   alt="Azraq Logo"
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain filter brightness-110"
                 />
               </div>
               <div>
-                <h3 className="text-2xl font-black text-white tracking-wider font-poppins">
-                  AZRAQ
+                <h3 className="text-2xl font-bold text-white tracking-tight font-serif-display">
+                  Azraq Trips
                 </h3>
-                <p className="text-xs text-[#5BC7F4] font-medium">
+                <p className="text-xs text-[#17BEBB] font-medium">
                   {AZRAQ_AGENCY_CONFIG.tagline} • Curated Asian Escapes
                 </p>
               </div>
@@ -53,17 +53,17 @@ export const Footer: React.FC<FooterProps> = ({
 
             <div className="pt-2 space-y-1.5 text-xs text-slate-300">
               <div className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-[#5BC7F4]" />
+                <MapPin className="w-3.5 h-3.5 text-[#17BEBB]" />
                 <span>Dhaka, Bangladesh</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#5BC7F4]" />
+                <Phone className="w-3.5 h-3.5 text-[#17BEBB]" />
                 <a href={`https://wa.me/${AZRAQ_AGENCY_CONFIG.whatsappNumber}`} target="_blank" rel="noreferrer" className="hover:text-white font-mono">
                   {AZRAQ_AGENCY_CONFIG.phoneDisplay}
                 </a>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#5BC7F4]" />
+                <Mail className="w-3.5 h-3.5 text-[#17BEBB]" />
                 <a href={`mailto:${AZRAQ_AGENCY_CONFIG.email}`} className="hover:text-white transition-colors">
                   {AZRAQ_AGENCY_CONFIG.email}
                 </a>

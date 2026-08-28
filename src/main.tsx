@@ -8,7 +8,14 @@ if (typeof window !== 'undefined') {
   const isPartnerError = (str: string) => {
     if (!str) return false;
     const s = str.toLowerCase();
-    return s.includes('partner url') || s.includes('partner urls') || s.includes('tpembars') || s.includes('tpwidg') || s.includes('travelpayouts');
+    return (
+      s.includes('partner url') ||
+      s.includes('partner urls') ||
+      s.includes('tpembars') ||
+      s.includes('tpwidg') ||
+      s.includes('travelpayouts') ||
+      s.includes('firebase configuration')
+    );
   };
 
   const originalConsoleError = console.error;

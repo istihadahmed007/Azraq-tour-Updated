@@ -81,73 +81,95 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
       <header
         ref={ref}
         id="main-navigation-header"
-        className="sticky top-0 left-0 right-0 w-full z-50 bg-[#003B80] bg-gradient-to-r from-[#002f6c] via-[#0759B8] to-[#003B80] text-white border-b border-white/15 shadow-md backdrop-blur-md transition-all duration-200"
+        className="sticky top-0 left-0 right-0 w-full z-50 bg-[#073B4C]/95 backdrop-blur-md text-white border-b border-white/10 shadow-sm transition-all duration-300"
       >
         {/* Main Navbar Container */}
-        <div className="w-full max-w-[1600px] mx-auto px-2 sm:px-4 lg:px-6">
-          <div className="h-16 flex items-center justify-between gap-1 sm:gap-2 md:gap-3">
+        <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-5 lg:px-8">
+          <div className="h-16 flex items-center justify-between gap-2 md:gap-4">
             
             {/* Left: Brand Logo */}
             <button
               onClick={() => handleNavigate('discover')}
-              className="flex items-center gap-2.5 cursor-pointer text-left group shrink-0 focus:outline-none py-1"
-              aria-label="Azraq Home"
+              className="flex items-center gap-3 cursor-pointer text-left group shrink-0 focus:outline-none py-1"
+              aria-label="Azraq Trips Home"
             >
-              <div className="w-9 h-9 rounded-xl bg-white shadow-xs flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden border border-white/60 p-1 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#086788] to-[#17BEBB] shadow-sm flex items-center justify-center group-hover:scale-105 transition-all overflow-hidden p-1.5 shrink-0 border border-white/20">
                 <img
                   src={BRAND_LOGOS.azraq}
-                  alt="Azraq Logo"
-                  className="w-full h-full object-contain"
+                  alt="Azraq Trips Logo"
+                  className="w-full h-full object-contain filter brightness-110"
                 />
               </div>
-              <span className="text-xl sm:text-2xl font-black text-white tracking-wider leading-none font-poppins drop-shadow-2xs">
-                AZRAQ
-              </span>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold text-white tracking-tight leading-none font-serif-display">
+                  Azraq Trips
+                </span>
+                <span className="text-[10px] text-[#17BEBB] tracking-wider uppercase font-medium">
+                  Travel Redefined
+                </span>
+              </div>
             </button>
 
-            {/* Center Navigation Links (Visible on 2xl / Large Desktop screens) */}
-            <nav className="hidden 2xl:flex items-center gap-1 shrink-0">
+            {/* Center Navigation Links (Desktop) */}
+            <nav className="hidden xl:flex items-center gap-1.5 shrink-0">
               {navItems.map((item) => {
                 const isActive = currentView === item.id;
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleNavigate(item.id)}
-                    className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`relative flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer whitespace-nowrap ${
                       isActive
-                        ? 'bg-white text-[#0759B8] shadow-xs'
-                        : 'text-white/90 hover:text-white hover:bg-white/15'
+                        ? 'bg-white/15 text-white font-semibold shadow-xs'
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span className={isActive ? 'text-[#0759B8]' : 'text-sky-200'}>
+                    <span className={isActive ? 'text-[#17BEBB]' : 'text-slate-300'}>
                       {item.icon}
                     </span>
                     <span>{item.label}</span>
+                    {isActive && (
+                      <span className="absolute bottom-0 left-3 right-3 h-[2px] bg-[#17BEBB] rounded-full" />
+                    )}
                     {item.badge && !isActive && (
-                      <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 ml-0.5">
+                      <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#17BEBB] text-[#073B4C] ml-0.5">
                         {item.badge}
                       </span>
                     )}
                   </button>
                 );
               })}
+              
+              {/* Flight White-Label External Tab */}
+              <a
+                href="https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium text-white/80 hover:text-white hover:bg-white/10 transition-all whitespace-nowrap"
+              >
+                <span className="text-slate-300">✈️</span>
+                <span>Flights</span>
+                <span className="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-[#17BEBB]/20 text-[#17BEBB] ml-0.5">
+                  Live
+                </span>
+              </a>
             </nav>
 
-            {/* Compact Navigation for Standard Desktops & Laptops (lg & xl) */}
-            <nav className="hidden lg:flex 2xl:hidden items-center gap-0.5 shrink">
-              {navItems.slice(0, 5).map((item) => {
+            {/* Compact Navigation for Medium Desktops (lg to xl) */}
+            <nav className="hidden lg:flex xl:hidden items-center gap-1 shrink">
+              {navItems.slice(0, 4).map((item) => {
                 const isActive = currentView === item.id;
                 return (
                   <button
                     key={item.id}
                     onClick={() => handleNavigate(item.id)}
-                    className={`flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                       isActive
-                        ? 'bg-white text-[#0759B8] shadow-xs'
-                        : 'text-white/90 hover:text-white hover:bg-white/15'
+                        ? 'bg-white/15 text-white'
+                        : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <span className={isActive ? 'text-[#0759B8]' : 'text-sky-200'}>
+                    <span className={isActive ? 'text-[#17BEBB]' : 'text-slate-300'}>
                       {item.icon}
                     </span>
                     <span>{item.label}</span>
@@ -156,19 +178,19 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
               })}
             </nav>
 
-            {/* Right Utilities Container - ALWAYS visible with shrink-0 */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto">
+            {/* Right Utilities Container */}
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
               
               {/* Voice AI Planner Button */}
               {onOpenVoiceModal && (
                 <button
                   type="button"
                   onClick={() => onOpenVoiceModal()}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shrink-0 bg-gradient-to-r from-sky-400/25 to-blue-500/25 hover:from-sky-400/40 hover:to-blue-500/40 text-sky-100 border-sky-300/40 shadow-xs"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer shrink-0 bg-[#086788]/60 hover:bg-[#086788] text-white border-white/20 shadow-xs"
                   title="Voice AI Trip & Flight Planner"
                 >
-                  <Mic className="w-3.5 h-3.5 text-sky-300 animate-pulse" />
-                  <span className="hidden md:inline font-bold">Voice AI</span>
+                  <Mic className="w-3.5 h-3.5 text-[#17BEBB] animate-pulse" />
+                  <span className="hidden md:inline font-semibold">Voice AI</span>
                 </button>
               )}
 
@@ -176,16 +198,16 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
               <button
                 type="button"
                 onClick={() => handleNavigate('search')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer shrink-0 ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all cursor-pointer shrink-0 ${
                   currentView === 'search'
-                    ? 'bg-white text-[#0759B8] border-white shadow-xs font-bold'
-                    : 'bg-white/10 hover:bg-white/20 text-white border-white/20 hover:border-white/40'
+                    ? 'bg-white text-[#073B4C] border-white shadow-xs font-bold'
+                    : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
                 }`}
                 title="Search packages, visas, flights (Press ⌘K)"
               >
-                <Search className={`w-3.5 h-3.5 ${currentView === 'search' ? 'text-[#0759B8]' : 'text-sky-300'}`} />
+                <Search className={`w-3.5 h-3.5 ${currentView === 'search' ? 'text-[#073B4C]' : 'text-[#17BEBB]'}`} />
                 <span className="hidden sm:inline">Search</span>
-                <kbd className="hidden md:inline-flex items-center px-1 py-0.2 text-[9px] font-mono rounded bg-white/20 text-white/80">
+                <kbd className="hidden md:inline-flex items-center px-1 py-0.2 text-[9px] font-mono rounded bg-white/20 text-white/90">
                   ⌘K
                 </kbd>
               </button>
@@ -194,15 +216,15 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
               <button
                 type="button"
                 onClick={() => handleNavigate('profile')}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shrink-0 ${
                   currentView === 'profile'
-                    ? 'bg-white/25 text-white border border-white/40'
+                    ? 'bg-white/20 text-white border border-white/40'
                     : 'bg-white/10 hover:bg-white/20 text-white border border-white/15'
                 }`}
                 title="Saved Trips & Wishlist"
               >
-                <Heart className={`w-4 h-4 ${savedTripsCount > 0 ? 'text-rose-300 fill-rose-300' : 'text-sky-200'}`} />
-                <span className="text-xs font-extrabold">{savedTripsCount}</span>
+                <Heart className={`w-4 h-4 ${savedTripsCount > 0 ? 'text-[#FF6B5A] fill-[#FF6B5A]' : 'text-slate-300'}`} />
+                <span className="text-xs font-bold">{savedTripsCount}</span>
               </button>
 
               {/* Divider */}
@@ -210,16 +232,16 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
 
               {/* User Authentication / Profile Area */}
               {isGuest ? (
-                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <button
                     onClick={() => openAuthModal('login')}
-                    className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold text-white hover:bg-white/15 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                    className="px-3 py-1.5 rounded-xl text-xs font-medium text-white hover:bg-white/10 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
                   >
                     Sign In
                   </button>
                   <button
                     onClick={() => openAuthModal('register')}
-                    className="px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-black text-[#0759B8] bg-white hover:bg-sky-50 transition-all cursor-pointer shadow-sm shrink-0 whitespace-nowrap hover:scale-[1.02] active:scale-[0.98]"
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#FF6B5A] to-[#ff8577] hover:brightness-105 transition-all cursor-pointer shadow-sm shrink-0 whitespace-nowrap"
                   >
                     Register
                   </button>
@@ -430,18 +452,18 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         {/* Mobile Bottom Navigation Bar (For screen sizes < 640px) */}
         <div
           id="mobile-bottom-nav"
-          className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#002757]/95 backdrop-blur-xl border-t border-white/15 px-2 py-1.5 flex items-center justify-around shadow-2xl safe-area-bottom"
+          className="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#073B4C]/95 backdrop-blur-xl border-t border-white/10 px-2 py-1.5 flex items-center justify-around shadow-2xl safe-area-bottom"
         >
           <button
             type="button"
             onClick={() => handleNavigate('discover')}
             className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
               currentView === 'discover'
-                ? 'text-white font-black'
-                : 'text-sky-200/70 hover:text-white'
+                ? 'text-[#17BEBB] font-bold'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
-            <Compass className={`w-5 h-5 mb-0.5 ${currentView === 'discover' ? 'text-white' : 'text-sky-300'}`} />
+            <Compass className={`w-5 h-5 mb-0.5 ${currentView === 'discover' ? 'text-[#17BEBB]' : 'text-slate-300'}`} />
             <span className="text-[10px] tracking-tight">Explore</span>
           </button>
 
@@ -450,40 +472,42 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
             onClick={() => handleNavigate('packages')}
             className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
               currentView === 'packages'
-                ? 'text-white font-black'
-                : 'text-sky-200/70 hover:text-white'
+                ? 'text-[#17BEBB] font-bold'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
-            <Package className={`w-5 h-5 mb-0.5 ${currentView === 'packages' ? 'text-white' : 'text-sky-300'}`} />
+            <Package className={`w-5 h-5 mb-0.5 ${currentView === 'packages' ? 'text-[#17BEBB]' : 'text-slate-300'}`} />
             <span className="text-[10px] tracking-tight">Packages</span>
           </button>
 
           <button
             type="button"
-            onClick={() => handleNavigate('search')}
+            onClick={() => handleNavigate('feed')}
             className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
-              currentView === 'search'
-                ? 'text-white font-black'
-                : 'text-sky-200/70 hover:text-white'
+              currentView === 'feed'
+                ? 'text-[#17BEBB] font-bold'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
-            <div className="w-8 h-8 -mt-3 rounded-full bg-white text-[#0759B8] flex items-center justify-center shadow-md">
-              <Search className="w-4 h-4" />
-            </div>
-            <span className="text-[10px] tracking-tight mt-0.5">Search</span>
+            <Users className={`w-5 h-5 mb-0.5 ${currentView === 'feed' ? 'text-[#17BEBB]' : 'text-slate-300'}`} />
+            <span className="text-[10px] tracking-tight">Buddies</span>
           </button>
 
           <button
             type="button"
-            onClick={() => handleNavigate('visa')}
+            onClick={() => handleNavigate('planner')}
             className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
-              currentView === 'visa'
-                ? 'text-white font-black'
-                : 'text-sky-200/70 hover:text-white'
+              currentView === 'planner'
+                ? 'text-[#17BEBB] font-bold'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
-            <FileCheck2 className={`w-5 h-5 mb-0.5 ${currentView === 'visa' ? 'text-white' : 'text-sky-300'}`} />
-            <span className="text-[10px] tracking-tight">Visa</span>
+            <div className={`w-8 h-8 -mt-3 rounded-full flex items-center justify-center shadow-md ${
+              currentView === 'planner' ? 'bg-[#17BEBB] text-[#073B4C]' : 'bg-gradient-to-r from-[#FF6B5A] to-[#ff8577] text-white'
+            }`}>
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <span className="text-[10px] tracking-tight mt-0.5">AI</span>
           </button>
 
           <button
@@ -491,12 +515,12 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
             onClick={() => handleNavigate('profile')}
             className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
               currentView === 'profile'
-                ? 'text-white font-black'
-                : 'text-sky-200/70 hover:text-white'
+                ? 'text-[#17BEBB] font-bold'
+                : 'text-slate-300 hover:text-white'
             }`}
           >
-            <User className={`w-5 h-5 mb-0.5 ${currentView === 'profile' ? 'text-white' : 'text-sky-300'}`} />
-            <span className="text-[10px] tracking-tight">Account</span>
+            <User className={`w-5 h-5 mb-0.5 ${currentView === 'profile' ? 'text-[#17BEBB]' : 'text-slate-300'}`} />
+            <span className="text-[10px] tracking-tight">Profile</span>
           </button>
         </div>
       </header>

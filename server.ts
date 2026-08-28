@@ -53,6 +53,11 @@ function getGenAI(): GoogleGenAI {
   if (!_genAIClient) {
     _genAIClient = new GoogleGenAI({
       apiKey,
+      httpOptions: {
+        headers: {
+          'User-Agent': 'aistudio-build',
+        },
+      },
     });
   }
   return _genAIClient;
