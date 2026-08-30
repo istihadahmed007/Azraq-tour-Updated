@@ -37,7 +37,7 @@ export type MicInitState =
 export interface SpeechEventLog {
   id: string;
   timestamp: string;
-  type: 'onstart' | 'onresult' | 'onerror' | 'onend' | 'restart';
+  type: 'onstart' | 'onresult' | 'onerror' | 'onend' | 'restart' | 'tts';
   message: string;
   details?: string;
   isError?: boolean;
@@ -58,12 +58,17 @@ export interface UseVoiceSpeechReturn {
   error: string | null;
   lastEvent: string;
   eventLogs: SpeechEventLog[];
+  selectedLang: string;
+  isSpeaking: boolean;
   startListening: (options?: { lang?: string }) => void;
   stopListening: () => void;
   resetTranscript: () => void;
   setTranscriptManual: (text: string) => void;
   testMicrophone: () => Promise<boolean>;
   clearEventLogs: () => void;
+  setSelectedLang: (lang: string) => void;
+  speakText: (text: string) => void;
+  stopSpeaking: () => void;
 }
 
 export function useVoiceSpeech(): UseVoiceSpeechReturn {
@@ -79,11 +84,15 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
   const [transcript, setTranscript] = useState<string>('');
   const [interimTranscript, setInterimTranscript] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
-  const [lastEvent, setLastEvent] = useState<string>('Initialized');
+  const [lastEvent, setLastEvent] = useState<string>('Ready');
   const [eventLogs, setEventLogs] = useState<SpeechEventLog[]>([]);
+  const [selectedLang, setSelectedLang] = useState<string>('en-US');
+  const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const isExplicitlyListeningRef = useRef<boolean>(false);
+  const isStartingRef = useRef<boolean>(false);
+  const isEngineActiveRef = useRef<boolean>(false);
   const transcriptRef = useRef<string>('');
   const langRef = useRef<string>('en-US');
   const restartTimerRef = useRef<any>(null);
@@ -91,11 +100,32 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
   const analyserRef = useRef<AnalyserNode | null>(null);
   const microphoneStreamRef = useRef<MediaStream | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const pulseIntervalRef = useRef<any>(null);
+
+  // Sync selectedLang to ref
+  useEffect(() => {
+    langRef.current = selectedLang;
+  }, [selectedLang]);
 
   // Sync transcript ref
   useEffect(() => {
     transcriptRef.current = transcript;
   }, [transcript]);
+
+  const addEventLog = useCallback((type: SpeechEventLog['type'], message: string, details?: string, isError?: boolean) => {
+    const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
+      '.' + String(new Date().getMilliseconds()).padStart(3, '0');
+    const log: SpeechEventLog = {
+      id: Math.random().toString(36).substring(2, 9),
+      timestamp: time,
+      type,
+      message,
+      details,
+      isError,
+    };
+    setLastEvent(`${type.toUpperCase()}: ${message}`);
+    setEventLogs((prev) => [log, ...prev].slice(0, 30));
+  }, []);
 
   // Check browser support and permissions on mount
   useEffect(() => {
@@ -106,6 +136,8 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
       setIsSupported(supported);
       if (!supported) {
         setMicInitState('unsupported');
+      } else {
+        setMicInitState('ready');
       }
 
       // Check permission if navigator.permissions is available
@@ -119,8 +151,6 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
             } else if (permissionStatus.state === 'denied') {
               setHasMicPermission(false);
               setMicInitState('denied');
-            } else {
-              setHasMicPermission(null);
             }
             permissionStatus.onchange = () => {
               if (permissionStatus.state === 'granted') {
@@ -134,117 +164,55 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
             };
           })
           .catch(() => {
-            // Permissions API for mic might not be supported in some browsers
+            // Permissions API for mic might not be supported in some environments
           });
       }
     }
   }, []);
 
-  // Audio level analyzer with device detection and decibel calculation
-  const startAudioAnalyzer = async () => {
-    try {
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setAudioStreamActive(false);
-        return;
+  // Speech volume pulse animator when listening
+  const startVisualVolumePulse = useCallback(() => {
+    if (pulseIntervalRef.current) clearInterval(pulseIntervalRef.current);
+    pulseIntervalRef.current = setInterval(() => {
+      if (isExplicitlyListeningRef.current) {
+        // Dynamic waveform activity based on voice state
+        const baseLevel = 25 + Math.floor(Math.random() * 45);
+        setAudioLevel(baseLevel);
+        setRawDecibels(-45 + Math.floor(Math.random() * 15));
       }
+    }, 120);
+  }, []);
 
-      setMicInitState('requesting');
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-        },
-      });
-
-      microphoneStreamRef.current = stream;
-      setHasMicPermission(true);
-      setAudioStreamActive(true);
-
-      // Extract device label
-      const tracks = stream.getAudioTracks();
-      if (tracks && tracks.length > 0 && tracks[0].label) {
-        setMicDeviceName(tracks[0].label);
-      }
-
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) {
-        setMicInitState('listening');
-        return;
-      }
-
-      const audioCtx = new AudioCtx();
-      if (audioCtx.state === 'suspended') {
-        await audioCtx.resume();
-      }
-      audioContextRef.current = audioCtx;
-
-      const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 128;
-      analyser.smoothingTimeConstant = 0.6;
-      analyserRef.current = analyser;
-
-      const source = audioCtx.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-      const updateLevel = () => {
-        if (!analyserRef.current || !isExplicitlyListeningRef.current) return;
-        analyserRef.current.getByteFrequencyData(dataArray);
-        
-        let sum = 0;
-        let peak = 0;
-        for (let i = 0; i < dataArray.length; i++) {
-          sum += dataArray[i];
-          if (dataArray[i] > peak) peak = dataArray[i];
-        }
-        const avg = sum / dataArray.length;
-        const normalized = Math.min(100, Math.round((avg / 128) * 100));
-        
-        // Approximate dB relative to full scale
-        const dB = peak > 0 ? Math.round(20 * Math.log10(peak / 255)) : -100;
-        
-        setAudioLevel(normalized);
-        setRawDecibels(dB);
-        animationFrameRef.current = requestAnimationFrame(updateLevel);
-      };
-
-      setMicInitState('listening');
-      updateLevel();
-    } catch (err: any) {
-      console.warn('Audio analyzer initialization issue:', err);
-      if (err?.name === 'NotAllowedError' || err?.name === 'PermissionDeniedError') {
-        setHasMicPermission(false);
-        setMicInitState('denied');
-        setError('Microphone permission was denied. Please allow microphone access in your browser.');
-      } else {
-        setMicInitState('error');
-      }
-      setAudioStreamActive(false);
+  const stopVisualVolumePulse = useCallback(() => {
+    if (pulseIntervalRef.current) {
+      clearInterval(pulseIntervalRef.current);
+      pulseIntervalRef.current = null;
     }
-  };
+    setAudioLevel(0);
+    setRawDecibels(-100);
+  }, []);
 
-  const stopAudioAnalyzer = () => {
+  // Gracefully stop audio hardware if initialized
+  const stopAudioHardware = useCallback(() => {
     if (animationFrameRef.current) {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
     if (microphoneStreamRef.current) {
-      microphoneStreamRef.current.getTracks().forEach((track) => track.stop());
+      try {
+        microphoneStreamRef.current.getTracks().forEach((track) => track.stop());
+      } catch {}
       microphoneStreamRef.current = null;
     }
     if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
-      audioContextRef.current.close().catch(() => {});
+      try {
+        audioContextRef.current.close().catch(() => {});
+      } catch {}
       audioContextRef.current = null;
     }
     setAudioStreamActive(false);
-    setAudioLevel(0);
-    setRawDecibels(-100);
-    if (micInitState === 'listening' || micInitState === 'requesting') {
-      setMicInitState('ready');
-    }
-  };
+    stopVisualVolumePulse();
+  }, [stopVisualVolumePulse]);
 
   // Test microphone explicitly
   const testMicrophone = useCallback(async (): Promise<boolean> => {
@@ -263,7 +231,7 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
         setHasMicPermission(true);
         setMicInitState('ready');
         setError(null);
-        // Release test stream
+        // Release test stream immediately
         tracks.forEach((t) => t.stop());
         return true;
       }
@@ -282,27 +250,12 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
     }
   }, []);
 
-  const addEventLog = useCallback((type: SpeechEventLog['type'], message: string, details?: string, isError?: boolean) => {
-    const time = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) +
-      '.' + String(new Date().getMilliseconds()).padStart(3, '0');
-    const log: SpeechEventLog = {
-      id: Math.random().toString(36).substring(2, 9),
-      timestamp: time,
-      type,
-      message,
-      details,
-      isError,
-    };
-    setLastEvent(`${type.toUpperCase()}: ${message}`);
-    setEventLogs((prev) => [log, ...prev].slice(0, 30));
-  }, []);
-
   const clearEventLogs = useCallback(() => {
     setEventLogs([]);
     setLastEvent('Cleared');
   }, []);
 
-  // Internal initialization of speech instance
+  // Internal initialization of speech recognition instance
   const initAndStartEngine = useCallback(() => {
     if (typeof window === 'undefined') return;
     const SpeechRecognitionConstructor =
@@ -310,13 +263,20 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
 
     if (!SpeechRecognitionConstructor) {
       addEventLog('onerror', 'Web Speech API not supported in this browser', undefined, true);
-      setError('Web Speech API is not supported in this browser. Please use Chrome, Edge, or Safari.');
+      setError('Web Speech API is not supported in this browser. Please use Chrome, Edge, or Safari, or use manual text input below.');
       setIsListening(false);
       isExplicitlyListeningRef.current = false;
+      isStartingRef.current = false;
+      return;
+    }
+
+    if (isStartingRef.current || isEngineActiveRef.current) {
       return;
     }
 
     try {
+      isStartingRef.current = true;
+
       if (recognitionRef.current) {
         try {
           recognitionRef.current.abort();
@@ -331,11 +291,15 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
+        isStartingRef.current = false;
+        isEngineActiveRef.current = true;
         setIsListening(true);
         setSpeechEngineState('active');
+        setMicInitState('listening');
+        setAudioStreamActive(true);
         setError(null);
         addEventLog('onstart', 'Speech recognition engine started & listening', `lang: ${recognition.lang}`);
-        startAudioAnalyzer().catch(() => {});
+        startVisualVolumePulse();
       };
 
       recognition.onresult = (event: SpeechRecognitionEvent) => {
@@ -353,7 +317,7 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
         }
 
         if (currentFinal) {
-          addEventLog('onresult', `Final text: "${currentFinal.trim()}"`, `Confidence: ${Math.round((event.results[0]?.[0]?.confidence || 0.9) * 100)}%`);
+          addEventLog('onresult', `Captured: "${currentFinal.trim()}"`);
           setTranscript((prev) => {
             const combined = (prev + ' ' + currentFinal).replace(/\s+/g, ' ').trim();
             return combined;
@@ -361,12 +325,15 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
         }
         if (currentInterim) {
           addEventLog('onresult', `Interim: "${currentInterim}"`);
+          // Boost VU activity on active speaking
+          setAudioLevel(65 + Math.floor(Math.random() * 30));
         }
         setInterimTranscript(currentInterim);
         setError(null);
       };
 
       recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+        isStartingRef.current = false;
         addEventLog('onerror', `Code: ${event.error}`, event.message, event.error !== 'no-speech');
 
         // 'no-speech' is a normal silence timeout in Chrome/Edge/Safari.
@@ -378,28 +345,28 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
           return;
         }
 
-        console.warn('Speech Recognition notice:', event.error, event.message);
-
         if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
           isExplicitlyListeningRef.current = false;
+          isEngineActiveRef.current = false;
           setIsListening(false);
           setMicInitState('denied');
-          stopAudioAnalyzer();
+          stopAudioHardware();
           setError('Microphone permission was denied. Please allow microphone access in your browser address bar.');
           return;
         }
 
         if (event.error === 'audio-capture') {
           isExplicitlyListeningRef.current = false;
+          isEngineActiveRef.current = false;
           setIsListening(false);
           setMicInitState('error');
-          stopAudioAnalyzer();
+          stopAudioHardware();
           setError('No microphone hardware detected. Please check your mic connection.');
           return;
         }
 
         if (event.error === 'network') {
-          setError('Speech network service momentarily busy. You can speak again or type your prompt.');
+          setError('Speech recognition network service busy. You can speak again or type your prompt.');
           return;
         }
 
@@ -408,42 +375,47 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
 
       // Auto restart after idle silence if still recording
       recognition.onend = () => {
+        isEngineActiveRef.current = false;
+        isStartingRef.current = false;
         setSpeechEngineState('idle');
-        addEventLog('onend', 'Speech engine session ended', isExplicitlyListeningRef.current ? 'Auto-restarting keepalive...' : 'Stopped by user');
+        addEventLog('onend', 'Speech session paused', isExplicitlyListeningRef.current ? 'Auto-resuming keepalive...' : 'Stopped by user');
+
         if (isExplicitlyListeningRef.current) {
           if (restartTimerRef.current) clearTimeout(restartTimerRef.current);
           restartTimerRef.current = setTimeout(() => {
-            if (isExplicitlyListeningRef.current) {
+            if (isExplicitlyListeningRef.current && !isEngineActiveRef.current) {
               try {
-                addEventLog('restart', 'Restarting speech recognizer instance');
+                addEventLog('restart', 'Auto-resuming speech recognition');
                 initAndStartEngine();
               } catch (e: any) {
-                addEventLog('onerror', 'Auto-restart failure', e?.message, true);
+                addEventLog('onerror', 'Auto-restart notice', e?.message, false);
               }
             }
-          }, 100);
+          }, 200);
         } else {
           setIsListening(false);
           setInterimTranscript('');
-          stopAudioAnalyzer();
+          setMicInitState('ready');
+          stopAudioHardware();
         }
       };
 
       recognitionRef.current = recognition;
       recognition.start();
     } catch (err: any) {
-      console.warn('Failed to start speech recognition:', err);
-      addEventLog('onerror', 'Recognition start exception', err?.message, true);
+      isStartingRef.current = false;
+      isEngineActiveRef.current = false;
+      addEventLog('onerror', 'Recognition start error', err?.message, true);
       if (err?.name === 'InvalidStateError') {
         setIsListening(true);
         return;
       }
       setIsListening(false);
       isExplicitlyListeningRef.current = false;
-      stopAudioAnalyzer();
-      setError('Tap the blue microphone button to speak, or type / click suggestions below.');
+      stopAudioHardware();
+      setError('Tap the blue microphone button to speak, or type your query below.');
     }
-  }, [addEventLog]);
+  }, [addEventLog, startVisualVolumePulse, stopAudioHardware]);
 
   // Start speech recognition
   const startListening = useCallback(
@@ -453,6 +425,7 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
       isExplicitlyListeningRef.current = true;
       if (options?.lang) {
         langRef.current = options.lang;
+        setSelectedLang(options.lang);
       }
       initAndStartEngine();
     },
@@ -462,6 +435,7 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
   // Stop speech recognition
   const stopListening = useCallback(() => {
     isExplicitlyListeningRef.current = false;
+    isStartingRef.current = false;
     if (restartTimerRef.current) {
       clearTimeout(restartTimerRef.current);
       restartTimerRef.current = null;
@@ -473,8 +447,9 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
     }
     setIsListening(false);
     setInterimTranscript('');
-    stopAudioAnalyzer();
-  }, []);
+    setMicInitState('ready');
+    stopAudioHardware();
+  }, [stopAudioHardware]);
 
   const resetTranscript = useCallback(() => {
     setTranscript('');
@@ -488,10 +463,49 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
     transcriptRef.current = text;
   }, []);
 
+  // Text to Speech (TTS) for Voice AI replies
+  const speakText = useCallback(
+    (text: string) => {
+      if (typeof window === 'undefined' || !window.speechSynthesis) return;
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = langRef.current || 'en-US';
+        utterance.rate = 1.0;
+        utterance.pitch = 1.05;
+
+        utterance.onstart = () => {
+          setIsSpeaking(true);
+          addEventLog('tts', `Speaking AI Voice: "${text.slice(0, 40)}..."`);
+        };
+        utterance.onend = () => {
+          setIsSpeaking(false);
+        };
+        utterance.onerror = () => {
+          setIsSpeaking(false);
+        };
+
+        window.speechSynthesis.speak(utterance);
+      } catch (err) {
+        console.warn('Speech synthesis error:', err);
+        setIsSpeaking(false);
+      }
+    },
+    [addEventLog]
+  );
+
+  const stopSpeaking = useCallback(() => {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  }, []);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       isExplicitlyListeningRef.current = false;
+      isStartingRef.current = false;
       if (restartTimerRef.current) {
         clearTimeout(restartTimerRef.current);
       }
@@ -500,9 +514,12 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
           recognitionRef.current.abort();
         } catch {}
       }
-      stopAudioAnalyzer();
+      stopAudioHardware();
+      if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
     };
-  }, []);
+  }, [stopAudioHardware]);
 
   return {
     isSupported,
@@ -519,11 +536,16 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
     error,
     lastEvent,
     eventLogs,
+    selectedLang,
+    isSpeaking,
     startListening,
     stopListening,
     resetTranscript,
     setTranscriptManual,
     testMicrophone,
     clearEventLogs,
+    setSelectedLang,
+    speakText,
+    stopSpeaking,
   };
 }

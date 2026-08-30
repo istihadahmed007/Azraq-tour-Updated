@@ -2049,6 +2049,16 @@ Output strictly valid JSON matching the schema:
         destCountry = "Maldives";
         destCode = "MLE";
         destAirportName = "Velana International Airport";
+      } else if (lower.includes("bali") || lower.includes("indonesia") || lower.includes("dps")) {
+        destCity = "Bali";
+        destCountry = "Indonesia";
+        destCode = "DPS";
+        destAirportName = "Ngurah Rai International Airport";
+      } else if (lower.includes("phuket") || lower.includes("hkt")) {
+        destCity = "Phuket";
+        destCountry = "Thailand";
+        destCode = "HKT";
+        destAirportName = "Phuket International Airport";
       } else if (lower.includes("malaysia") || lower.includes("kuala lumpur") || lower.includes("kul")) {
         destCity = "Kuala Lumpur";
         destCountry = "Malaysia";
@@ -2064,11 +2074,31 @@ Output strictly valid JSON matching the schema:
         destCountry = "Japan";
         destCode = "NRT";
         destAirportName = "Narita International Airport";
-      } else if (lower.includes("cox") || lower.includes("bazar")) {
+      } else if (lower.includes("cox") || lower.includes("bazar") || lower.includes("cxb")) {
         destCity = "Cox's Bazar";
         destCountry = "Bangladesh";
         destCode = "CXB";
         destAirportName = "Cox's Bazar Airport";
+      } else if (lower.includes("chittagong") || lower.includes("cgp")) {
+        destCity = "Chittagong";
+        destCountry = "Bangladesh";
+        destCode = "CGP";
+        destAirportName = "Shah Amanat International Airport";
+      } else if (lower.includes("sylhet") || lower.includes("zyl")) {
+        destCity = "Sylhet";
+        destCountry = "Bangladesh";
+        destCode = "ZYL";
+        destAirportName = "Osmani International Airport";
+      } else if (lower.includes("jeddah") || lower.includes("umrah") || lower.includes("saudi") || lower.includes("jed")) {
+        destCity = "Jeddah";
+        destCountry = "Saudi Arabia";
+        destCode = "JED";
+        destAirportName = "King Abdulaziz International Airport";
+      } else if (lower.includes("doha") || lower.includes("qatar") || lower.includes("doh")) {
+        destCity = "Doha";
+        destCountry = "Qatar";
+        destCode = "DOH";
+        destAirportName = "Hamad International Airport";
       } else if (lower.includes("istanbul") || lower.includes("turkey") || lower.includes("ist")) {
         destCity = "Istanbul";
         destCountry = "Turkey";
@@ -2079,7 +2109,32 @@ Output strictly valid JSON matching the schema:
         destCountry = "United Kingdom";
         destCode = "LHR";
         destAirportName = "London Heathrow Airport";
+      } else if (lower.includes("new york") || lower.includes("usa") || lower.includes("jfk")) {
+        destCity = "New York";
+        destCountry = "United States";
+        destCode = "JFK";
+        destAirportName = "John F. Kennedy International Airport";
       }
+
+      // Check passenger counts
+      let adults = 2;
+      let children = 0;
+      const adultMatch = cleanText.match(/(\d+)\s*(?:adult|adults|people|passengers|person)/i);
+      if (adultMatch) {
+        adults = Math.max(1, parseInt(adultMatch[1], 10));
+      } else if (/solo|myself|alone/i.test(cleanText)) {
+        adults = 1;
+      } else if (/couple|honeymoon|wife|husband/i.test(cleanText)) {
+        adults = 2;
+      }
+
+      const childMatch = cleanText.match(/(\d+)\s*(?:child|children|kid|kids)/i);
+      if (childMatch) {
+        children = parseInt(childMatch[1], 10);
+      }
+
+      const isOneWay = /one[\s-]?way|single|return\s*no/i.test(cleanText);
+      const cabinClass = /business/i.test(cleanText) ? "Business" : /first/i.test(cleanText) ? "First" : /premium/i.test(cleanText) ? "Premium Economy" : "Economy";
 
       const isFlight = /flight|fly|ticket|airline|airport|route|book/i.test(cleanText);
 
@@ -2092,11 +2147,11 @@ Output strictly valid JSON matching the schema:
           startDate: defaultStart,
           endDate: defaultEnd,
           vibes: ["Culture", "Local Cuisine", "Sightseeing"],
-          travelerCount: 2,
+          travelerCount: adults + children,
           travelStyle: "Curated Holiday",
           budgetLevel: "Moderate / Value",
-          structuredPrompt: `Plan a ${durationDays}-day curated trip to ${destCity}, ${destCountry} featuring authentic cultural landmarks, local culinary hotspots, and scenic photography highlights.`,
-          spokenSummary: `Got it! Ready to plan your ${durationDays}-day journey to ${destCity}, ${destCountry} departing from Dhaka.`,
+          structuredPrompt: `Plan a ${durationDays}-day curated trip to ${destCity}, ${destCountry} for ${adults} adult(s)${children ? ` and ${children} child(ren)` : ''} featuring authentic cultural landmarks, local culinary hotspots, and scenic photography highlights.`,
+          spokenSummary: `Got it! Ready to plan your ${durationDays}-day ${isOneWay ? 'one-way' : 'round-trip'} journey to ${destCity}, ${destCountry} for ${adults} passenger(s) departing from Dhaka.`,
           flightParams: {
             originCode: "DAC",
             originCity: "Dhaka",
@@ -2106,13 +2161,13 @@ Output strictly valid JSON matching the schema:
             destinationCity: destCity,
             destinationName: destAirportName,
             destinationCountry: destCountry,
-            tripType: "round",
+            tripType: isOneWay ? "oneway" : "round",
             departureDate: defaultStart,
-            returnDate: defaultEnd,
-            adults: 2,
-            children: 0,
+            returnDate: isOneWay ? defaultStart : defaultEnd,
+            adults,
+            children,
             infants: 0,
-            cabinClass: "Economy",
+            cabinClass,
             preferredAirline: "Biman Bangladesh Airlines",
           },
         },

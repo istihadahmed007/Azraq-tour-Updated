@@ -26,6 +26,7 @@ import {
   Sliders,
   ShieldCheck,
   ShieldAlert,
+  Languages,
 } from 'lucide-react';
 import { useVoiceSpeech } from '../hooks/useVoiceSpeech';
 import { FlightSearchParams } from './AzraqTripFinder';
@@ -111,12 +112,17 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
     error: speechError,
     lastEvent,
     eventLogs,
+    selectedLang,
+    isSpeaking,
     startListening,
     stopListening,
     resetTranscript,
     setTranscriptManual,
     testMicrophone,
     clearEventLogs,
+    setSelectedLang,
+    speakText,
+    stopSpeaking,
   } = useVoiceSpeech();
 
   const [activeTab, setActiveTab] = useState<'flight' | 'itinerary'>(initialMode);
@@ -151,6 +157,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
       }
     } else {
       stopListening();
+      stopSpeaking();
     }
   }, [isOpen, initialTranscript, initialMode]);
 
@@ -205,6 +212,10 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
         setEditablePrompt(json.data.structuredPrompt || spokenText);
         if (json.data.isFlightIntent) {
           setActiveTab('flight');
+        }
+        // Speak friendly summary back to the traveler
+        if (json.data.spokenSummary) {
+          speakText(json.data.spokenSummary);
         }
       } else {
         throw new Error(json.error || 'Could not parse voice input');
@@ -336,7 +347,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
               <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
                 <span>Azraq Voice Flight & Trip Planner</span>
                 <span className="px-2 py-0.5 rounded-full bg-blue-400/20 text-sky-200 text-[10px] font-semibold tracking-wide uppercase border border-sky-300/30">
-                  Web Speech AI
+                  Gemini AI Voice
                 </span>
               </h2>
               <p className="text-xs text-slate-300 font-normal">
@@ -345,14 +356,46 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
             </div>
           </div>
 
-          <button
-            id="close-voice-modal-btn"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
-            aria-label="Close"
-          >
-            <X className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Language Selector */}
+            <div className="flex items-center bg-white/10 rounded-lg p-0.5 border border-white/20 text-xs">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedLang('en-US');
+                  if (isListening) startListening({ lang: 'en-US' });
+                }}
+                className={`px-2 py-1 rounded font-bold text-[11px] transition-all cursor-pointer ${
+                  selectedLang === 'en-US' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-200 hover:text-white'
+                }`}
+                title="English Speech Recognition"
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedLang('bn-BD');
+                  if (isListening) startListening({ lang: 'bn-BD' });
+                }}
+                className={`px-2 py-1 rounded font-bold text-[11px] transition-all cursor-pointer ${
+                  selectedLang === 'bn-BD' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-200 hover:text-white'
+                }`}
+                title="বাংলা (Bangla) Speech Recognition"
+              >
+                বাংলা
+              </button>
+            </div>
+
+            <button
+              id="close-voice-modal-btn"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Mode Toggle Tabs */}
@@ -452,7 +495,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-2">
                 {/* State Pill */}
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hardware Status:</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Engine:</span>
                   <span
                     className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                       micInitState === 'listening' || audioStreamActive
@@ -472,20 +515,20 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
                       }`}
                     />
                     {micInitState === 'listening'
-                      ? 'Streaming Audio'
+                      ? 'Live Speech Active'
                       : micInitState === 'requesting'
-                      ? 'Requesting Mic Access...'
+                      ? 'Connecting Mic...'
                       : micInitState === 'denied'
-                      ? 'Mic Permission Blocked'
+                      ? 'Mic Blocked'
                       : micInitState === 'ready'
-                      ? 'Mic Initialized & Ready'
+                      ? 'Ready to Listen'
                       : 'Standby'}
                   </span>
                 </div>
 
                 {/* Device Name Label & Test Button */}
                 <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium">
-                  <span className="truncate max-w-[160px] text-slate-600 font-normal" title={micDeviceName}>
+                  <span className="truncate max-w-[140px] text-slate-600 font-normal" title={micDeviceName}>
                     {micDeviceName}
                   </span>
                   <button
@@ -501,42 +544,13 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
                 </div>
               </div>
 
-              {/* Audio Stream Activity VU Level Meter */}
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px]">
-                  <span className="font-semibold text-slate-600 flex items-center gap-1">
-                    <Radio className={`w-3 h-3 ${audioStreamActive ? 'text-emerald-600 animate-pulse' : 'text-slate-400'}`} />
-                    <span>Live Input Signal Level</span>
-                  </span>
-                  <span className="font-mono text-[10px] font-bold text-slate-500">
-                    {audioLevel}% {rawDecibels > -100 ? `(${rawDecibels} dB)` : '(Quiet)'}
-                  </span>
-                </div>
-
-                {/* Meter Bar */}
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex">
-                  <div
-                    className={`h-full transition-all duration-75 rounded-full ${
-                      audioLevel > 75
-                        ? 'bg-rose-500'
-                        : audioLevel > 40
-                        ? 'bg-amber-500'
-                        : audioLevel > 5
-                        ? 'bg-emerald-500'
-                        : 'bg-blue-300'
-                    }`}
-                    style={{ width: `${Math.max(audioLevel, audioStreamActive ? 4 : 0)}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Live Audio Level Soundwave Equalizer Bars when Recording */}
+              {/* Soundwave Bars when Recording */}
               {isListening && (
                 <div className="flex items-center justify-center gap-1 pt-1 h-7">
-                  {[...Array(16)].map((_, i) => {
+                  {[...Array(20)].map((_, i) => {
                     const dynamicHeight = Math.max(
                       4,
-                      Math.min(26, Math.round((audioLevel / 100) * 26 * (0.4 + Math.sin(i * 0.6) * 0.6)))
+                      Math.min(26, Math.round((audioLevel / 100) * 26 * (0.3 + Math.sin(i * 0.5) * 0.7)))
                     );
                     return (
                       <div
@@ -562,88 +576,6 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
                   <span>{testResult}</span>
                 </div>
               )}
-
-              {/* Inactivity / Zero-level Notice */}
-              {isListening && audioLevel === 0 && (
-                <p className="text-[10px] text-slate-400 italic text-center">
-                  Mic stream active. Speak clearly or check your hardware input volume if level stays at 0%.
-                </p>
-              )}
-
-              {/* Web Speech API Real-Time Status & Event Inspector */}
-              <div className="pt-2 border-t border-slate-100">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-700">
-                    <Sliders className="w-3.5 h-3.5 text-[#0D6EFD]" />
-                    <span>Web Speech API Live Engine State:</span>
-                    <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 font-bold">
-                      {lastEvent}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowDiagnostics(!showDiagnostics)}
-                    className="text-[10px] font-bold text-[#0D6EFD] hover:underline cursor-pointer flex items-center gap-1"
-                  >
-                    <span>{showDiagnostics ? 'Hide Event Stream' : 'Inspect Speech Events'}</span>
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-blue-100 text-blue-700 font-mono font-bold">
-                      {eventLogs.length}
-                    </span>
-                  </button>
-                </div>
-
-                {/* Expanded Event Log Visualizer */}
-                {showDiagnostics && (
-                  <div className="mt-2.5 space-y-2">
-                    <div className="flex items-center justify-between text-[10px] text-slate-500">
-                      <span className="font-medium">Real-Time onresult / onerror stream:</span>
-                      {eventLogs.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={clearEventLogs}
-                          className="text-slate-400 hover:text-slate-600 underline cursor-pointer"
-                        >
-                          Clear Logs
-                        </button>
-                      )}
-                    </div>
-
-                    <div className="max-h-36 overflow-y-auto space-y-1.5 p-2 rounded-lg bg-slate-900 text-slate-100 font-mono text-[10px]">
-                      {eventLogs.length === 0 ? (
-                        <div className="text-slate-500 italic py-2 text-center">
-                          No events captured yet. Tap microphone or speak to trigger events.
-                        </div>
-                      ) : (
-                        eventLogs.map((log) => (
-                          <div
-                            key={log.id}
-                            className={`p-1.5 rounded flex flex-col gap-0.5 border ${
-                              log.type === 'onresult'
-                                ? 'bg-emerald-950/60 border-emerald-800/80 text-emerald-200'
-                                : log.type === 'onerror'
-                                ? log.isError
-                                  ? 'bg-rose-950/80 border-rose-800 text-rose-200'
-                                  : 'bg-amber-950/60 border-amber-800 text-amber-200'
-                                : log.type === 'onstart'
-                                ? 'bg-blue-950/60 border-blue-800 text-blue-200'
-                                : 'bg-slate-800 border-slate-700 text-slate-300'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between text-[9px] opacity-80">
-                              <span className="font-bold tracking-wide uppercase">[{log.type}]</span>
-                              <span>{log.timestamp}</span>
-                            </div>
-                            <div className="font-medium text-xs text-white break-words">{log.message}</div>
-                            {log.details && (
-                              <div className="text-[9px] opacity-75 break-words">{log.details}</div>
-                            )}
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
             </div>
 
             {/* Error message if speech failed */}
@@ -674,7 +606,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
                 }}
                 placeholder={
                   activeTab === 'flight'
-                    ? 'e.g. 2 flights from Dhaka to Bangkok on next Friday for 5 days'
+                    ? 'e.g. 2 flights from Dhaka to Bangkok next Friday for 5 days'
                     : 'e.g. 5 days honeymoon trip to Bali for couple in luxury resort'
                 }
                 className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#0D6EFD] focus:ring-2 focus:ring-blue-100 text-xs text-slate-800 placeholder-slate-400 font-medium outline-none bg-slate-50/50"
@@ -734,7 +666,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
           {isParsing && (
             <div className="p-5 rounded-2xl bg-blue-50/70 border border-blue-200 flex items-center justify-center gap-3 text-sm text-[#0D6EFD] font-bold">
               <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-              <span>Analyzing speech & formatting flight route parameters...</span>
+              <span>Analyzing speech & extracting flight route parameters with Gemini AI...</span>
             </div>
           )}
 
@@ -748,17 +680,41 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-[#071A33]">Parsed Travel Request</h4>
-                    <p className="text-[11px] text-slate-500">Extracted from spoken input</p>
+                    <p className="text-[11px] text-slate-500">Gemini AI voice understanding</p>
                   </div>
                 </div>
-                <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
-                  {parsedData.flightParams?.tripType === 'oneway' ? 'One-Way' : 'Round-Trip'} Flight
-                </span>
+                <div className="flex items-center gap-2">
+                  {/* TTS Speaker Button */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isSpeaking) {
+                        stopSpeaking();
+                      } else if (parsedData.spokenSummary) {
+                        speakText(parsedData.spokenSummary);
+                      }
+                    }}
+                    className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer border ${
+                      isSpeaking
+                        ? 'bg-blue-600 text-white border-blue-600 animate-pulse'
+                        : 'bg-blue-50 text-[#0D6EFD] border-blue-200 hover:bg-blue-100'
+                    }`}
+                    title={isSpeaking ? 'Mute AI Voice' : 'Listen to AI Voice response'}
+                  >
+                    {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                    <span>{isSpeaking ? 'Mute Voice' : 'Listen'}</span>
+                  </button>
+
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                    {parsedData.flightParams?.tripType === 'oneway' ? 'One-Way' : 'Round-Trip'} Flight
+                  </span>
+                </div>
               </div>
 
               {/* Summary Sentence */}
-              <div className="p-3 rounded-xl bg-slate-50 text-xs font-semibold text-slate-700 leading-relaxed border border-slate-100">
-                "{parsedData.spokenSummary}"
+              <div className="p-3 rounded-xl bg-slate-50 text-xs font-semibold text-slate-700 leading-relaxed border border-slate-100 flex items-start gap-2">
+                <Sparkles className="w-4 h-4 text-[#0D6EFD] shrink-0 mt-0.5" />
+                <span>"{parsedData.spokenSummary}"</span>
               </div>
 
               {/* Flight Route Banner */}
@@ -944,10 +900,10 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
               </span>
             ) : isListening ? (
               <span className="text-blue-700 font-semibold animate-pulse">
-                Listening to your microphone...
+                Listening to your microphone ({selectedLang === 'bn-BD' ? 'বাংলা' : 'English'})...
               </span>
             ) : (
-              <span>Web Speech API active</span>
+              <span>Web Speech & Gemini AI active</span>
             )}
           </div>
 
