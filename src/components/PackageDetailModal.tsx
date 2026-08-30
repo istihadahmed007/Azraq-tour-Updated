@@ -42,11 +42,12 @@ export const PackageDetailModal: React.FC<PackageDetailModalProps> = ({
   onClose,
   onRequestQuote,
 }) => {
-  if (!pkg) return null;
-
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [expandedDay, setExpandedDay] = useState<number | string | null>(1);
   const { isPackageSaved, toggleSavePackage } = usePackages();
+
+  if (!pkg) return null;
+
   const isSaved = isPackageSaved(pkg.id);
 
   const toggleDay = (dayNum: number | string) => {

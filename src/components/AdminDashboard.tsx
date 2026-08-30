@@ -14,6 +14,7 @@ import { geminiPdfService } from '../services/geminiPdfService';
 import { getVisaRequirement, getVisaFeeForDestination } from '../data/visaRequirementsData';
 import { ExtractionPreview } from './ExtractionPreview';
 import { SEOHead } from './SEOHead';
+import { AzraqLogo } from './AzraqLogo';
 import {
   FileUp,
   Sparkles,
@@ -523,27 +524,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       <SEOHead title="Admin Dashboard" noindex={true} />
       {/* Top Banner & Role Switcher */}
       <div className="p-6 md:p-8 rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-[#0a192f] border border-amber-400/30 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 relative overflow-hidden">
-        <div className="space-y-1 z-10">
-          <div className="flex items-center gap-3">
-            <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 flex items-center gap-1.5 shadow-md">
-              <Shield className="w-3.5 h-3.5 fill-slate-950" />
-              <span>Azraq Management Suite</span>
-            </span>
-
-            {/* Active Staff & Role Indicator */}
-            <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-white/10 text-xs">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-slate-300">Staff: <strong className="text-white">{currentStaff.name}</strong></span>
-              <span className="text-amber-300 font-bold">({currentRole === 'super_admin' ? 'Super Admin' : 'Support Agent'})</span>
-            </div>
+        <div className="flex items-center gap-4 z-10">
+          <div className="w-14 h-14 rounded-full overflow-hidden bg-white shadow-xl flex items-center justify-center p-1 border-2 border-amber-400/40 shrink-0">
+            <AzraqLogo size={50} className="w-full h-full" />
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-serif-display font-extrabold text-white tracking-tight">
-            Azraq Tours & Travels — Admin Operations
-          </h1>
-          <p className="text-xs md:text-sm text-slate-300">
-            Real-time quote management, staff ticket assignments, PDF package pipeline, user audits & security.
-          </p>
+          <div className="space-y-1">
+            <div className="flex items-center gap-3">
+              <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 flex items-center gap-1.5 shadow-md">
+                <Shield className="w-3.5 h-3.5 fill-slate-950" />
+                <span>Azraq Management Suite</span>
+              </span>
+
+              {/* Active Staff & Role Indicator */}
+              <div className="flex items-center gap-2 bg-slate-800/80 px-3 py-1 rounded-full border border-white/10 text-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span className="text-slate-300">Staff: <strong className="text-white">{currentStaff.name}</strong></span>
+                <span className="text-amber-300 font-bold">({currentRole === 'super_admin' ? 'Super Admin' : 'Support Agent'})</span>
+              </div>
+            </div>
+
+            <h1 className="text-2xl md:text-3xl font-serif-display font-extrabold text-white tracking-tight">
+              Azraq Tours &amp; Travels — Admin Operations
+            </h1>
+            <p className="text-xs md:text-sm text-slate-300">
+              Real-time quote management, staff ticket assignments, PDF package pipeline, user audits &amp; security.
+            </p>
+          </div>
         </div>
 
         {/* Header Right Controls */}

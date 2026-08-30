@@ -87,6 +87,14 @@ export function ClientLayout({
           } as React.CSSProperties
         }
       >
+        {/* Accessible Keyboard Skip to Content Link */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2.5 focus:bg-[#073B4C] focus:text-white focus:font-bold focus:rounded-xl focus:shadow-2xl focus:ring-2 focus:ring-[#17BEBB] focus:outline-none"
+        >
+          Skip to main content
+        </a>
+
         {typeof navbar === 'function' ? (
           navbar(navbarRef)
         ) : (
@@ -95,7 +103,7 @@ export function ClientLayout({
           </div>
         )}
 
-        <main className={mainClassName}>
+        <main id="main-content" tabIndex={-1} className={mainClassName}>
           {children}
         </main>
       </div>

@@ -35,11 +35,11 @@ export interface AgencyConfig {
 }
 
 export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
-  agencyName: 'Azraq Tours & Travels',
-  tagline: 'Luxury Travel Concierge',
-  subTagline: 'Your Gateway to Curated Asian Escapes',
-  heroHeadline: 'Where Will You Fly Next?',
-  heroSubheadline: 'Compare flight options and discover great fares for your next journey.',
+  agencyName: 'Azraq Trips',
+  tagline: 'Travel farther. Experience more.',
+  subTagline: 'Bangladesh’s Premier Online Travel Agency',
+  heroHeadline: 'Travel farther. Experience more.',
+  heroSubheadline: 'Compare flight options, book handpicked stays, unlock curated packages, and plan with AI.',
   phone: '+8801851172032',
   phoneDisplay: '+880 1851-172032',
   whatsappNumber: '8801851172032',

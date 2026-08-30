@@ -221,7 +221,7 @@ export const SEARCHABLE_PRODUCT_CATALOG: ProductCatalogEntry[] = [
   {
     id: 'visa-schengen-europe',
     title: 'Schengen Europe Tourist Visa File Preparation',
-    description: 'Comprehensive file processing for France, Germany, Italy, Spain, Switzerland. Complete day-by-day travel plan, dummy flight & hotel reservations, insurance, and VFS appointment assistance.',
+    description: 'Comprehensive file processing for France, Germany, Italy, Spain, Switzerland. Complete day-by-day travel plan, embassy-verifiable flight & hotel reservations, insurance, and VFS appointment assistance.',
     type: 'article',
     url: 'visa',
     category: 'Visa Requirements',

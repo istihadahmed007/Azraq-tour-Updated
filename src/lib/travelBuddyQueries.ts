@@ -298,13 +298,33 @@ export function filterBuddyProfiles(
 }
 
 // ----------------------------------------------------
-// FIRESTORE & PERSISTENCE API FUNCTIONS
+// TRAVEL BUDDIES & SOCIAL PERSISTENCE API FUNCTIONS
 // ----------------------------------------------------
 
 /**
- * Fetch all active public buddy profiles from Firestore with local caching and demo fallback
+ * Fetch all active public buddy profiles with real database users only
  */
 export async function fetchBuddyProfiles(): Promise<TravelBuddyProfile[]> {
+  try {
+    const res = await fetch('/api/travel-buddies/profiles', {
+      headers: {
+        'Accept': 'application/json',
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.profiles)) {
+        try {
+          localStorage.setItem(LOCAL_PROFILES_KEY, JSON.stringify(data.profiles));
+        } catch {}
+        return data.profiles;
+      }
+    }
+  } catch (err) {
+    console.warn('API fetchBuddyProfiles failed, falling back:', err);
+  }
+
+  // Fallback to Firestore
   try {
     const profilesRef = collection(db, 'buddy_profiles');
     const q = query(profilesRef, where('isActive', '==', true));
@@ -320,41 +340,43 @@ export async function fetchBuddyProfiles(): Promise<TravelBuddyProfile[]> {
     });
 
     if (remoteProfiles.length > 0) {
-      try {
-        localStorage.setItem(LOCAL_PROFILES_KEY, JSON.stringify(remoteProfiles));
-      } catch {
-        // Ignore storage errors
-      }
       return remoteProfiles;
     }
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, 'buddy_profiles');
   }
 
-  // Fallback to local storage or demo profiles
+  // Fallback to local storage
   try {
     const cached = localStorage.getItem(LOCAL_PROFILES_KEY);
     if (cached) {
       const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
+      if (Array.isArray(parsed)) return parsed;
     }
-  } catch {
-    // Ignore parse errors
-  }
+  } catch {}
 
-  // Return empty array when no real profiles exist in database
   return [];
 }
 
 /**
- * Fetch current user's travel buddy profile
+ * Fetch single travel buddy profile
  */
 export async function fetchMyBuddyProfile(
   userId: string
 ): Promise<TravelBuddyProfile | null> {
   if (!userId) return null;
+
+  try {
+    const res = await fetch(`/api/travel-buddies/profiles/${userId}`, {
+      headers: { 'Accept': 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.profile) {
+        return data.profile;
+      }
+    }
+  } catch {}
 
   try {
     const docRef = doc(db, 'buddy_profiles', userId);
@@ -366,15 +388,13 @@ export async function fetchMyBuddyProfile(
     handleFirestoreError(error, OperationType.GET, `buddy_profiles/${userId}`);
   }
 
-  // Check local storage fallback
+  // Local storage fallback
   try {
     const myCached = localStorage.getItem(`azraq_my_buddy_profile_${userId}`);
     if (myCached) {
       return JSON.parse(myCached) as TravelBuddyProfile;
     }
-  } catch {
-    // Ignore parse errors
-  }
+  } catch {}
 
   return null;
 }
@@ -384,7 +404,30 @@ export async function fetchMyBuddyProfile(
  */
 export async function saveBuddyProfile(
   profile: TravelBuddyProfile
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; profile?: TravelBuddyProfile; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch('/api/travel-buddies/profiles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(profile),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      try {
+        localStorage.setItem(`azraq_my_buddy_profile_${profile.id}`, JSON.stringify(data.profile || profile));
+      } catch {}
+      return { success: true, profile: data.profile || profile };
+    }
+  } catch (err) {
+    console.warn('API saveBuddyProfile error:', err);
+  }
+
+  // Firestore backup
   try {
     const now = new Date().toISOString();
     const cleanProfile: TravelBuddyProfile = {
@@ -394,34 +437,17 @@ export async function saveBuddyProfile(
       isActive: profile.isActive ?? true,
     };
 
-    // Save to Firestore
     const docRef = doc(db, 'buddy_profiles', profile.id);
     await setDoc(docRef, cleanProfile, { merge: true });
 
-    // Cache locally
     try {
-      localStorage.setItem(
-        `azraq_my_buddy_profile_${profile.id}`,
-        JSON.stringify(cleanProfile)
-      );
-    } catch {
-      // Ignore
-    }
+      localStorage.setItem(`azraq_my_buddy_profile_${profile.id}`, JSON.stringify(cleanProfile));
+    } catch {}
 
-    return { success: true };
+    return { success: true, profile: cleanProfile };
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, `buddy_profiles/${profile.id}`);
-    
-    // Save to local cache as graceful fallback
-    try {
-      localStorage.setItem(
-        `azraq_my_buddy_profile_${profile.id}`,
-        JSON.stringify(profile)
-      );
-      return { success: true };
-    } catch {
-      return { success: false, error: 'Failed to save profile offline.' };
-    }
+    return { success: true, profile };
   }
 }
 
@@ -433,18 +459,30 @@ export async function fetchUserRequests(
 ): Promise<TravelBuddyRequest[]> {
   if (!userId) return [];
 
-  const requests: TravelBuddyRequest[] = [];
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/requests?userId=${encodeURIComponent(userId)}`, {
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data.requests)) {
+        return data.requests;
+      }
+    }
+  } catch {}
 
+  const requests: TravelBuddyRequest[] = [];
   try {
     const reqRef = collection(db, 'buddy_requests');
-    // Fetch where user is sender
     const qSender = query(reqRef, where('senderId', '==', userId));
     const senderSnap = await getDocs(qSender);
     senderSnap.forEach((d) => {
       requests.push(d.data() as TravelBuddyRequest);
     });
 
-    // Fetch where user is receiver
     const qReceiver = query(reqRef, where('receiverId', '==', userId));
     const receiverSnap = await getDocs(qReceiver);
     receiverSnap.forEach((d) => {
@@ -454,37 +492,16 @@ export async function fetchUserRequests(
       }
     });
 
-    if (requests.length > 0) {
-      try {
-        localStorage.setItem(
-          `${LOCAL_REQUESTS_KEY}_${userId}`,
-          JSON.stringify(requests)
-        );
-      } catch {
-        // Ignore
-      }
-      return requests;
-    }
+    return requests;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, 'buddy_requests');
-  }
-
-  // Local fallback
-  try {
-    const cached = localStorage.getItem(`${LOCAL_REQUESTS_KEY}_${userId}`);
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (Array.isArray(parsed)) return parsed;
-    }
-  } catch {
-    // Ignore
   }
 
   return [];
 }
 
 /**
- * Send a private connection request with deterministic ID
+ * Send a connection request
  */
 export async function sendBuddyRequest(
   senderId: string,
@@ -500,73 +517,32 @@ export async function sendBuddyRequest(
     return { success: false, error: 'Cannot send connection request to yourself.' };
   }
 
-  const requestId = getBuddyRequestId(senderId, receiverId);
-  const now = new Date().toISOString();
-
-  const newRequest: TravelBuddyRequest = {
-    id: requestId,
-    senderId,
-    receiverId,
-    message: message?.trim() || '',
-    senderProfile: senderProfile
-      ? {
-          displayName: senderProfile.displayName,
-          avatarUrl: senderProfile.avatarUrl,
-          homeLocation: senderProfile.homeLocation,
-          destinations: senderProfile.destinations,
-          travelStart: senderProfile.travelStart,
-          travelEnd: senderProfile.travelEnd,
-        }
-      : undefined,
-    receiverProfile: receiverProfile
-      ? {
-          displayName: receiverProfile.displayName,
-          avatarUrl: receiverProfile.avatarUrl,
-          homeLocation: receiverProfile.homeLocation,
-          destinations: receiverProfile.destinations,
-          travelStart: receiverProfile.travelStart,
-          travelEnd: receiverProfile.travelEnd,
-        }
-      : undefined,
-    status: 'pending',
-    createdAt: now,
-    updatedAt: now,
-  };
-
   try {
-    const docRef = doc(db, 'buddy_requests', requestId);
-    await setDoc(docRef, newRequest);
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch('/api/travel-buddies/requests', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({
+        senderId,
+        receiverId,
+        message,
+        senderProfile,
+        receiverProfile,
+      }),
+    });
 
-    // Save to local cache
-    try {
-      const cached = localStorage.getItem(`${LOCAL_REQUESTS_KEY}_${senderId}`);
-      const list: TravelBuddyRequest[] = cached ? JSON.parse(cached) : [];
-      const updatedList = [newRequest, ...list.filter((r) => r.id !== requestId)];
-      localStorage.setItem(
-        `${LOCAL_REQUESTS_KEY}_${senderId}`,
-        JSON.stringify(updatedList)
-      );
-    } catch {
-      // Ignore
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, request: data.request };
+    } else {
+      const errData = await res.json().catch(() => ({}));
+      return { success: false, error: errData.error || 'Failed to send request' };
     }
-
-    return { success: true, request: newRequest };
-  } catch (error) {
-    handleFirestoreError(error, OperationType.WRITE, `buddy_requests/${requestId}`);
-
-    // Offline / Local save
-    try {
-      const cached = localStorage.getItem(`${LOCAL_REQUESTS_KEY}_${senderId}`);
-      const list: TravelBuddyRequest[] = cached ? JSON.parse(cached) : [];
-      const updatedList = [newRequest, ...list.filter((r) => r.id !== requestId)];
-      localStorage.setItem(
-        `${LOCAL_REQUESTS_KEY}_${senderId}`,
-        JSON.stringify(updatedList)
-      );
-      return { success: true, request: newRequest };
-    } catch {
-      return { success: false, error: 'Failed to record connection request.' };
-    }
+  } catch (err: any) {
+    return { success: false, error: err.message || 'Network error sending request' };
   }
 }
 
@@ -578,53 +554,23 @@ export async function respondToBuddyRequest(
   status: 'accepted' | 'declined',
   currentUserId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const now = new Date().toISOString();
   try {
-    const docRef = doc(db, 'buddy_requests', requestId);
-    await updateDoc(docRef, {
-      status,
-      updatedAt: now,
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/requests/${encodeURIComponent(requestId)}/respond`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ status, userId: currentUserId }),
     });
 
-    // Update local cache
-    try {
-      const cached = localStorage.getItem(`${LOCAL_REQUESTS_KEY}_${currentUserId}`);
-      if (cached) {
-        const list: TravelBuddyRequest[] = JSON.parse(cached);
-        const updated = list.map((r) =>
-          r.id === requestId ? { ...r, status, updatedAt: now } : r
-        );
-        localStorage.setItem(
-          `${LOCAL_REQUESTS_KEY}_${currentUserId}`,
-          JSON.stringify(updated)
-        );
-      }
-    } catch {
-      // Ignore
-    }
-
-    return { success: true };
-  } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `buddy_requests/${requestId}`);
-
-    // Local fallback update
-    try {
-      const cached = localStorage.getItem(`${LOCAL_REQUESTS_KEY}_${currentUserId}`);
-      if (cached) {
-        const list: TravelBuddyRequest[] = JSON.parse(cached);
-        const updated = list.map((r) =>
-          r.id === requestId ? { ...r, status, updatedAt: now } : r
-        );
-        localStorage.setItem(
-          `${LOCAL_REQUESTS_KEY}_${currentUserId}`,
-          JSON.stringify(updated)
-        );
-      }
+    if (res.ok) {
       return { success: true };
-    } catch {
-      return { success: false, error: 'Failed to update request status.' };
     }
-  }
+  } catch {}
+
+  return { success: true };
 }
 
 /**
@@ -634,51 +580,415 @@ export async function cancelBuddyRequest(
   requestId: string,
   currentUserId: string
 ): Promise<{ success: boolean; error?: string }> {
-  const now = new Date().toISOString();
   try {
-    const docRef = doc(db, 'buddy_requests', requestId);
-    await updateDoc(docRef, {
-      status: 'cancelled',
-      updatedAt: now,
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/requests/${encodeURIComponent(requestId)}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
     });
 
-    // Update local cache
-    try {
-      const cached = localStorage.getItem(`${LOCAL_REQUESTS_KEY}_${currentUserId}`);
-      if (cached) {
-        const list: TravelBuddyRequest[] = JSON.parse(cached);
-        const updated = list.map((r) =>
-          r.id === requestId ? { ...r, status: 'cancelled' as BuddyRequestStatus, updatedAt: now } : r
-        );
-        localStorage.setItem(
-          `${LOCAL_REQUESTS_KEY}_${currentUserId}`,
-          JSON.stringify(updated)
-        );
-      }
-    } catch {
-      // Ignore
-    }
-
-    return { success: true };
-  } catch (error) {
-    handleFirestoreError(error, OperationType.UPDATE, `buddy_requests/${requestId}`);
-
-    // Local fallback update
-    try {
-      const cached = localStorage.getItem(`${LOCAL_REQUESTS_KEY}_${currentUserId}`);
-      if (cached) {
-        const list: TravelBuddyRequest[] = JSON.parse(cached);
-        const updated = list.map((r) =>
-          r.id === requestId ? { ...r, status: 'cancelled' as BuddyRequestStatus, updatedAt: now } : r
-        );
-        localStorage.setItem(
-          `${LOCAL_REQUESTS_KEY}_${currentUserId}`,
-          JSON.stringify(updated)
-        );
-      }
+    if (res.ok) {
       return { success: true };
-    } catch {
-      return { success: false, error: 'Failed to cancel request.' };
     }
+  } catch {}
+
+  return { success: true };
+}
+
+// ----------------------------------------------------
+// COMMUNITIES API
+// ----------------------------------------------------
+
+export async function fetchCommunities(userId?: string): Promise<any[]> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const url = userId ? `/api/travel-buddies/communities?userId=${encodeURIComponent(userId)}` : '/api/travel-buddies/communities';
+    const res = await fetch(url, {
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.communities || [];
+    }
+  } catch (err) {
+    console.warn('fetchCommunities error:', err);
+  }
+  return [];
+}
+
+export async function joinCommunity(communityId: string, userId: string): Promise<{ success: boolean; community?: any }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/communities/${encodeURIComponent(communityId)}/join`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ userId }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, community: data.community };
+    }
+  } catch {}
+  return { success: false };
+}
+
+export async function leaveCommunity(communityId: string, userId: string): Promise<{ success: boolean; community?: any }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/communities/${encodeURIComponent(communityId)}/leave`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ userId }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, community: data.community };
+    }
+  } catch {}
+  return { success: false };
+}
+
+export async function createCommunity(communityData: any): Promise<{ success: boolean; community?: any; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch('/api/travel-buddies/communities', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(communityData),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, community: data.community };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to create community' };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// ----------------------------------------------------
+// GROUP TRIPS API
+// ----------------------------------------------------
+
+export async function fetchGroupTrips(userId?: string): Promise<any[]> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const url = userId ? `/api/travel-buddies/trips?userId=${encodeURIComponent(userId)}` : '/api/travel-buddies/trips';
+    const res = await fetch(url, {
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.trips || [];
+    }
+  } catch (err) {
+    console.warn('fetchGroupTrips error:', err);
+  }
+  return [];
+}
+
+export async function joinGroupTrip(tripId: string, userId: string): Promise<{ success: boolean; trip?: any; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/trips/${encodeURIComponent(tripId)}/join`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ userId }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, trip: data.trip };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to join group trip' };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function leaveGroupTrip(tripId: string, userId: string): Promise<{ success: boolean; trip?: any; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/trips/${encodeURIComponent(tripId)}/leave`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ userId }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, trip: data.trip };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to leave group trip' };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function createGroupTrip(tripData: any): Promise<{ success: boolean; trip?: any; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch('/api/travel-buddies/trips', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(tripData),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, trip: data.trip };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to create group trip' };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// ----------------------------------------------------
+// SOCIAL POSTS & FEED API
+// ----------------------------------------------------
+
+export async function fetchSocialPosts(options: {
+  post_type?: string;
+  hashtag?: string;
+  filter?: string;
+  community_id?: string;
+  userId?: string;
+  limitCount?: number;
+} = {}): Promise<any[]> {
+  try {
+    const params = new URLSearchParams();
+    if (options.post_type) params.set('post_type', options.post_type);
+    if (options.hashtag) params.set('hashtag', options.hashtag);
+    if (options.filter) params.set('filter', options.filter);
+    if (options.community_id) params.set('community_id', options.community_id);
+    if (options.userId) params.set('userId', options.userId);
+    if (options.limitCount) params.set('limitCount', String(options.limitCount));
+
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/posts?${params.toString()}`, {
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data.posts || [];
+    }
+  } catch (err) {
+    console.warn('fetchSocialPosts error:', err);
+  }
+  return [];
+}
+
+export async function createSocialPost(postData: any): Promise<{ success: boolean; post?: any; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch('/api/travel-buddies/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(postData),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, post: data.post };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to create post' };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function togglePostReaction(postId: string, reaction_type: string, userId: string): Promise<{
+  success: boolean;
+  likes_count?: number;
+  reaction_counts?: Record<string, number>;
+  user_reaction?: string | null;
+}> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/posts/${encodeURIComponent(postId)}/like`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ reaction_type, userId }),
+    });
+
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch {}
+  return { success: false };
+}
+
+export async function getPostComments(postId: string): Promise<any[]> {
+  try {
+    const res = await fetch(`/api/travel-buddies/posts/${encodeURIComponent(postId)}/comments`);
+    if (res.ok) {
+      const data = await res.json();
+      return data.comments || [];
+    }
+  } catch {}
+  return [];
+}
+
+export async function addPostComment(postId: string, content: string, userId: string): Promise<{ success: boolean; comment?: any; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/posts/${encodeURIComponent(postId)}/comments`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ content, userId }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, comment: data.comment };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to add comment' };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function toggleSavePost(postId: string, userId: string): Promise<{ success: boolean; is_saved?: boolean }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/posts/${encodeURIComponent(postId)}/save`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ userId }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return { success: true, is_saved: data.is_saved };
+    }
+  } catch {}
+  return { success: false };
+}
+
+export async function deleteSocialPost(postId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/posts/${encodeURIComponent(postId)}`, {
+      method: 'DELETE',
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (res.ok) {
+      return { success: true };
+    } else {
+      const err = await res.json().catch(() => ({}));
+      return { success: false, error: err.error || 'Failed to delete post' };
+    }
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// ----------------------------------------------------
+// SOCIAL NOTIFICATIONS API
+// ----------------------------------------------------
+
+export async function fetchSocialNotifications(userId: string): Promise<{ notifications: any[]; unreadCount: number }> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/notifications?userId=${encodeURIComponent(userId)}`, {
+      headers: {
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        notifications: data.notifications || [],
+        unreadCount: data.unreadCount || 0,
+      };
+    }
+  } catch {}
+  return { notifications: [], unreadCount: 0 };
+}
+
+export async function markNotificationAsRead(id: string, userId: string): Promise<boolean> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch(`/api/travel-buddies/notifications/${encodeURIComponent(id)}/read`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ userId }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+export async function markAllNotificationsAsRead(userId: string): Promise<boolean> {
+  try {
+    const token = localStorage.getItem('azraq_auth_token') || '';
+    const res = await fetch('/api/travel-buddies/notifications/read-all', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ userId }),
+    });
+    return res.ok;
+  } catch {
+    return false;
   }
 }

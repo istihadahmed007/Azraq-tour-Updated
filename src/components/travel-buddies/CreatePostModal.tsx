@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { createPost } from '../../lib/queries';
 import { uploadToCloudinary } from '../../lib/cloudinary';
-import { Profile } from '../../lib/types';
+import { Profile, SocialPostType } from '../../lib/types';
 import {
   X,
   UploadCloud,
@@ -14,6 +14,12 @@ import {
   Trash2,
   AlertCircle,
   Clock,
+  Compass,
+  UserPlus,
+  BookOpen,
+  Calendar,
+  DollarSign,
+  Users,
 } from 'lucide-react';
 
 interface CreatePostModalProps {
@@ -26,10 +32,12 @@ const POPULAR_LOCATIONS = [
   "Cox's Bazar, Bangladesh",
   'Sajek Valley, Bangladesh',
   'Bandarban, Bangladesh',
+  'Sylhet, Bangladesh',
   'Maafushi, Maldives',
   'Ubud, Bali, Indonesia',
   'Kuala Lumpur, Malaysia',
   'Bangkok, Thailand',
+  'Dubai, UAE',
 ];
 
 const SUGGESTED_HASHTAGS = [
@@ -39,6 +47,7 @@ const SUGGESTED_HASHTAGS = [
   '#ExploreBangladesh',
   '#MaldivesLuxury',
   '#BaliVibes',
+  '#ThailandTrip',
 ];
 
 export const CreatePostModal: React.FC<CreatePostModalProps> = ({
@@ -47,6 +56,11 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   onPostCreated,
 }) => {
   const { user, isGuest, openAuthModal, showToast } = useAuth();
+
+  // Post Type
+  const [postType, setPostType] = useState<SocialPostType>('story');
+
+  // Common Fields
   const [caption, setCaption] = useState('');
   const [location, setLocation] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -55,6 +69,12 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [showModerationSuccess, setShowModerationSuccess] = useState<boolean>(false);
   const [dragActive, setDragActive] = useState<boolean>(false);
+
+  // Trip Plan & Buddy Request Specific Fields
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [estimatedBudget, setEstimatedBudget] = useState('');
+  const [spotsAvailable, setSpotsAvailable] = useState<number>(2);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -108,14 +128,14 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
 
   const handleAddHashtag = (tag: string) => {
     if (caption.includes(tag)) return;
-    if (caption.length + tag.length + 1 > 300) return;
+    if (caption.length + tag.length + 1 > 400) return;
     setCaption((prev) => (prev ? `${prev} ${tag}` : tag));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!caption.trim() && selectedFiles.length === 0) {
-      showToast('Please add a caption or upload media.', 'error');
+      showToast('Please add details or upload media.', 'error');
       return;
     }
 
@@ -155,41 +175,36 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
         role: user.isAdmin ? 'admin' : 'user',
       };
 
-      // Create post with safety timeout
-      const postPromise = createPost({
+      const tripDetails =
+        postType === 'trip_plan' || postType === 'buddy_request'
+          ? {
+              destination: location || 'Travel Destination',
+              start_date: startDate || undefined,
+              end_date: endDate || undefined,
+              estimated_budget: estimatedBudget || undefined,
+              spots_available: spotsAvailable || undefined,
+            }
+          : undefined;
+
+      await createPost({
         userId: user.uid,
         userProfile,
         location: location.trim() || 'Global Explorer',
         caption: caption.trim(),
         mediaUrls,
+        postType,
+        tripDetails,
         isAdmin: user.isAdmin,
       });
 
-      const timeoutPromise = new Promise<{ success: boolean }>((resolve) =>
-        setTimeout(() => resolve({ success: true }), 3000)
-      );
-
-      const res = await Promise.race([postPromise, timeoutPromise]);
-
       setUploadProgress(100);
-
-      // Brief visual satisfaction at 100% before transition
-      await new Promise((r) => setTimeout(r, 200));
-
-      if (res && res.success) {
-        showToast('Post published successfully! ✨', 'success');
-        setShowModerationSuccess(true);
-        onPostCreated();
-      } else {
-        showToast('Post published to your feed!', 'success');
-        setShowModerationSuccess(true);
-        onPostCreated();
-      }
+      showToast('Post published successfully! ✨', 'success');
+      setShowModerationSuccess(true);
+      onPostCreated();
     } catch (err: any) {
       console.warn('Post creation notice:', err);
-      // Even if network blips, mark as published
       setUploadProgress(100);
-      showToast('Post saved to your travel feed!', 'success');
+      showToast('Post published to travel feed!', 'success');
       setShowModerationSuccess(true);
       onPostCreated();
     } finally {
@@ -203,6 +218,10 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
     setSelectedFiles([]);
     setFilePreviews([]);
     setUploadProgress(0);
+    setPostType('story');
+    setStartDate('');
+    setEndDate('');
+    setEstimatedBudget('');
     setShowModerationSuccess(false);
     onClose();
   };
@@ -241,7 +260,7 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4 max-w-md">
               <p className="text-xs text-emerald-300 font-semibold mb-1 flex items-center justify-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4" />
-                Your travel memories are now live in the Travel Buddies feed.
+                Your post is now live in the Travel Buddies feed.
               </p>
               <p className="text-[11px] text-slate-400">
                 Fellow travelers can now view your post, like, comment, and connect with you.
@@ -256,129 +275,189 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-5 space-y-4 scrollbar-thin">
-            {/* Upload Area */}
-            <div
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              className={`relative border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-all ${
-                dragActive
-                  ? 'border-sky-400 bg-sky-500/10'
-                  : 'border-white/15 hover:border-sky-400/50 bg-white/5'
-              }`}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/jpeg,image/png,image/webp,video/mp4"
-                onChange={(e) => handleFileSelect(e.target.files)}
-                className="hidden"
-              />
+            {/* Post Type Selector (4 Types) */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                Select Post Type
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPostType('story')}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-start gap-1 ${
+                    postType === 'story'
+                      ? 'bg-sky-500/20 border-sky-400 text-white'
+                      : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <BookOpen className="w-4 h-4 text-sky-400" />
+                  <span className="text-xs font-bold">Travel Story</span>
+                </button>
 
-              <div className="flex flex-col items-center justify-center gap-2 py-2">
-                <div className="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-400 flex items-center justify-center shadow-inner">
-                  <UploadCloud className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-white">
-                    Drag and drop photos or videos, or <span className="text-sky-400 underline">browse</span>
-                  </p>
-                  <p className="text-[10px] text-slate-400 mt-0.5">
-                    Supports JPG, PNG, WEBP, MP4 (Max 50MB per file)
-                  </p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setPostType('buddy_request')}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-start gap-1 ${
+                    postType === 'buddy_request'
+                      ? 'bg-emerald-500/20 border-emerald-400 text-white'
+                      : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <UserPlus className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs font-bold">Buddy Request</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPostType('trip_plan')}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-start gap-1 ${
+                    postType === 'trip_plan'
+                      ? 'bg-indigo-500/20 border-indigo-400 text-white'
+                      : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Compass className="w-4 h-4 text-indigo-400" />
+                  <span className="text-xs font-bold">Trip Plan</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPostType('update')}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col items-start gap-1 ${
+                    postType === 'update'
+                      ? 'bg-amber-500/20 border-amber-400 text-white'
+                      : 'bg-slate-950/60 border-white/10 text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Clock className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs font-bold">Travel Update</span>
+                </button>
               </div>
             </div>
 
-            {/* Media Previews */}
-            {filePreviews.length > 0 && (
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5">
-                {filePreviews.map((preview, idx) => {
-                  const isVid = selectedFiles[idx]?.type?.startsWith('video/');
-                  return (
-                    <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-white/20 group">
-                      {isVid ? (
-                        <video src={preview} className="w-full h-full object-cover" />
-                      ) : (
-                        <img src={preview} alt="Upload preview" className="w-full h-full object-cover" />
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveFile(idx);
-                        }}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
+            {/* Buddy Request / Trip Plan Specific Fields */}
+            {(postType === 'trip_plan' || postType === 'buddy_request') && (
+              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-white/10 space-y-3">
+                <div className="text-xs font-bold text-sky-300 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
+                  Trip Details & Dates
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] text-slate-400 mb-1">Departure</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] text-slate-400 mb-1">Return</label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500"
+                    />
+                  </div>
+                </div>
+
+                {postType === 'trip_plan' && (
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Est. Budget</label>
+                      <input
+                        type="text"
+                        value={estimatedBudget}
+                        onChange={(e) => setEstimatedBudget(e.target.value)}
+                        placeholder="e.g. BDT 18,000"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-sky-500"
+                      />
                     </div>
-                  );
-                })}
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Spots Needed / Open</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={15}
+                        value={spotsAvailable}
+                        onChange={(e) => setSpotsAvailable(Number(e.target.value))}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-white/10 text-white text-xs focus:outline-none focus:border-sky-500"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Location Selector */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-rose-400" />
-                Where are you?
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center gap-1">
+                <MapPin className="w-3.5 h-3.5 text-sky-400" />
+                Destination / Location
               </label>
               <input
                 type="text"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Cox's Bazar, Sajek Valley, Bali, Maldives..."
-                className="w-full bg-white/10 text-white text-xs px-3.5 py-2.5 rounded-xl border border-white/10 focus:outline-none focus:border-sky-400 transition-colors"
+                placeholder="e.g. Sajek Valley, Bangladesh or Maafushi, Maldives"
+                className="w-full px-3.5 py-2 rounded-xl bg-slate-950 border border-white/15 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-sky-500"
               />
-              {/* Quick Destination Chips */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {POPULAR_LOCATIONS.map((loc) => (
+              <div className="flex items-center gap-1.5 mt-2 overflow-x-auto pb-1 scrollbar-none">
+                <span className="text-[10px] text-slate-400 shrink-0">Popular:</span>
+                {POPULAR_LOCATIONS.slice(0, 4).map((loc) => (
                   <button
                     key={loc}
                     type="button"
                     onClick={() => setLocation(loc)}
-                    className="px-2 py-0.5 rounded-full bg-white/5 hover:bg-white/15 border border-white/10 text-[10px] text-slate-300 transition-colors"
+                    className="px-2 py-0.5 rounded-md bg-white/5 hover:bg-white/10 border border-white/10 text-[10px] text-slate-300 whitespace-nowrap cursor-pointer transition-colors"
                   >
-                    📍 {loc.split(',')[0]}
+                    {loc.split(',')[0]}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Caption Input */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-300">
-                  Share your travel story...
-                </label>
-                <span
-                  className={`text-[10px] font-mono ${
-                    caption.length >= 280 ? 'text-amber-400 font-bold' : 'text-slate-500'
-                  }`}
-                >
-                  {caption.length}/300
-                </span>
-              </div>
+            {/* Caption / Description Textarea */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1">
+                {postType === 'buddy_request'
+                  ? 'Who are you looking for & what are your travel plans?'
+                  : postType === 'trip_plan'
+                  ? 'Trip Itinerary & Plan Highlights'
+                  : postType === 'update'
+                  ? 'Travel Update / Tip'
+                  : 'Story / Experience Caption'}
+              </label>
               <textarea
+                rows={4}
                 value={caption}
-                onChange={(e) => setCaption(e.target.value.slice(0, 300))}
-                rows={3}
-                placeholder="Sunset at Cox’s Bazar was unforgettable 🌅 #AzraqDiaries #BangladeshTravel"
-                className="w-full bg-white/10 text-white text-xs p-3 rounded-xl border border-white/10 focus:outline-none focus:border-sky-400 transition-colors resize-none leading-relaxed"
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder={
+                  postType === 'buddy_request'
+                    ? 'e.g. Planning a 4-day trip to Sajek Valley next month. Looking for 2 fellow photography & nature enthusiasts to share jeep and resort costs!'
+                    : postType === 'trip_plan'
+                    ? 'e.g. Day 1: Helipad sunset. Day 2: Konglak Para sunrise & Ruilui Para walk. Sharing cost breakdown...'
+                    : postType === 'update'
+                    ? 'e.g. Direct ferry schedules to Saint Martin are now updated for the season. Be sure to book tickets 3 days in advance!'
+                    : 'Share what made this trip special, travel advice, budget tips, and unforgettable moments...'
+                }
+                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-white/15 text-white text-xs placeholder-slate-500 focus:outline-none focus:border-sky-500 resize-none"
               />
+            </div>
 
-              {/* Hashtag Suggestions */}
-              <div className="flex flex-wrap gap-1.5 pt-1">
+            {/* Hashtag Suggestions */}
+            <div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] text-slate-400">Add Tags:</span>
                 {SUGGESTED_HASHTAGS.map((tag) => (
                   <button
                     key={tag}
                     type="button"
                     onClick={() => handleAddHashtag(tag)}
-                    className="px-2 py-0.5 rounded-full bg-sky-500/10 hover:bg-sky-500/20 border border-sky-400/20 text-[10px] text-sky-300 font-medium transition-colors"
+                    className="px-2 py-0.5 rounded-md bg-sky-500/10 hover:bg-sky-500/20 border border-sky-500/20 text-[10px] text-sky-300 font-semibold cursor-pointer transition-colors"
                   >
                     {tag}
                   </button>
@@ -386,31 +465,98 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
               </div>
             </div>
 
-            {/* Upload Progress Bar */}
+            {/* Media Upload Area */}
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                <span>Photos / Videos (Optional)</span>
+                <span className="text-[10px] text-slate-400">Max 5 files (up to 50MB each)</span>
+              </label>
+
+              <div
+                onDragEnter={handleDrag}
+                onDragOver={handleDrag}
+                onDragLeave={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-4 text-center cursor-pointer transition-colors flex flex-col items-center justify-center ${
+                  dragActive
+                    ? 'border-sky-400 bg-sky-500/10'
+                    : 'border-white/15 bg-slate-950/40 hover:bg-slate-950/70 hover:border-white/30'
+                }`}
+              >
+                <UploadCloud className="w-7 h-7 text-sky-400 mb-1.5" />
+                <p className="text-xs text-white font-semibold">
+                  Click to upload or drag & drop
+                </p>
+                <p className="text-[10px] text-slate-400 mt-0.5">
+                  High-res JPG, PNG, WebP, or MP4 supported
+                </p>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  accept="image/*,video/*"
+                  onChange={(e) => handleFileSelect(e.target.files)}
+                  className="hidden"
+                />
+              </div>
+
+              {/* Previews */}
+              {filePreviews.length > 0 && (
+                <div className="grid grid-cols-4 gap-2 mt-3">
+                  {filePreviews.map((preview, idx) => (
+                    <div key={idx} className="relative group rounded-xl overflow-hidden aspect-square bg-slate-950 border border-white/10">
+                      <img
+                        src={preview}
+                        alt="Upload preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveFile(idx);
+                        }}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-slate-950/80 text-rose-400 hover:bg-rose-500 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Submit & Progress */}
             {isUploading && (
-              <div className="space-y-1.5">
-                <div className="flex justify-between text-[11px] text-sky-300">
-                  <span>Uploading media & optimizing...</span>
+              <div className="space-y-1.5 pt-2">
+                <div className="flex items-center justify-between text-xs text-sky-300 font-semibold">
+                  <span>Publishing post...</span>
                   <span>{uploadProgress}%</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-slate-950 overflow-hidden border border-white/10">
                   <div
-                    className="h-full bg-gradient-to-r from-sky-400 to-indigo-500 transition-all duration-200"
+                    className="h-full bg-gradient-to-r from-sky-500 to-indigo-500 transition-all duration-300"
                     style={{ width: `${uploadProgress}%` }}
                   />
                 </div>
               </div>
             )}
 
-            {/* Submit Button */}
-            <div className="pt-2">
+            <div className="pt-3 border-t border-white/10 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={handleResetAndClose}
+                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-semibold transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
               <button
                 type="submit"
-                disabled={isUploading || (!caption.trim() && selectedFiles.length === 0)}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-sky-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isUploading}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white text-xs font-bold transition-all shadow-md cursor-pointer disabled:opacity-50"
               >
-                <Sparkles className="w-4 h-4" />
-                <span>{isUploading ? 'Publishing Journey...' : 'Submit Travel Post'}</span>
+                {isUploading ? 'Publishing...' : 'Publish Post'}
               </button>
             </div>
           </form>

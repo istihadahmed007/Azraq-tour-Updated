@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import { MapPin, Star, Plane, ChevronRight } from 'lucide-react';
 import { Destination } from '../../types';
 import { POPULAR_AIRPORTS, BANGLADESH_AIRPORTS } from '../../data/flightsData';
@@ -19,6 +20,8 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
   onSearchFlights,
   onNavigateToDestinations,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   const curatedList = [
     {
       id: 'dest-bangkok',
@@ -99,14 +102,14 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
     <section id="popular-destinations" className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-[#0D6EFD]">
-            <MapPin className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-[#086788]">
+            <MapPin className="w-3.5 h-3.5 text-[#17BEBB]" />
             <span>Curated Routes</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#071A33] tracking-tight font-poppins">
+          <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
             Popular Destinations from Dhaka
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500">
+          <p className="text-xs sm:text-sm text-slate-500 font-inter">
             Direct airline connections, fast visa processing, and curated partner stays.
           </p>
         </div>
@@ -115,19 +118,27 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
           <button
             onClick={onNavigateToDestinations}
             type="button"
-            className="inline-flex items-center gap-1 text-sm font-bold text-[#0D6EFD] hover:text-blue-700 transition-colors cursor-pointer self-start sm:self-auto min-h-[44px]"
+            className="inline-flex items-center gap-1 text-sm font-bold text-[#086788] hover:text-[#073B4C] transition-colors cursor-pointer self-start sm:self-auto min-h-[44px]"
           >
             <span>Explore all destinations</span>
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-4 h-4 text-[#17BEBB]" />
           </button>
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
-        {curatedList.map((dest) => (
-          <div
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-x-visible no-scrollbar pb-3 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory sm:snap-none">
+        {curatedList.map((dest, idx) => (
+          <motion.div
             key={dest.id}
-            className="group bg-white rounded-2xl overflow-hidden shadow-xs hover:shadow-lg border border-slate-200/80 transition-all duration-300 flex flex-col justify-between"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.25,
+              delay: shouldReduceMotion ? 0 : idx * 0.05,
+              ease: 'easeOut',
+            }}
+            whileHover={shouldReduceMotion ? undefined : { y: -3 }}
+            className="min-w-[260px] xs:min-w-[280px] sm:min-w-0 w-[80vw] max-w-[320px] sm:w-full snap-start shrink-0 sm:shrink group bg-white rounded-2xl overflow-hidden shadow-xs hover:shadow-lg border border-slate-200/80 transition-all duration-300 flex flex-col justify-between"
           >
             <div
               className="relative h-48 w-full overflow-hidden bg-slate-100 cursor-pointer"
@@ -154,12 +165,12 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                 <div className="flex items-center justify-between">
                   <h3
                     onClick={() => handleCardClick(dest.name)}
-                    className="text-base font-bold text-[#071A33] tracking-tight group-hover:text-[#0D6EFD] transition-colors cursor-pointer font-poppins"
+                    className="text-base font-bold text-[#073B4C] tracking-tight group-hover:text-[#086788] transition-colors cursor-pointer font-inter"
                   >
                     {dest.name}, {dest.country}
                   </h3>
                   <div className="flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    <Star className="w-3.5 h-3.5 fill-[#FF6B5A] text-[#FF6B5A]" />
                     <span className="text-xs font-bold text-slate-800">{dest.rating}</span>
                   </div>
                 </div>
@@ -170,23 +181,23 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                 <button
                   type="button"
                   onClick={() => handleFlightClick(dest.code)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#0D6EFD] hover:underline cursor-pointer min-h-[40px]"
+                  className="inline-flex items-center gap-1 text-xs font-bold text-[#086788] hover:text-[#073B4C] hover:underline cursor-pointer min-h-[40px]"
                 >
-                  <Plane className="w-3.5 h-3.5" />
+                  <Plane className="w-3.5 h-3.5 text-[#17BEBB]" />
                   <span>Find Flights</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => handleCardClick(dest.name)}
-                  className="text-xs font-bold text-slate-700 hover:text-[#0D6EFD] flex items-center gap-0.5 cursor-pointer min-h-[40px]"
+                  className="text-xs font-bold text-slate-700 hover:text-[#086788] flex items-center gap-0.5 cursor-pointer min-h-[40px]"
                 >
                   <span>Details</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-3.5 h-3.5 text-[#17BEBB]" />
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

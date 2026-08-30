@@ -1,6 +1,6 @@
 {
   "name": "Azraq Trips",
-  "description": "Plan smarter with Azraq, an AI-powered travel platform for Bangladeshi travelers. Discover destinations, create personalized itineraries, explore flights, travel guides, visa information and travel planning tools.",
-  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "description": "Azraq Trips - Travel farther. Experience more. Bangladesh premier Online Travel Agency offering international flights, luxury hotel stays, curated Asian tour packages, fast-track visa processing, activities, and AI trip planning.",
+  "requestFramePermissions": ["microphone"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

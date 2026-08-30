@@ -11,7 +11,7 @@ import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
 const INITIAL_BLOG_POSTS: any[] = [];
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+const PORT = 3000;
 
 // Ensure public/uploads directory exists for permanent media storage
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
@@ -266,6 +266,9 @@ interface ServerUser {
   emailVerified: boolean;
   emailVerificationCode?: string;
   emailCodeExpiry?: number;
+  emailOtpCode?: string;
+  emailOtpExpiry?: number;
+  emailOtpAttempts?: number;
   phoneVerified?: boolean;
   phoneOtpCode?: string;
   phoneOtpExpiry?: number;
@@ -836,6 +839,129 @@ app.post("/api/auth/verify-phone-otp", (req, res) => {
   } catch (err: any) {
     console.error("Verify Phone OTP Error:", err);
     res.status(500).json({ error: "Failed to verify phone OTP." });
+  }
+});
+
+// 6b. Send Email OTP Endpoint (Passwordless Email Auth)
+app.post("/api/auth/send-email-otp", (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== "string") {
+      return res.status(400).json({ error: "A valid email address is required." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      return res.status(400).json({ error: "Please enter a valid email address format." });
+    }
+
+    let user = usersStore.get(normalizedEmail);
+    const isNew = !user;
+
+    if (!user) {
+      const generatedUid = `usr_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      user = {
+        uid: generatedUid,
+        fullName: normalizedEmail.split("@")[0].replace(/[\._]/g, " "),
+        email: normalizedEmail,
+        phone: "",
+        country: "Bangladesh",
+        photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(normalizedEmail)}`,
+        bio: `Travel enthusiast at Azraq Trips.`,
+        languages: ["English", "Bengali"],
+        emailVerified: false,
+        phoneVerified: false,
+        provider: "email",
+        createdAt: new Date().toISOString(),
+        role: "user",
+        isAdmin: false,
+        isProfileComplete: false,
+      };
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.emailOtpCode = otpCode;
+    user.emailOtpExpiry = Date.now() + 10 * 60 * 1000; // 10 mins
+    user.emailOtpAttempts = 0;
+
+    usersStore.set(normalizedEmail, user);
+    saveUsersToDisk();
+
+    console.log(`[AUTH] Sent 6-digit Email OTP to ${normalizedEmail}: ${otpCode}`);
+
+    res.json({
+      success: true,
+      message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
+      demoOtp: otpCode,
+      isNewUser: isNew || !user.isProfileComplete,
+    });
+  } catch (err: any) {
+    console.error("Send Email OTP Error:", err);
+    res.status(500).json({ error: "Failed to send email OTP code. Please try again." });
+  }
+});
+
+// 6c. Verify Email OTP Endpoint
+app.post("/api/auth/verify-email-otp", (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({ error: "Email address and 6-digit OTP code are required." });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = usersStore.get(normalizedEmail);
+
+    if (!user) {
+      return res.status(404).json({ error: "No account or pending login found for this email." });
+    }
+
+    if ((user.emailOtpAttempts || 0) >= 5) {
+      return res.status(429).json({
+        error: "Maximum OTP verification attempts exceeded. Please request a new verification code.",
+      });
+    }
+
+    if (user.emailOtpExpiry && Date.now() > user.emailOtpExpiry) {
+      return res.status(400).json({
+        error: "Verification code has expired. Please request a new code.",
+      });
+    }
+
+    const cleanOtp = otp.toString().trim();
+    if (!user.emailOtpCode || user.emailOtpCode !== cleanOtp) {
+      user.emailOtpAttempts = (user.emailOtpAttempts || 0) + 1;
+      saveUsersToDisk();
+      const remaining = 5 - user.emailOtpAttempts;
+      return res.status(400).json({
+        error: `Invalid 6-digit code. ${remaining > 0 ? `${remaining} attempt(s) remaining.` : "Please request a new code."}`,
+      });
+    }
+
+    // Mark verified and clear OTP
+    user.emailVerified = true;
+    delete user.emailOtpCode;
+    delete user.emailOtpExpiry;
+    user.emailOtpAttempts = 0;
+    user.updatedAt = new Date().toISOString();
+
+    const isNewUser = !user.isProfileComplete || !user.phone || !user.homeLocation;
+
+    usersStore.set(normalizedEmail, user);
+    saveUsersToDisk();
+
+    const token = issueSessionToken(user);
+
+    res.json({
+      success: true,
+      message: "Email verified successfully! Welcome to Azraq Trips.",
+      user: sanitizeUserPayload(user),
+      token,
+      isNewUser,
+    });
+  } catch (err: any) {
+    console.error("Verify Email OTP Error:", err);
+    res.status(500).json({ error: "Failed to verify email OTP code." });
   }
 });
 
@@ -4542,6 +4668,1309 @@ app.post("/api/feed/read", (req, res) => {
   }
 });
 
+// ============================================================================
+// AZRAQ TRIPS — TRAVEL BUDDIES SOCIAL SYSTEM (Convex/Real Database Endpoints)
+// ============================================================================
+
+const BUDDY_DB_FILE = path.join(process.cwd(), ".travel_buddies_db.json");
+
+interface TravelBuddiesDbSchema {
+  buddyProfiles: Record<string, any>;
+  buddyRequests: Record<string, any>;
+  communities: Record<string, any>;
+  groupTrips: Record<string, any>;
+  socialPosts: Record<string, any>;
+  socialComments: Record<string, any[]>;
+  socialNotifications: Record<string, any[]>;
+  savedPostsMap: Record<string, string[]>;
+  postLikesMap: Record<string, Record<string, string>>;
+}
+
+function getInitialCommunities(): Record<string, any> {
+  return {
+    comm_thailand: {
+      id: "comm_thailand",
+      name: "Thailand Travelers BD",
+      destination: "Thailand",
+      image: "https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=800&q=75",
+      description: "Community for Bangladeshi travelers exploring Bangkok street food, Phuket beaches, Pattaya island hopping, and Chiang Mai culture.",
+      members: ["user_istihad_001"],
+      memberCount: 1,
+      postsCount: 2,
+      createdAt: new Date("2024-01-10").toISOString(),
+      creatorId: "user_istihad_001",
+      tags: ["Thailand", "Bangkok", "Phuket", "Island Hopping"],
+    },
+    comm_maldives: {
+      id: "comm_maldives",
+      name: "Maldives Luxury & Island Club",
+      destination: "Maldives",
+      image: "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=75",
+      description: "Private overwater villa experiences, manta ray snorkeling spots, resort transfers, and romantic getaway discussions.",
+      members: ["user_istihad_001"],
+      memberCount: 1,
+      postsCount: 1,
+      createdAt: new Date("2024-01-15").toISOString(),
+      creatorId: "user_istihad_001",
+      tags: ["Maldives", "Luxury", "Overwater Villa", "Honeymoon"],
+    },
+    comm_bangladesh: {
+      id: "comm_bangladesh",
+      name: "Cox's Bazar & Sajek Trekkers",
+      destination: "Bangladesh",
+      image: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=75",
+      description: "Dedicated to domestic Bangladesh exploration — Sajek clouds, Cox's Bazar beaches, Sylhet tea gardens, and Sreemangal rainforests.",
+      members: ["user_istihad_001"],
+      memberCount: 1,
+      postsCount: 2,
+      createdAt: new Date("2024-02-01").toISOString(),
+      creatorId: "user_istihad_001",
+      tags: ["Bangladesh", "Sajek Valley", "Cox's Bazar", "Sylhet"],
+    },
+    comm_bali: {
+      id: "comm_bali",
+      name: "Bali & SE Asia Backpackers",
+      destination: "Indonesia & SE Asia",
+      image: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=75",
+      description: "Connect with solo explorers, digital nomads, and budget-friendly backpackers touring Ubud, Nusa Penida, and Malaysia.",
+      members: ["user_istihad_001"],
+      memberCount: 1,
+      postsCount: 1,
+      createdAt: new Date("2024-02-10").toISOString(),
+      creatorId: "user_istihad_001",
+      tags: ["Bali", "Backpacking", "Solo Travel", "Digital Nomad"],
+    },
+    comm_umrah: {
+      id: "comm_umrah",
+      name: "Umrah & Halal Travel Circle",
+      destination: "Saudi Arabia",
+      image: "https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&w=800&q=75",
+      description: "Supportive network sharing DIY Umrah visas, Nusuk app guides, Makkah/Madinah hotels, and family pilgrimage itineraries.",
+      members: ["user_istihad_001"],
+      memberCount: 1,
+      postsCount: 1,
+      createdAt: new Date("2024-02-20").toISOString(),
+      creatorId: "user_istihad_001",
+      tags: ["Umrah", "Halal Travel", "Makkah", "Madinah"],
+    },
+    comm_europe: {
+      id: "comm_europe",
+      name: "Europe & Schengen Explorers",
+      destination: "Europe",
+      image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=75",
+      description: "Schengen visa appointment tips, Eurail train hacks, budget stays, and multi-country Euro trip planning for Bangladeshis.",
+      members: ["user_istihad_001"],
+      memberCount: 1,
+      postsCount: 1,
+      createdAt: new Date("2024-03-01").toISOString(),
+      creatorId: "user_istihad_001",
+      tags: ["Europe", "Schengen", "Euro Rail", "Sightseeing"],
+    },
+  };
+}
+
+function loadTravelBuddiesDb(): TravelBuddiesDbSchema {
+  try {
+    if (fs.existsSync(BUDDY_DB_FILE)) {
+      const data = fs.readFileSync(BUDDY_DB_FILE, "utf-8");
+      const parsed = JSON.parse(data);
+      return {
+        buddyProfiles: parsed.buddyProfiles || {},
+        buddyRequests: parsed.buddyRequests || {},
+        communities: parsed.communities && Object.keys(parsed.communities).length > 0 ? parsed.communities : getInitialCommunities(),
+        groupTrips: parsed.groupTrips || {},
+        socialPosts: parsed.socialPosts || {},
+        socialComments: parsed.socialComments || {},
+        socialNotifications: parsed.socialNotifications || {},
+        savedPostsMap: parsed.savedPostsMap || {},
+        postLikesMap: parsed.postLikesMap || {},
+      };
+    }
+  } catch (err) {
+    console.error("Failed to read Travel Buddies DB file:", err);
+  }
+
+  return {
+    buddyProfiles: {},
+    buddyRequests: {},
+    communities: getInitialCommunities(),
+    groupTrips: {},
+    socialPosts: {},
+    socialComments: {},
+    socialNotifications: {},
+    savedPostsMap: {},
+    postLikesMap: {},
+  };
+}
+
+const travelBuddiesDb = loadTravelBuddiesDb();
+
+function saveTravelBuddiesDb() {
+  try {
+    fs.writeFileSync(BUDDY_DB_FILE, JSON.stringify(travelBuddiesDb, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to write Travel Buddies DB file:", err);
+  }
+}
+
+// Helper to authenticate user from token or header
+function getAuthenticatedUser(req: express.Request): ServerUser | null {
+  const authHeader = req.headers.authorization || "";
+  let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
+  if (!token && req.headers["x-auth-token"]) {
+    token = String(req.headers["x-auth-token"]).trim();
+  }
+  if (!token) return null;
+
+  if (activeTokensMap.has(token)) {
+    const email = activeTokensMap.get(token)!;
+    const user = usersStore.get(email.toLowerCase());
+    if (user) return user;
+  }
+
+  if (token.startsWith("token_")) {
+    const parts = token.split("_");
+    if (parts.length >= 3) {
+      const targetUid = parts.slice(1, parts.length - 1).join("_");
+      for (const u of usersStore.values()) {
+        if (u.uid === targetUid) return u;
+      }
+    }
+  }
+  return null;
+}
+
+// 1. GET ALL TRAVEL BUDDY PROFILES (Real database users only)
+app.get("/api/travel-buddies/profiles", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const profileList: any[] = [];
+
+    // 1. First gather profiles explicitly created/updated in travelBuddiesDb
+    const customProfiles = travelBuddiesDb.buddyProfiles;
+
+    // 2. Also map registered users who completed profile
+    usersStore.forEach((user) => {
+      if (user.isSuspended) return;
+      const custom = customProfiles[user.uid];
+
+      if (custom && custom.isActive) {
+        profileList.push({
+          ...custom,
+          id: user.uid,
+          displayName: custom.displayName || user.fullName,
+          avatarUrl: custom.avatarUrl || user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email)}`,
+          homeLocation: custom.homeLocation || user.homeLocation || user.country || "Bangladesh",
+          bio: custom.bio || user.bio || `Passionate traveler and explorer from ${user.homeLocation || user.country || "Bangladesh"}.`,
+          destinations: custom.destinations?.length ? custom.destinations : ["Bangkok", "Phuket", "Cox's Bazar"],
+          travelStyles: custom.travelStyles?.length ? custom.travelStyles : (user.travelPreferences?.length ? user.travelPreferences : ["Food & Culture", "Photography"]),
+          languages: custom.languages?.length ? custom.languages : (user.languages?.length ? user.languages : ["Bangla", "English"]),
+          groupSize: custom.groupSize || 2,
+          contactPreference: custom.contactPreference || "In-app only",
+          visibility: custom.visibility || "public",
+          isActive: true,
+          createdAt: custom.createdAt || user.createdAt,
+          updatedAt: custom.updatedAt || user.updatedAt,
+        });
+      } else if (!custom && user.isProfileComplete) {
+        profileList.push({
+          id: user.uid,
+          displayName: user.fullName,
+          avatarUrl: user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.email)}`,
+          homeLocation: user.homeLocation || user.country || "Dhaka, Bangladesh",
+          bio: user.bio || `Travel enthusiast exploring new destinations with Azraq Trips.`,
+          destinations: ["Bangkok", "Dubai", "Cox's Bazar"],
+          travelStyles: user.travelPreferences?.length ? user.travelPreferences : ["Food & Culture", "Beach & Relaxation"],
+          languages: user.languages?.length ? user.languages : ["Bangla", "English"],
+          groupSize: 2,
+          contactPreference: "In-app only",
+          visibility: "public",
+          isActive: true,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        });
+      }
+    });
+
+    res.json({
+      success: true,
+      profiles: profileList,
+      totalCount: profileList.length,
+    });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/profiles error:", err);
+    res.status(500).json({ error: "Failed to fetch travel buddy profiles." });
+  }
+});
+
+// 2. GET SINGLE BUDDY PROFILE
+app.get("/api/travel-buddies/profiles/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    let found = travelBuddiesDb.buddyProfiles[id];
+
+    if (!found) {
+      for (const u of usersStore.values()) {
+        if (u.uid === id) {
+          found = {
+            id: u.uid,
+            displayName: u.fullName,
+            avatarUrl: u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.email)}`,
+            homeLocation: u.homeLocation || u.country || "Bangladesh",
+            bio: u.bio || "",
+            destinations: ["Bangkok", "Phuket", "Dubai"],
+            travelStyles: u.travelPreferences || ["Food & Culture"],
+            languages: u.languages || ["Bangla", "English"],
+            groupSize: 2,
+            contactPreference: "In-app only",
+            visibility: "public",
+            isActive: true,
+            createdAt: u.createdAt,
+            updatedAt: u.updatedAt,
+          };
+          break;
+        }
+      }
+    }
+
+    if (!found) {
+      return res.status(404).json({ error: "Travel buddy profile not found." });
+    }
+
+    res.json({ success: true, profile: found });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/profiles/:id error:", err);
+    res.status(500).json({ error: "Failed to get profile." });
+  }
+});
+
+// 3. SAVE / UPDATE MY BUDDY PROFILE
+app.post("/api/travel-buddies/profiles", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const {
+      id,
+      displayName,
+      avatarUrl,
+      homeLocation,
+      bio,
+      destinations,
+      travelStyles,
+      languages,
+      travelStart,
+      travelEnd,
+      groupSize,
+      contactPreference,
+      visibility,
+      isActive,
+    } = req.body;
+
+    const targetId = authUser ? authUser.uid : id;
+    if (!targetId) {
+      return res.status(401).json({ error: "Authentication or valid user ID required." });
+    }
+
+    const now = new Date().toISOString();
+    const existing = travelBuddiesDb.buddyProfiles[targetId] || {};
+
+    const updatedProfile = {
+      ...existing,
+      id: targetId,
+      displayName: displayName || (authUser ? authUser.fullName : "Azraq Traveler"),
+      avatarUrl: avatarUrl || (authUser ? authUser.photoURL : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(targetId)}`),
+      homeLocation: homeLocation || (authUser ? authUser.homeLocation : "Bangladesh"),
+      bio: bio !== undefined ? bio : existing.bio || "",
+      destinations: Array.isArray(destinations) ? destinations : existing.destinations || [],
+      travelStyles: Array.isArray(travelStyles) ? travelStyles : existing.travelStyles || [],
+      languages: Array.isArray(languages) ? languages : existing.languages || ["Bangla", "English"],
+      travelStart: travelStart || existing.travelStart || undefined,
+      travelEnd: travelEnd || existing.travelEnd || undefined,
+      groupSize: Number(groupSize) || existing.groupSize || 2,
+      contactPreference: contactPreference || existing.contactPreference || "In-app only",
+      visibility: visibility || existing.visibility || "public",
+      isActive: isActive !== undefined ? isActive : true,
+      createdAt: existing.createdAt || now,
+      updatedAt: now,
+    };
+
+    travelBuddiesDb.buddyProfiles[targetId] = updatedProfile;
+    saveTravelBuddiesDb();
+
+    // Also update server user profile if authenticated
+    if (authUser) {
+      authUser.homeLocation = updatedProfile.homeLocation;
+      authUser.bio = updatedProfile.bio;
+      authUser.travelPreferences = updatedProfile.travelStyles;
+      authUser.languages = updatedProfile.languages;
+      authUser.updatedAt = now;
+      usersStore.set(authUser.email, authUser);
+      saveUsersToDisk();
+    }
+
+    res.json({ success: true, profile: updatedProfile });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/profiles error:", err);
+    res.status(500).json({ error: "Failed to save travel buddy profile." });
+  }
+});
+
+// 4. BUDDY REQUESTS — GET MY REQUESTS
+app.get("/api/travel-buddies/requests", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.query.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication or userId required." });
+    }
+
+    const myRequests = Object.values(travelBuddiesDb.buddyRequests).filter(
+      (r: any) => r.senderId === userId || r.receiverId === userId
+    );
+
+    res.json({ success: true, requests: myRequests });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/requests error:", err);
+    res.status(500).json({ error: "Failed to get requests." });
+  }
+});
+
+// 5. BUDDY REQUESTS — SEND REQUEST
+app.post("/api/travel-buddies/requests", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const { senderId, receiverId, message, senderProfile, receiverProfile } = req.body;
+    const finalSenderId = authUser ? authUser.uid : senderId;
+
+    if (!finalSenderId || !receiverId) {
+      return res.status(400).json({ error: "Sender and receiver IDs are required." });
+    }
+    if (finalSenderId === receiverId) {
+      return res.status(400).json({ error: "Cannot send connection request to yourself." });
+    }
+
+    const requestId = `${finalSenderId}__${receiverId}`;
+    const now = new Date().toISOString();
+
+    const newRequest = {
+      id: requestId,
+      senderId: finalSenderId,
+      receiverId,
+      message: message?.trim() || "Hi! I saw we have matching travel plans on Azraq Trips. Let's connect!",
+      senderProfile: senderProfile || travelBuddiesDb.buddyProfiles[finalSenderId] || {
+        displayName: authUser?.fullName || "Traveler",
+        avatarUrl: authUser?.photoURL,
+        homeLocation: authUser?.homeLocation || "Bangladesh",
+      },
+      receiverProfile: receiverProfile || travelBuddiesDb.buddyProfiles[receiverId],
+      status: "pending",
+      createdAt: now,
+      updatedAt: now,
+    };
+
+    travelBuddiesDb.buddyRequests[requestId] = newRequest;
+
+    // Trigger in-app notification to receiver
+    const notifId = `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const notification = {
+      id: notifId,
+      recipientId: receiverId,
+      senderId: finalSenderId,
+      senderName: newRequest.senderProfile?.displayName || authUser?.fullName || "A fellow traveler",
+      senderAvatar: newRequest.senderProfile?.avatarUrl || authUser?.photoURL,
+      type: "buddy_request",
+      title: "New Travel Buddy Request",
+      message: `${newRequest.senderProfile?.displayName || "A fellow traveler"} wants to connect for travel planning!`,
+      linkUrl: "/travel-buddies",
+      isRead: false,
+      createdAt: now,
+      metadata: { requestId },
+    };
+
+    if (!travelBuddiesDb.socialNotifications[receiverId]) {
+      travelBuddiesDb.socialNotifications[receiverId] = [];
+    }
+    travelBuddiesDb.socialNotifications[receiverId].unshift(notification);
+
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, request: newRequest });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/requests error:", err);
+    res.status(500).json({ error: "Failed to send request." });
+  }
+});
+
+// 6. BUDDY REQUESTS — RESPOND (Accept / Decline)
+app.post("/api/travel-buddies/requests/:id/respond", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    const authUser = getAuthenticatedUser(req);
+
+    const existing = travelBuddiesDb.buddyRequests[id];
+    if (!existing) {
+      return res.status(404).json({ error: "Request not found." });
+    }
+
+    if (!["accepted", "declined"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status. Must be 'accepted' or 'declined'." });
+    }
+
+    const now = new Date().toISOString();
+    existing.status = status;
+    existing.updatedAt = now;
+
+    // If accepted, send notification to sender
+    if (status === "accepted") {
+      const notifId = `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const receiverName = existing.receiverProfile?.displayName || authUser?.fullName || "Your buddy candidate";
+      const notification = {
+        id: notifId,
+        recipientId: existing.senderId,
+        senderId: existing.receiverId,
+        senderName: receiverName,
+        senderAvatar: existing.receiverProfile?.avatarUrl || authUser?.photoURL,
+        type: "buddy_accepted",
+        title: "Connection Request Accepted! 🎉",
+        message: `${receiverName} accepted your travel connection request. You can now coordinate trips!`,
+        linkUrl: "/travel-buddies",
+        isRead: false,
+        createdAt: now,
+        metadata: { requestId: id },
+      };
+
+      if (!travelBuddiesDb.socialNotifications[existing.senderId]) {
+        travelBuddiesDb.socialNotifications[existing.senderId] = [];
+      }
+      travelBuddiesDb.socialNotifications[existing.senderId].unshift(notification);
+    }
+
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, request: existing });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/requests/:id/respond error:", err);
+    res.status(500).json({ error: "Failed to update request." });
+  }
+});
+
+// 7. BUDDY REQUESTS — CANCEL
+app.delete("/api/travel-buddies/requests/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = travelBuddiesDb.buddyRequests[id];
+    if (!existing) {
+      return res.status(404).json({ error: "Request not found." });
+    }
+
+    existing.status = "cancelled";
+    existing.updatedAt = new Date().toISOString();
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, message: "Request cancelled successfully." });
+  } catch (err: any) {
+    console.error("DELETE /api/travel-buddies/requests/:id error:", err);
+    res.status(500).json({ error: "Failed to cancel request." });
+  }
+});
+
+// 8. COMMUNITIES — GET ALL
+app.get("/api/travel-buddies/communities", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.query.userId || "");
+
+    const list = Object.values(travelBuddiesDb.communities).map((comm: any) => ({
+      ...comm,
+      memberCount: Array.isArray(comm.members) ? comm.members.length : 0,
+      isJoined: userId ? Array.isArray(comm.members) && comm.members.includes(userId) : false,
+    }));
+
+    res.json({ success: true, communities: list });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/communities error:", err);
+    res.status(500).json({ error: "Failed to get communities." });
+  }
+});
+
+// 9. COMMUNITIES — CREATE COMMUNITY
+app.post("/api/travel-buddies/communities", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const { name, destination, image, description, tags } = req.body;
+
+    if (!name || !destination) {
+      return res.status(400).json({ error: "Community name and destination are required." });
+    }
+
+    const creatorId = authUser ? authUser.uid : "user_istihad_001";
+    const id = `comm_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const now = new Date().toISOString();
+
+    const newCommunity = {
+      id,
+      name: name.trim(),
+      destination: destination.trim(),
+      image: image || "https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=800&q=75",
+      description: description?.trim() || `Travel group dedicated to exploring ${destination}.`,
+      members: [creatorId],
+      memberCount: 1,
+      postsCount: 0,
+      createdAt: now,
+      creatorId,
+      tags: Array.isArray(tags) ? tags : [destination],
+      isJoined: true,
+    };
+
+    travelBuddiesDb.communities[id] = newCommunity;
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, community: newCommunity });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/communities error:", err);
+    res.status(500).json({ error: "Failed to create community." });
+  }
+});
+
+// 10. COMMUNITIES — JOIN COMMUNITY
+app.post("/api/travel-buddies/communities/:id/join", (req, res) => {
+  try {
+    const { id } = req.params;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to join community." });
+    }
+
+    const comm = travelBuddiesDb.communities[id];
+    if (!comm) {
+      return res.status(404).json({ error: "Community not found." });
+    }
+
+    if (!Array.isArray(comm.members)) comm.members = [];
+    if (!comm.members.includes(userId)) {
+      comm.members.push(userId);
+      comm.memberCount = comm.members.length;
+      saveTravelBuddiesDb();
+    }
+
+    res.json({ success: true, community: { ...comm, isJoined: true } });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/communities/:id/join error:", err);
+    res.status(500).json({ error: "Failed to join community." });
+  }
+});
+
+// 11. COMMUNITIES — LEAVE COMMUNITY
+app.post("/api/travel-buddies/communities/:id/leave", (req, res) => {
+  try {
+    const { id } = req.params;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required." });
+    }
+
+    const comm = travelBuddiesDb.communities[id];
+    if (!comm) {
+      return res.status(404).json({ error: "Community not found." });
+    }
+
+    if (Array.isArray(comm.members)) {
+      comm.members = comm.members.filter((m: string) => m !== userId);
+      comm.memberCount = comm.members.length;
+      saveTravelBuddiesDb();
+    }
+
+    res.json({ success: true, community: { ...comm, isJoined: false } });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/communities/:id/leave error:", err);
+    res.status(500).json({ error: "Failed to leave community." });
+  }
+});
+
+// 12. GROUP TRIPS — GET ALL
+app.get("/api/travel-buddies/trips", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.query.userId || "");
+
+    const trips = Object.values(travelBuddiesDb.groupTrips).map((trip: any) => {
+      const currentList = Array.isArray(trip.currentTravelers) ? trip.currentTravelers : [];
+      const count = currentList.length;
+      let status = trip.status || "open";
+      if (count >= trip.maxTravelers) {
+        status = "full";
+      } else if (count >= Math.floor(trip.maxTravelers * 0.7)) {
+        status = "filling_fast";
+      }
+
+      return {
+        ...trip,
+        travelersCount: count,
+        status,
+        isJoined: userId ? currentList.includes(userId) : false,
+        isHost: userId ? trip.hostId === userId : false,
+      };
+    });
+
+    res.json({ success: true, trips, totalCount: trips.length });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/trips error:", err);
+    res.status(500).json({ error: "Failed to get group trips." });
+  }
+});
+
+// 13. GROUP TRIPS — CREATE GROUP TRIP
+app.post("/api/travel-buddies/trips", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const {
+      title,
+      destination,
+      startDate,
+      endDate,
+      budgetBDT,
+      maxTravelers,
+      travelStyle,
+      description,
+      itineraryHighlights,
+    } = req.body;
+
+    if (!title || !destination || !startDate || !endDate) {
+      return res.status(400).json({ error: "Title, destination, and travel dates are required." });
+    }
+
+    const hostId = authUser ? authUser.uid : "user_istihad_001";
+    const hostName = authUser ? authUser.fullName : "Azraq Tour Host";
+    const hostAvatar = authUser ? authUser.photoURL : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80";
+
+    const id = `trip_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const now = new Date().toISOString();
+
+    const newTrip = {
+      id,
+      title: title.trim(),
+      destination: destination.trim(),
+      startDate,
+      endDate,
+      budgetBDT: budgetBDT ? Number(budgetBDT) : undefined,
+      maxTravelers: Number(maxTravelers) || 6,
+      currentTravelers: [hostId],
+      travelersCount: 1,
+      travelStyle: travelStyle || "Adventure & Nature",
+      status: "open",
+      hostId,
+      hostName,
+      hostAvatar,
+      hostLocation: authUser?.homeLocation || "Dhaka, Bangladesh",
+      hostVerified: true,
+      description: description?.trim() || `Excited to explore ${destination}! Join our group for shared transport, photography, and group discounts.`,
+      itineraryHighlights: Array.isArray(itineraryHighlights) ? itineraryHighlights : [`Day 1: Arrival & Welcome Dinner in ${destination}`, `Day 2: Full-day guided sightseeing`, `Day 3: Free exploration & group activities`],
+      createdAt: now,
+      isJoined: true,
+      isHost: true,
+    };
+
+    travelBuddiesDb.groupTrips[id] = newTrip;
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, trip: newTrip });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/trips error:", err);
+    res.status(500).json({ error: "Failed to create group trip." });
+  }
+});
+
+// 14. GROUP TRIPS — JOIN TRIP
+app.post("/api/travel-buddies/trips/:id/join", (req, res) => {
+  try {
+    const { id } = req.params;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to join group trip." });
+    }
+
+    const trip = travelBuddiesDb.groupTrips[id];
+    if (!trip) {
+      return res.status(404).json({ error: "Group trip not found." });
+    }
+
+    if (!Array.isArray(trip.currentTravelers)) trip.currentTravelers = [];
+
+    if (trip.currentTravelers.length >= trip.maxTravelers && !trip.currentTravelers.includes(userId)) {
+      return res.status(400).json({ error: "This group trip is already full." });
+    }
+
+    if (!trip.currentTravelers.includes(userId)) {
+      trip.currentTravelers.push(userId);
+      trip.travelersCount = trip.currentTravelers.length;
+      if (trip.travelersCount >= trip.maxTravelers) {
+        trip.status = "full";
+      } else if (trip.travelersCount >= Math.floor(trip.maxTravelers * 0.7)) {
+        trip.status = "filling_fast";
+      }
+
+      // Notify host
+      if (trip.hostId && trip.hostId !== userId) {
+        const notifId = `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        const joinerName = authUser?.fullName || "A traveler";
+        const notification = {
+          id: notifId,
+          recipientId: trip.hostId,
+          senderId: userId,
+          senderName: joinerName,
+          senderAvatar: authUser?.photoURL,
+          type: "trip_joined",
+          title: "New Traveler Joined Your Trip! 🎒",
+          message: `${joinerName} just joined your group trip to ${trip.destination}!`,
+          linkUrl: "/travel-buddies",
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          metadata: { tripId: id },
+        };
+
+        if (!travelBuddiesDb.socialNotifications[trip.hostId]) {
+          travelBuddiesDb.socialNotifications[trip.hostId] = [];
+        }
+        travelBuddiesDb.socialNotifications[trip.hostId].unshift(notification);
+      }
+
+      saveTravelBuddiesDb();
+    }
+
+    res.json({
+      success: true,
+      trip: {
+        ...trip,
+        isJoined: true,
+        isHost: trip.hostId === userId,
+      },
+    });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/trips/:id/join error:", err);
+    res.status(500).json({ error: "Failed to join group trip." });
+  }
+});
+
+// 15. GROUP TRIPS — LEAVE TRIP
+app.post("/api/travel-buddies/trips/:id/leave", (req, res) => {
+  try {
+    const { id } = req.params;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required." });
+    }
+
+    const trip = travelBuddiesDb.groupTrips[id];
+    if (!trip) {
+      return res.status(404).json({ error: "Group trip not found." });
+    }
+
+    if (trip.hostId === userId) {
+      return res.status(400).json({ error: "Host cannot leave their own trip. You can cancel or delete it." });
+    }
+
+    if (Array.isArray(trip.currentTravelers)) {
+      trip.currentTravelers = trip.currentTravelers.filter((m: string) => m !== userId);
+      trip.travelersCount = trip.currentTravelers.length;
+      if (trip.travelersCount < trip.maxTravelers) {
+        trip.status = trip.travelersCount >= Math.floor(trip.maxTravelers * 0.7) ? "filling_fast" : "open";
+      }
+      saveTravelBuddiesDb();
+    }
+
+    res.json({
+      success: true,
+      trip: {
+        ...trip,
+        isJoined: false,
+        isHost: false,
+      },
+    });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/trips/:id/leave error:", err);
+    res.status(500).json({ error: "Failed to leave group trip." });
+  }
+});
+
+// 16. SOCIAL POSTS — GET PAGINATED FEED WITH 4 POST TYPES
+app.get("/api/travel-buddies/posts", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.query.userId || "");
+    const { post_type, hashtag, filter, community_id, limitCount = 20 } = req.query;
+
+    let allPosts = Object.values(travelBuddiesDb.socialPosts);
+
+    // Apply Post Type Filter (e.g. 'Travel Story', 'Buddy Request', 'Trip Plan', 'Travel Update')
+    if (post_type && post_type !== "all" && post_type !== "All") {
+      allPosts = allPosts.filter((p: any) => {
+        if (!p.post_type) return post_type === "Travel Story";
+        return p.post_type.toLowerCase() === String(post_type).toLowerCase();
+      });
+    }
+
+    // Apply Community Filter
+    if (community_id) {
+      allPosts = allPosts.filter((p: any) => p.community_id === community_id);
+    }
+
+    // Apply Hashtag Filter
+    if (hashtag) {
+      const tag = String(hashtag).toLowerCase().replace("#", "");
+      allPosts = allPosts.filter((p: any) =>
+        p.hashtags?.some((h: string) => h.toLowerCase().replace("#", "") === tag) ||
+        p.caption?.toLowerCase().includes(`#${tag}`)
+      );
+    }
+
+    const userSaved = userId && travelBuddiesDb.savedPostsMap[userId] ? travelBuddiesDb.savedPostsMap[userId] : [];
+
+    // Filter by Saved
+    if (filter === "saved") {
+      allPosts = allPosts.filter((p: any) => userSaved.includes(p.id));
+    }
+
+    // Sort by latest or popular
+    if (filter === "popular") {
+      allPosts.sort((a: any, b: any) => (b.likes_count || 0) - (a.likes_count || 0));
+    } else {
+      allPosts.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
+
+    // Hydrate each post with caller-specific state (is_saved, user_reaction)
+    const hydrated = allPosts.slice(0, Number(limitCount)).map((post: any) => {
+      const likesObj = travelBuddiesDb.postLikesMap[post.id] || {};
+      const userReaction = userId && likesObj[userId] ? likesObj[userId] : null;
+
+      // Hydrate author profile if missing
+      let authorProfile = post.profile;
+      if (!authorProfile) {
+        for (const u of usersStore.values()) {
+          if (u.uid === post.user_id) {
+            authorProfile = {
+              id: u.uid,
+              username: u.fullName.toLowerCase().replace(/\s+/g, "_"),
+              full_name: u.fullName,
+              avatar_url: u.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.email)}`,
+              bio: u.bio || "Azraq Traveler",
+              created_at: u.createdAt,
+              is_verified: true,
+              role: u.role || "user",
+            };
+            break;
+          }
+        }
+      }
+
+      return {
+        ...post,
+        profile: authorProfile,
+        is_saved: userSaved.includes(post.id),
+        user_reaction: userReaction,
+        comments_count: travelBuddiesDb.socialComments[post.id]?.length || post.comments_count || 0,
+      };
+    });
+
+    res.json({
+      success: true,
+      posts: hydrated,
+      totalCount: allPosts.length,
+    });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/posts error:", err);
+    res.status(500).json({ error: "Failed to get travel feed." });
+  }
+});
+
+// 17. SOCIAL POSTS — CREATE POST (Travel Story, Buddy Request, Trip Plan, Travel Update)
+app.post("/api/travel-buddies/posts", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const {
+      location,
+      caption,
+      media_urls,
+      hashtags,
+      post_type = "Travel Story",
+      trip_details,
+      community_id,
+    } = req.body;
+
+    if (!caption || !caption.trim()) {
+      return res.status(400).json({ error: "Caption or description is required." });
+    }
+
+    const userId = authUser ? authUser.uid : "user_istihad_001";
+    const userName = authUser ? authUser.fullName : "Istihad Ahmed";
+    const userAvatar = authUser ? authUser.photoURL : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80";
+
+    const id = `post_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    const now = new Date().toISOString();
+
+    // Extract hashtags from caption if not provided
+    const extractedHashtags: string[] = Array.isArray(hashtags) && hashtags.length > 0
+      ? hashtags
+      : (caption.match(/#[a-zA-Z0-9_]+/g) || ["#AzraqTrips", "#TravelBuddies"]);
+
+    const newPost = {
+      id,
+      user_id: userId,
+      location: location?.trim() || "Azraq Travel Community",
+      caption: caption.trim(),
+      media_urls: Array.isArray(media_urls) ? media_urls : [],
+      created_at: now,
+      likes_count: 0,
+      comments_count: 0,
+      is_approved: true,
+      post_type,
+      trip_details: trip_details || undefined,
+      community_id: community_id || undefined,
+      hashtags: extractedHashtags,
+      profile: {
+        id: userId,
+        username: userName.toLowerCase().replace(/\s+/g, "_"),
+        full_name: userName,
+        avatar_url: userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userId)}`,
+        bio: authUser?.bio || "Azraq Community Traveler",
+        created_at: now,
+        is_verified: true,
+        role: authUser?.role || "user",
+      },
+      reaction_counts: {
+        like: 0,
+        love: 0,
+        fire: 0,
+        wow: 0,
+      },
+    };
+
+    travelBuddiesDb.socialPosts[id] = newPost;
+    travelBuddiesDb.socialComments[id] = [];
+    travelBuddiesDb.postLikesMap[id] = {};
+
+    // Increment community post count if associated
+    if (community_id && travelBuddiesDb.communities[community_id]) {
+      travelBuddiesDb.communities[community_id].postsCount = (travelBuddiesDb.communities[community_id].postsCount || 0) + 1;
+    }
+
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, post: newPost });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/posts error:", err);
+    res.status(500).json({ error: "Failed to create post." });
+  }
+});
+
+// 18. SOCIAL POSTS — LIKE / REACTION TOGGLE
+app.post("/api/travel-buddies/posts/:id/like", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reaction_type = "like" } = req.body;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to react to posts." });
+    }
+
+    const post = travelBuddiesDb.socialPosts[id];
+    if (!post) {
+      return res.status(404).json({ error: "Post not found." });
+    }
+
+    if (!travelBuddiesDb.postLikesMap[id]) {
+      travelBuddiesDb.postLikesMap[id] = {};
+    }
+
+    const userReactions = travelBuddiesDb.postLikesMap[id];
+    const previousReaction = userReactions[userId];
+
+    if (!post.reaction_counts) {
+      post.reaction_counts = { like: 0, love: 0, fire: 0, wow: 0 };
+    }
+
+    if (previousReaction === reaction_type) {
+      // Toggle off
+      delete userReactions[userId];
+      post.reaction_counts[reaction_type] = Math.max(0, (post.reaction_counts[reaction_type] || 1) - 1);
+      post.likes_count = Math.max(0, (post.likes_count || 1) - 1);
+    } else {
+      // Decrement previous if existed
+      if (previousReaction && post.reaction_counts[previousReaction]) {
+        post.reaction_counts[previousReaction] = Math.max(0, post.reaction_counts[previousReaction] - 1);
+      } else {
+        post.likes_count = (post.likes_count || 0) + 1;
+      }
+      userReactions[userId] = reaction_type;
+      post.reaction_counts[reaction_type] = (post.reaction_counts[reaction_type] || 0) + 1;
+
+      // Send notification to post author if not self
+      if (post.user_id && post.user_id !== userId) {
+        const notifId = `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+        const likerName = authUser?.fullName || "A traveler";
+        const notification = {
+          id: notifId,
+          recipientId: post.user_id,
+          senderId: userId,
+          senderName: likerName,
+          senderAvatar: authUser?.photoURL,
+          type: "post_like",
+          title: "New Reaction on Your Post ❤️",
+          message: `${likerName} reacted to your ${post.post_type || "travel post"}!`,
+          linkUrl: "/travel-buddies",
+          isRead: false,
+          createdAt: new Date().toISOString(),
+          metadata: { postId: id, reactionType: reaction_type },
+        };
+
+        if (!travelBuddiesDb.socialNotifications[post.user_id]) {
+          travelBuddiesDb.socialNotifications[post.user_id] = [];
+        }
+        travelBuddiesDb.socialNotifications[post.user_id].unshift(notification);
+      }
+    }
+
+    saveTravelBuddiesDb();
+
+    res.json({
+      success: true,
+      likes_count: post.likes_count,
+      reaction_counts: post.reaction_counts,
+      user_reaction: userReactions[userId] || null,
+    });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/posts/:id/like error:", err);
+    res.status(500).json({ error: "Failed to update reaction." });
+  }
+});
+
+// 19. SOCIAL POSTS — GET COMMENTS
+app.get("/api/travel-buddies/posts/:id/comments", (req, res) => {
+  try {
+    const { id } = req.params;
+    const comments = travelBuddiesDb.socialComments[id] || [];
+    res.json({ success: true, comments });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/posts/:id/comments error:", err);
+    res.status(500).json({ error: "Failed to get comments." });
+  }
+});
+
+// 20. SOCIAL POSTS — ADD COMMENT
+app.post("/api/travel-buddies/posts/:id/comments", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : "user_istihad_001";
+    const userName = authUser ? authUser.fullName : "Azraq Explorer";
+    const userAvatar = authUser ? authUser.photoURL : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80";
+
+    if (!content || !content.trim()) {
+      return res.status(400).json({ error: "Comment content is required." });
+    }
+
+    const post = travelBuddiesDb.socialPosts[id];
+    if (!post) {
+      return res.status(404).json({ error: "Post not found." });
+    }
+
+    const now = new Date().toISOString();
+    const commentId = `comment_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+
+    const newComment = {
+      id: commentId,
+      post_id: id,
+      user_id: userId,
+      content: content.trim(),
+      created_at: now,
+      profile: {
+        id: userId,
+        username: userName.toLowerCase().replace(/\s+/g, "_"),
+        full_name: userName,
+        avatar_url: userAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userId)}`,
+        bio: authUser?.bio || "Traveler",
+        created_at: now,
+        is_verified: true,
+        role: authUser?.role || "user",
+      },
+    };
+
+    if (!travelBuddiesDb.socialComments[id]) {
+      travelBuddiesDb.socialComments[id] = [];
+    }
+    travelBuddiesDb.socialComments[id].push(newComment);
+    post.comments_count = travelBuddiesDb.socialComments[id].length;
+
+    // Send notification to post author if not self
+    if (post.user_id && post.user_id !== userId) {
+      const notifId = `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const commenterName = authUser?.fullName || "A traveler";
+      const notification = {
+        id: notifId,
+        recipientId: post.user_id,
+        senderId: userId,
+        senderName: commenterName,
+        senderAvatar: userAvatar,
+        type: "post_comment",
+        title: "New Comment on Your Post 💬",
+        message: `${commenterName} commented: "${content.length > 50 ? content.substring(0, 50) + "..." : content}"`,
+        linkUrl: "/travel-buddies",
+        isRead: false,
+        createdAt: now,
+        metadata: { postId: id, commentId },
+      };
+
+      if (!travelBuddiesDb.socialNotifications[post.user_id]) {
+        travelBuddiesDb.socialNotifications[post.user_id] = [];
+      }
+      travelBuddiesDb.socialNotifications[post.user_id].unshift(notification);
+    }
+
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, comment: newComment, comments_count: post.comments_count });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/posts/:id/comments error:", err);
+    res.status(500).json({ error: "Failed to add comment." });
+  }
+});
+
+// 21. SOCIAL POSTS — TOGGLE SAVE POST
+app.post("/api/travel-buddies/posts/:id/save", (req, res) => {
+  try {
+    const { id } = req.params;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication required to bookmark posts." });
+    }
+
+    if (!travelBuddiesDb.savedPostsMap[userId]) {
+      travelBuddiesDb.savedPostsMap[userId] = [];
+    }
+
+    const userSaved = travelBuddiesDb.savedPostsMap[userId];
+    const isSavedAlready = userSaved.includes(id);
+
+    if (isSavedAlready) {
+      travelBuddiesDb.savedPostsMap[userId] = userSaved.filter((pid: string) => pid !== id);
+    } else {
+      travelBuddiesDb.savedPostsMap[userId].push(id);
+    }
+
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, is_saved: !isSavedAlready });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/posts/:id/save error:", err);
+    res.status(500).json({ error: "Failed to toggle bookmark." });
+  }
+});
+
+// 22. SOCIAL POSTS — DELETE POST
+app.delete("/api/travel-buddies/posts/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const authUser = getAuthenticatedUser(req);
+
+    const post = travelBuddiesDb.socialPosts[id];
+    if (!post) {
+      return res.status(404).json({ error: "Post not found." });
+    }
+
+    if (authUser && post.user_id !== authUser.uid && authUser.role !== "admin") {
+      return res.status(403).json({ error: "You can only delete your own posts." });
+    }
+
+    delete travelBuddiesDb.socialPosts[id];
+    delete travelBuddiesDb.socialComments[id];
+    delete travelBuddiesDb.postLikesMap[id];
+    saveTravelBuddiesDb();
+
+    res.json({ success: true, message: "Post deleted successfully." });
+  } catch (err: any) {
+    console.error("DELETE /api/travel-buddies/posts/:id error:", err);
+    res.status(500).json({ error: "Failed to delete post." });
+  }
+});
+
+// 23. SOCIAL NOTIFICATIONS — GET MY NOTIFICATIONS
+app.get("/api/travel-buddies/notifications", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.query.userId || "");
+
+    if (!userId) {
+      return res.status(401).json({ error: "Authentication or userId required." });
+    }
+
+    const notifs = travelBuddiesDb.socialNotifications[userId] || [];
+    const unreadCount = notifs.filter((n: any) => !n.isRead).length;
+
+    res.json({
+      success: true,
+      notifications: notifs,
+      unreadCount,
+    });
+  } catch (err: any) {
+    console.error("GET /api/travel-buddies/notifications error:", err);
+    res.status(500).json({ error: "Failed to get notifications." });
+  }
+});
+
+// 24. SOCIAL NOTIFICATIONS — MARK SINGLE READ
+app.post("/api/travel-buddies/notifications/:id/read", (req, res) => {
+  try {
+    const { id } = req.params;
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (userId && travelBuddiesDb.socialNotifications[userId]) {
+      const notif = travelBuddiesDb.socialNotifications[userId].find((n: any) => n.id === id);
+      if (notif) {
+        notif.isRead = true;
+        saveTravelBuddiesDb();
+      }
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/notifications/:id/read error:", err);
+    res.status(500).json({ error: "Failed to mark notification read." });
+  }
+});
+
+// 25. SOCIAL NOTIFICATIONS — MARK ALL READ
+app.post("/api/travel-buddies/notifications/read-all", (req, res) => {
+  try {
+    const authUser = getAuthenticatedUser(req);
+    const userId = authUser ? authUser.uid : String(req.body.userId || "");
+
+    if (userId && travelBuddiesDb.socialNotifications[userId]) {
+      travelBuddiesDb.socialNotifications[userId].forEach((n: any) => {
+        n.isRead = true;
+      });
+      saveTravelBuddiesDb();
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("POST /api/travel-buddies/notifications/read-all error:", err);
+    res.status(500).json({ error: "Failed to mark all notifications read." });
+  }
+});
 
 // 8. Admin List All Quotations
 app.get("/api/quotes/admin", (req, res) => {
@@ -6347,7 +7776,7 @@ async function startServer() {
       const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
         server: { middlewareMode: true },
-        appType: "custom",
+        appType: "spa",
       });
 
       app.use(vite.middlewares);

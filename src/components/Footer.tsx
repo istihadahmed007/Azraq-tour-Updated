@@ -3,6 +3,7 @@ import { BRAND_LOGOS } from '../data/mockData';
 import { MapPin, Phone, Mail, MessageSquare, ArrowRight, ShieldCheck, X, ExternalLink, HelpCircle } from 'lucide-react';
 import { NavView } from '../types';
 import { AZRAQ_AGENCY_CONFIG } from '../data/agencyConfig';
+import { AzraqLogo } from './AzraqLogo';
 
 interface FooterProps {
   onNavigate?: (view: NavView) => void;
@@ -25,17 +26,13 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <>
-      <footer className="w-full bg-[#073B4C] border-t border-white/10 text-slate-300 pt-16 pb-12 px-4 sm:px-6 lg:px-8">
+      <footer className="w-full bg-[#073B4C] border-t border-white/10 text-slate-300 pt-14 sm:pt-16 pb-28 md:pb-14 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-8 pb-12 border-b border-white/10">
           {/* Column 1: Brand & Company Bio (Span 2) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl overflow-hidden bg-gradient-to-br from-[#086788] to-[#17BEBB] shadow-sm flex items-center justify-center p-1.5 border border-white/20">
-                <img
-                  src={BRAND_LOGOS.azraq}
-                  alt="Azraq Logo"
-                  className="w-full h-full object-contain filter brightness-110"
-                />
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-sm flex items-center justify-center p-0.5 border border-white/20 shrink-0">
+                <AzraqLogo size={44} className="w-full h-full" />
               </div>
               <div>
                 <h3 className="text-2xl font-bold text-white tracking-tight font-serif-display">

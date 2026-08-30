@@ -57,18 +57,18 @@ export const WhyAzraqSection: React.FC = () => {
   ];
 
   return (
-    <section className="w-full bg-slate-100/70 py-12 sm:py-16">
+    <section className="w-full bg-[#EAF7F8]/50 py-12 sm:py-16">
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-10">
         {/* Why Choose Azraq Highlights */}
         <div className="space-y-4">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#0D6EFD] font-mono">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#086788] font-mono">
               The Azraq Difference
             </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#071A33] tracking-tight font-poppins">
+            <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
               Built for Bangladeshi Travelers
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500">
+            <p className="text-xs sm:text-sm text-slate-500 font-inter">
               We bridge the gap between complex international travel systems and friendly local service.
             </p>
           </div>
@@ -79,11 +79,11 @@ export const WhyAzraqSection: React.FC = () => {
                 key={idx}
                 className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-2"
               >
-                <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0D6EFD] flex items-center justify-center font-bold text-xs">
+                <div className="w-7 h-7 rounded-lg bg-[#EAF7F8] text-[#086788] flex items-center justify-center font-bold text-xs">
                   ✓
                 </div>
-                <h3 className="text-sm font-bold text-[#071A33] font-poppins">{h.title}</h3>
-                <p className="text-xs text-slate-600 leading-relaxed">{h.desc}</p>
+                <h3 className="text-sm font-bold text-[#073B4C] font-inter">{h.title}</h3>
+                <p className="text-xs text-slate-600 leading-relaxed font-inter">{h.desc}</p>
               </div>
             ))}
           </div>
@@ -93,11 +93,11 @@ export const WhyAzraqSection: React.FC = () => {
         <div className="space-y-6 pt-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-bold text-[#071A33] font-poppins">Traveler Memories & Feedback</h3>
-              <p className="text-xs text-slate-500">Real feedback from clients who booked their holiday with Azraq</p>
+              <h3 className="text-xl font-normal text-[#073B4C] font-serif-display">Traveler Memories & Feedback</h3>
+              <p className="text-xs text-slate-500 font-inter">Real feedback from clients who booked their holiday with Azraq</p>
             </div>
-            <div className="flex items-center gap-1.5 text-amber-500 text-xs font-bold bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            <div className="flex items-center gap-1.5 text-[#073B4C] text-xs font-bold bg-white px-3 py-1.5 rounded-full border border-slate-200 shadow-xs">
+              <Star className="w-3.5 h-3.5 fill-[#FF6B5A] text-[#FF6B5A]" />
               <span>4.9 / 5 Average Rating</span>
             </div>
           </div>
@@ -127,12 +127,12 @@ export const WhyAzraqSection: React.FC = () => {
                 className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
-                  <div className="flex items-center gap-1 text-amber-500">
+                  <div className="flex items-center gap-1">
                     {[...Array(item.rating)].map((_, s) => (
-                      <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <Star key={s} className="w-3.5 h-3.5 fill-[#FF6B5A] text-[#FF6B5A]" />
                     ))}
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic">
+                  <p className="text-xs sm:text-sm text-slate-700 leading-relaxed italic font-inter">
                     "{item.review}"
                   </p>
                 </div>
@@ -144,8 +144,8 @@ export const WhyAzraqSection: React.FC = () => {
                     className="w-9 h-9 rounded-full object-cover border border-slate-200"
                   />
                   <div>
-                    <h4 className="text-xs font-bold text-[#071A33] font-poppins">{item.name}</h4>
-                    <p className="text-[11px] text-slate-500">{item.destination}</p>
+                    <h4 className="text-xs font-bold text-[#073B4C] font-inter">{item.name}</h4>
+                    <p className="text-[11px] text-slate-500 font-inter">{item.destination}</p>
                   </div>
                 </div>
               </div>

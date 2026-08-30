@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <!-- Background Circle (White) -->
+  <circle cx="250" cy="250" r="240" fill="#FFFFFF" />
+  
+  <!-- Outer Blue Ring -->
+  <circle cx="250" cy="250" r="236" fill="none" stroke="#0047BA" stroke-width="15" />
+
+  <!-- Main "A" Graphic with Airplane & Swoosh -->
+  <g fill="#0047BA">
+    <!-- Left Leg of A -->
+    <path d="M 248,70 L 262,70 L 160,268 L 120,268 L 222,70 Z" />
+    
+    <!-- Top Apex & Right Leg of A -->
+    <path d="M 238,70 L 255,70 L 362,268 L 322,268 L 285,198 L 260,198 L 224,198 Z" />
+    
+    <!-- Dynamic Ascending Swoosh / Contrail through A -->
+    <path d="M 148,255 C 190,240 235,200 355,152 C 260,185 200,215 148,255 Z" />
+    <path d="M 160,268 C 210,230 270,185 355,150 L 350,156 C 265,192 205,238 160,268 Z" />
+
+    <!-- Solid Silhouette Shape for the A with Jet Trail -->
+    <!-- Custom integrated path for highest fidelity -->
+    <path d="M 250,68 
+             L 266,74 
+             L 362,268 
+             L 300,268 
+             L 272,212 
+             C 285,188 318,162 355,152 
+             C 275,178 220,212 178,268 
+             L 116,268 
+             L 234,68 
+             Z" />
+
+    <!-- Airplane Flying Out (Upper Right) -->
+    <g transform="translate(370, 142) rotate(32) scale(0.95)">
+      <!-- Jet Body -->
+      <path d="M 0,-24 C 2,-24 4,-18 4,-4 L 4,14 C 4,18 2,22 0,22 C -2,22 -4,18 -4,14 L -4,-4 C -4,-18 -2,-24 0,-24 Z" />
+      <!-- Main Wings -->
+      <path d="M 0,-4 L 28,10 L 28,14 L 0,6 L -28,14 L -28,10 Z" />
+      <!-- Tail Wings -->
+      <path d="M 0,16 L 12,22 L 12,25 L 0,21 L -12,25 L -12,22 Z" />
+    </g>
+
+    <!-- AZRAQ Text (Classic High-Contrast Serif Style) -->
+    <g transform="translate(250, 358)" text-anchor="middle" font-family="'Cinzel', 'Trajan Pro', 'Baskerville', 'Times New Roman', 'Playfair Display', serif" font-weight="900" font-size="76" letter-spacing="12">
+      <text x="6" y="0">AZRAQ</text>
+    </g>
+
+    <!-- TOURS & TRAVELS Subtitle (Clean Geometric Sans-Serif) -->
+    <g transform="translate(250, 400)" text-anchor="middle" font-family="'Montserrat', 'Inter', 'Helvetica Neue', 'Arial', sans-serif" font-weight="800" font-size="25" letter-spacing="6">
+      <text x="3" y="0">TOURS &amp; TRAVELS</text>
+    </g>
+
+    <!-- Bottom Ornament: Line - Airplane - Line -->
+    <!-- Left Divider Line -->
+    <line x1="140" y1="432" x2="225" y2="432" stroke="#0047BA" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Centered Small Airplane Icon -->
+    <g transform="translate(250, 432) scale(0.65)">
+      <path d="M 0,-14 C 1.5,-14 2.5,-10 2.5,-2 L 2.5,8 C 2.5,11 1.5,13 0,13 C -1.5,13 -2.5,11 -2.5,8 L -2.5,-2 C -2.5,-10 -1.5,-14 0,-14 Z" />
+      <path d="M 0,-2 L 18,6 L 18,9 L 0,4 L -18,9 L -18,6 Z" />
+      <path d="M 0,9 L 8,13 L 8,15 L 0,12 L -8,15 L -8,13 Z" />
+    </g>
+
+    <!-- Right Divider Line -->
+    <line x1="275" y1="432" x2="360" y2="432" stroke="#0047BA" stroke-width="2.5" stroke-linecap="round" />
+  </g>
+</svg>

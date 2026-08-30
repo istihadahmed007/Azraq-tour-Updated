@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Send } from 'lucide-react';
 import { AzraqTripFinder, FlightSearchParams } from '../AzraqTripFinder';
 import { TourPackage } from '../../types';
@@ -20,6 +21,8 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
   onOpenQuote,
   onOpenVoiceModal,
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <section className="relative w-full text-white pt-8 sm:pt-14 pb-14 sm:pb-20 shadow-lg overflow-hidden bg-slate-950">
       {/* Wonderful Natural Landscape Background - Thailand Phang Nga Bay & Longtail Boat Scenery */}
@@ -57,25 +60,50 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
 
       <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         {/* Brand Promise Header */}
-        <div className="max-w-3xl text-left space-y-3.5">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/20 text-xs font-semibold text-white shadow-md">
-            <Send className="w-3.5 h-3.5 text-[#5BC7F4] transform -rotate-45" />
-            <span className="tracking-wide uppercase font-mono text-[11px]">
-              Azraq Travel Concierge · Dhaka to the World
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.28, ease: 'easeOut' }}
+          className="max-w-3xl text-left space-y-3.5"
+        >
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#073B4C]/80 backdrop-blur-md border border-[#17BEBB]/30 text-xs font-semibold text-white shadow-md">
+            <Send className="w-3.5 h-3.5 text-[#17BEBB] transform -rotate-45" />
+            <span className="tracking-wide uppercase font-mono text-[11px] text-[#EAF7F8]">
+              AZRAQ TRIPS · Bangladesh's Premier OTA
             </span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.12] font-poppins drop-shadow-md">
-            AI Travel Planner for Your Perfect Trip
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-normal tracking-tight text-white leading-[1.12] font-serif-display drop-shadow-md">
+            Travel farther. <span className="text-[#17BEBB]">Experience more.</span>
           </h1>
 
-          <p className="text-sm sm:text-base md:text-lg text-slate-100 font-medium max-w-2xl leading-relaxed drop-shadow-sm">
-            AzraqTrips is an AI-powered travel platform for travelers from Bangladesh. Discover destinations, create personalized day-by-day itineraries, explore flights from Dhaka, read in-depth travel guides, verify visa requirements, and optimize your travel budget.
+          <p className="text-sm sm:text-base md:text-lg text-slate-100 font-normal max-w-2xl leading-relaxed drop-shadow-sm font-inter">
+            Discover the world with Azraq Trips. Compare lowest airfares from Dhaka, book verified luxury hotels, unlock all-inclusive Asian holiday packages, secure fast-track visa processing, and generate personalized AI travel itineraries.
           </p>
-        </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 pt-1 text-xs text-white/90 font-medium">
+            <span className="inline-flex items-center gap-1.5 bg-[#073B4C]/60 backdrop-blur-xs px-3 py-1 rounded-full border border-white/20">
+              ✈️ 500+ Partner Airlines
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-[#073B4C]/60 backdrop-blur-xs px-3 py-1 rounded-full border border-white/20">
+              🏨 Verified 4★ & 5★ Stays
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-[#073B4C]/60 backdrop-blur-xs px-3 py-1 rounded-full border border-white/20">
+              🛂 99.2% Visa Success Rate
+            </span>
+            <span className="inline-flex items-center gap-1.5 bg-[#073B4C]/60 backdrop-blur-xs px-3 py-1 rounded-full border border-white/20">
+              ✨ Gemini AI Trip Engine
+            </span>
+          </div>
+        </motion.div>
 
         {/* 5-Mode Travel Search & Conversion Engine (Floating Panel) */}
-        <div className="w-full pt-2">
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.32, delay: shouldReduceMotion ? 0 : 0.08, ease: 'easeOut' }}
+          className="w-full pt-2"
+        >
           <AzraqTripFinder
             initialMode="flights"
             onSearchFlights={onSearchFlights}
@@ -87,7 +115,7 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
             onOpenQuoteModal={onOpenQuote ? () => onOpenQuote() : undefined}
             onOpenVoiceModal={onOpenVoiceModal}
           />
-        </div>
+        </motion.div>
       </div>
     </section>
   );

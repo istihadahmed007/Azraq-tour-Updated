@@ -5,6 +5,8 @@ import { PackageDetailModal } from './PackageDetailModal';
 import { PackageQuotationModal } from './PackageQuotationModal';
 import { PackageComparisonModal } from './PackageComparisonModal';
 import { TourPackage } from '../types';
+import { SEOHead } from './SEOHead';
+import { getTourPackageSchema } from '../lib/seo';
 import {
   Search,
   Filter,
@@ -55,15 +57,32 @@ export const PackagesView: React.FC = () => {
 
   return (
     <div className="w-full min-h-screen pb-20 pt-4 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-8 animate-fadeIn">
+      <SEOHead
+        title="Asian Holiday Tour Packages from Dhaka – Verified PDF Itineraries | Azraq Trips"
+        description="Browse all-inclusive verified holiday tour packages from Bangladesh. Complete day-by-day itineraries, 4-star hotel stays, airport transfers, and visa checklists in BDT (৳)."
+        canonical="https://www.azraqtrips.com/packages"
+        structuredData={
+          packages.length > 0
+            ? getTourPackageSchema(
+                packages[0].package_name,
+                packages[0].overview || 'Curated Asian Holiday Tour Package',
+                packages[0].price,
+                packages[0].currency || 'BDT',
+                packages[0].images?.[0]
+              )
+            : undefined
+        }
+      />
+
       {/* Hero Banner */}
-      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#002f6c] via-[#0759B8] to-[#003B80] border border-white/20 shadow-xl p-6 sm:p-10 text-white">
+      <section aria-labelledby="packages-hero-heading" className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#002f6c] via-[#0759B8] to-[#003B80] border border-white/20 shadow-xl p-6 sm:p-10 text-white">
         <div className="relative z-10 max-w-3xl space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 text-white border border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-            <FileText className="w-4 h-4 text-[#5BC7F4]" />
+            <FileText className="w-4 h-4 text-[#5BC7F4]" aria-hidden="true" />
             Verified Agency PDF Packages
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-poppins">
+          <h1 id="packages-hero-heading" className="text-3xl sm:text-5xl font-black text-white tracking-tight font-poppins">
             Explore Curated <span className="text-[#5BC7F4]">Tour Packages</span>
           </h1>
 
@@ -74,38 +93,45 @@ export const PackagesView: React.FC = () => {
           {/* Quick Metrics Badge */}
           <div className="pt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-white">
             <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/25 text-white font-extrabold text-sm shadow-xs">
-              <Compass className="w-4 h-4 text-[#5BC7F4]" />
+              <Compass className="w-4 h-4 text-[#5BC7F4]" aria-hidden="true" />
               {filteredPackages.length === packages.length
                 ? `${packages.length} Tour Packages Available`
                 : `${filteredPackages.length} of ${packages.length} Packages Showing`}
             </span>
             <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 text-sky-200">
-              <MapPin className="w-4 h-4 text-amber-300" />
+              <MapPin className="w-4 h-4 text-amber-300" aria-hidden="true" />
               {destinations.length} Destination Spots ({allCountries.length} Countries)
             </span>
           </div>
         </div>
 
         {/* Ambient Glow background */}
-        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" />
-      </div>
+        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
+      </section>
 
       {/* Filter and Search Control Bar */}
-      <div className="bg-white p-5 rounded-2xl border border-[#E1EFF8] shadow-sm space-y-4">
+      <section aria-label="Search and Filter Tour Packages" className="bg-white p-5 rounded-2xl border border-[#E1EFF8] shadow-sm space-y-4">
         {/* Search Input */}
         <div className="relative w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0759B8]" />
+          <label htmlFor="package-search-input" className="sr-only">
+            Search tour packages
+          </label>
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0759B8]" aria-hidden="true" />
           <input
-            type="text"
+            id="package-search-input"
+            name="searchQuery"
+            type="search"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by package name, destination, country, or hotel..."
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#F4FAFD] border border-[#CDE9FB] text-[#12304A] placeholder-slate-400 text-sm focus:outline-none focus:border-[#1389E8] focus:bg-white transition-colors shadow-inner"
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#F4FAFD] border border-[#CDE9FB] text-[#12304A] placeholder-slate-400 text-sm focus:outline-none focus:border-[#1389E8] focus:bg-white transition-colors shadow-inner focus-visible:ring-2 focus-visible:ring-[#1389E8]"
           />
           {searchQuery && (
             <button
+              type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-700 cursor-pointer"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#0759B8] focus-visible:outline-none rounded"
+              aria-label="Clear package search query"
             >
               Clear
             </button>
@@ -116,17 +142,19 @@ export const PackagesView: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-3 border-t border-slate-100">
           {/* Country Filter */}
           <div>
-            <label className="block text-xs font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-[#1389E8]" />
+            <label htmlFor="package-country-select" className="block text-xs font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-[#1389E8]" aria-hidden="true" />
               Country
             </label>
             <select
+              id="package-country-select"
+              name="country"
               value={selectedCountry}
               onChange={(e) => {
                 setSelectedCountry(e.target.value);
                 setSelectedDestinationId('All');
               }}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-sm font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-sm font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
             >
               <option value="All">All Countries ({allCountries.length})</option>
               {allCountries.map((country) => (
@@ -139,14 +167,16 @@ export const PackagesView: React.FC = () => {
 
           {/* Destination Filter */}
           <div>
-            <label className="block text-[11px] font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Compass className="w-3.5 h-3.5 text-[#1389E8]" />
+            <label htmlFor="package-destination-select" className="block text-[11px] font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
+              <Compass className="w-3.5 h-3.5 text-[#1389E8]" aria-hidden="true" />
               Destination
             </label>
             <select
+              id="package-destination-select"
+              name="destination"
               value={selectedDestinationId}
               onChange={(e) => setSelectedDestinationId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-xs font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer"
+              className="w-full px-3 py-2 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-xs font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
             >
               <option value="All">All Destinations ({destinations.length})</option>
               {destinations
@@ -161,14 +191,16 @@ export const PackagesView: React.FC = () => {
 
           {/* Duration Filter */}
           <div>
-            <label className="block text-[11px] font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-[#1389E8]" />
+            <label htmlFor="package-duration-select" className="block text-[11px] font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-[#1389E8]" aria-hidden="true" />
               Duration
             </label>
             <select
+              id="package-duration-select"
+              name="duration"
               value={selectedDuration}
               onChange={(e) => setSelectedDuration(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-xs font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer"
+              className="w-full px-3 py-2 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-xs font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
             >
               <option value="All">All Durations</option>
               <option value="Short (1-3 Days)">Short (1-3 Days)</option>
@@ -180,8 +212,8 @@ export const PackagesView: React.FC = () => {
           {/* Price Range Slider */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label className="text-[11px] font-bold text-[#12304A] uppercase tracking-wider flex items-center gap-1">
-                <DollarSign className="w-3.5 h-3.5 text-[#0759B8]" />
+              <label htmlFor="package-price-range" className="text-[11px] font-bold text-[#12304A] uppercase tracking-wider flex items-center gap-1">
+                <DollarSign className="w-3.5 h-3.5 text-[#0759B8]" aria-hidden="true" />
                 Max Price
               </label>
               <span className="text-xs font-mono font-extrabold text-[#0759B8]">
@@ -189,6 +221,7 @@ export const PackagesView: React.FC = () => {
               </span>
             </div>
             <input
+              id="package-price-range"
               type="range"
               min={2000}
               max={100000}
@@ -242,7 +275,7 @@ export const PackagesView: React.FC = () => {
             </button>
           </div>
         )}
-      </div>
+      </section>
 
       {/* Featured Destinations Row */}
       {destinations.length > 0 && (

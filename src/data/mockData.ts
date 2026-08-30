@@ -3,7 +3,7 @@ import { ALL_DESTINATIONS } from "./destinationsData";
 
 export const BRAND_LOGOS = {
   globetrotter: "https://lh3.googleusercontent.com/aida-public/AB6AXuDueO4XryGUl6a6WmWX0EvWIDKx_Zu5FHQ49JBhgL8k9NZOkMjJu3Xr9z0w7qgLX7p7ctXVHms1BPNX9LQbELXZWUjouvvWHc2aLlYloz94DqzNNnDH6Gmu1q-OwC_kMG5BS0sDUQnKohe-rq44IcpooNz4LDQtko6F0gporrLADTlW8mFgb9X8JOqQyZMw7whC2ykcHxoWLBM93q2IYw0yAWLt-VE9q3__DYK4hKxFuZnds12hDZCBeqCZg4vwi--DdQ",
-  azraq: "https://lh3.googleusercontent.com/aida-public/AB6AXuDueO4XryGUl6a6WmWX0EvWIDKx_Zu5FHQ49JBhgL8k9NZOkMjJu3Xr9z0w7qgLX7p7ctXVHms1BPNX9LQbELXZWUjouvvWHc2aLlYloz94DqzNNnDH6Gmu1q-OwC_kMG5BS0sDUQnKohe-rq44IcpooNz4LDQtko6F0gporrLADTlW8mFgb9X8JOqQyZMw7whC2ykcHxoWLBM93q2IYw0yAWLt-VE9q3__DYK4hKxFuZnds12hDZCBeqCZg4vwi--DdQ",
+  azraq: "/azraq-logo.svg",
   userAvatar: "https://lh3.googleusercontent.com/aida-public/AB6AXuBT0Jpi4jcWzVICFjXaWc6S9_wz003aLtkBBHPk9HJSstTEBXkgpEklox53ddv26NHXkWFbdvFH0N6Hthfr0G1pYJYOCx8t3FBRFr4uxZ9jCMRajpdD530QlmBVs9WRU5J1RAqGpycee1OLBVnMnJUthyC5b9A0eOYh_TRPiN4knTC6SuM3nevoRTFEWaOIx1MHb5zPOPW602asXmNimVWCEXYqxxUZFzE3xyoA9A-JiA93cAPU_GeW"
 };
 
@@ -12,151 +12,179 @@ export const INITIAL_DESTINATIONS: Destination[] = ALL_DESTINATIONS;
 export const INITIAL_FEED_POSTS: FeedPost[] = [
   {
     id: 'post-1',
-    authorName: 'Elena Rossi',
-    authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBVA_Y-chzwXJuEeMA3v1P-9qjr0aHPuY-aycLZPVY8c0x7XoesyaJWmoFKN5KcEPhre8KW4x7BWOp7Ir1oApKoYSKgne8qJw97LZxgvFsgTvRc8L6-NB1NiD1fAlTtE_meqi1xB5h4cz0hDGQEWT1bTeoBS-KwChuog7jGI5gsQjqansvXo4TWvOtaHn9vqZZR9o0rVu6zM_nKUJZ5RO5Yd9syRkWD2qB_EeL74TmbW9KjLvTFkUy0',
-    location: 'Dolomites, Italy',
-    badgeLabel: 'AI Verified Route',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA0aKun8M_UKkizSoQTYDKraK80K46sPwtetIHS1Q8T3NiXeEOioCD7I8qYCJbT3fM0I6wOCmYByIhlNlBKBc2oPwzFy9fIanrFRloP0q7_z3dcU2VXCq2mqLRwO7pyi0MBK8eqgiPMZXgn0PDIvBN3N1STzrmcJnpt2E7zJ6dVxbAXjCICWE9mwPXI-fybc0HgDIuL3xhYN611MTHa6MV2mUWVgy0DjkE0JtBgF_k3Uaj6wfARX886',
-    likes: 2400,
-    commentsCount: 184,
-    caption: 'The morning light hitting the Tre Cime is something you never forget. Hiked up before dawn. Totally worth the cold.',
-    hashtags: ['#Dolomites', '#AlpineSunrise', '#TreCime'],
+    authorName: 'Sadia Rahman',
+    authorAvatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=70',
+    location: 'Maafushi, Maldives',
+    badgeLabel: 'Verified Traveler',
+    imageUrl: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=75',
+    likes: 342,
+    commentsCount: 28,
+    caption: 'Crystal turquoise waters and private sandbank picnic on our 5D4N luxury Maldives package. Manta ray snorkeling was breathtaking! 🐬✨',
+    hashtags: ['#AzraqDiaries', '#MaldivesTravel', '#LuxuryTravel', '#TravelBuddies'],
     timeAgo: '2h ago',
     isLiked: false,
     isBookmarked: true,
     aiVerified: true,
     commentsList: [
-      { id: 'c1', author: 'Liam Vance', avatar: BRAND_LOGOS.userAvatar, text: 'The framing on this sunrise is unbelievable! Which lens did you use?', timeAgo: '1h ago' },
-      { id: 'c2', author: 'Sophia Meyer', avatar: BRAND_LOGOS.userAvatar, text: 'Added to my GlobeTrotter AI itinerary right now!', timeAgo: '30m ago' }
+      { id: 'c1', author: 'Tanvir Ahmed', avatar: BRAND_LOGOS.userAvatar, text: 'The seaplane transfer views look unbelievable! Which resort did you stay at?', timeAgo: '1h ago' },
+      { id: 'c2', author: 'Nusrat Jahan', avatar: BRAND_LOGOS.userAvatar, text: 'Added this exact Maldives package to my Azraq Trips planner!', timeAgo: '30m ago' }
     ]
   },
   {
     id: 'post-2',
-    authorName: 'Marcus Chen',
-    authorAvatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDJEhiJzi3nX0bVk6FOV_giyi-UQKN8xiy2q47_U_dk17WNHISeg8fZvRZ8ZklaFF7-_l91LVhTij5C4CorM2POkvqmKSVBdBiO0Cw2fJWSAuOXvdFl-uWzEPgYdbV4UobUj7rXuFSY0Z6-e05vqK-iAXfwaUBn0S2Qwqgt-dDMcC2aL9YQogty2agftL9wHYwA4uLvqF6GN5xyuVfbHPnjMJvhqRhjX6Qru9XyAZsjsEGQw8Jo-Qxe',
-    location: 'Tokyo, Japan',
-    badgeLabel: 'Local Secret Spot',
-    imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCWwjcNUShEsgDQjSe3nMLGqyRDwMc0hDp18yXND1vikACwbmGItfdor1wu9hqunh87ECOqds_W63ZPXkqq6P0Z1f_GkE4cci6jEqaoHAN6CNIXH8EpOawPHxAC6LRTJjY-_kXaIjDZw7ReJDAzPTMdinW4XvaRqwvMtoCvaIMk3vgQZ5c5OxuPCjTJdZ34B85u1PemYb72233XoO3SByxjR4hP-TgqxIdew5zN1nXIh-xOELpNOqFG',
-    likes: 8100,
-    commentsCount: 432,
-    caption: 'Lost in the neon labyrinth. Found the best hidden ramen spot thanks to GlobeTrotter AI\'s local recommendations.',
-    hashtags: ['#TokyoNights', '#StreetPhotography', '#Shinjuku'],
+    authorName: 'Tanvir Ahmed',
+    authorAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=70',
+    location: 'Kuala Lumpur, Malaysia',
+    badgeLabel: 'Community Guide',
+    imageUrl: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=800&q=75',
+    likes: 512,
+    commentsCount: 45,
+    caption: 'Night view of the iconic Petronas Towers from the KLCC Park sky bridge. Street food at Jalan Alor right after was phenomenal 🍜🇲🇾',
+    hashtags: ['#MalaysiaTrulyAsia', '#KualaLumpur', '#AzraqDiaries', '#TravelBuddies'],
     timeAgo: '5h ago',
     isLiked: true,
     isBookmarked: false,
     aiVerified: true,
     commentsList: [
-      { id: 'c3', author: 'Aria Takahashi', avatar: BRAND_LOGOS.userAvatar, text: 'Golden Gai ramen hits different in late night rain!', timeAgo: '2h ago' }
+      { id: 'c3', author: 'Rahim Chowdhury', avatar: BRAND_LOGOS.userAvatar, text: 'Jalan Alor grilled satay with peanut sauce is unbeatable!', timeAgo: '2h ago' }
     ]
   }
 ];
 
 export const TRENDING_HASHTAGS: TrendingHashtag[] = [
-  { tag: '#AuroraBorealis', postsCount: '12.5k posts', isRising: true },
-  { tag: '#KyotoAutumn', postsCount: '8.2k posts', isRising: true },
-  { tag: '#DigitalNomadLife', postsCount: '45.1k posts', isRising: true },
-  { tag: '#AmalfiViews', postsCount: '19.8k posts', isRising: false },
-  { tag: '#DesertMagic', postsCount: '6.4k posts', isRising: true }
+  { tag: '#MalaysiaTrulyAsia', postsCount: '18.5k posts', isRising: true },
+  { tag: '#MaldivesEscape', postsCount: '14.2k posts', isRising: true },
+  { tag: '#ExploreBangladesh', postsCount: '32.1k posts', isRising: true },
+  { tag: '#DubaiDesertSafari', postsCount: '21.8k posts', isRising: false },
+  { tag: '#KashmirParadise', postsCount: '11.4k posts', isRising: true }
 ];
 
-export const INITIAL_KYOTO_ITINERARY: Itinerary = {
-  id: 'kyoto-immersion',
-  title: 'Kyoto Cultural Immersion',
-  destination: 'Kyoto, Japan',
+export const INITIAL_AZRAQ_ITINERARY: Itinerary = {
+  id: 'malaysia-explorer-5d',
+  title: '5-Day Malaysia & Genting Highlands Explorer',
+  destination: 'Kuala Lumpur & Genting Highlands, Malaysia',
   durationDays: 5,
-  weatherSummary: 'Oct 12 - Oct 18 • 15°C Partly Cloudy',
-  aiSummary: 'A meticulously curated journey through ancient temples, serene bamboo groves, traditional tea houses, and exquisite kaiseki dining.',
+  weatherSummary: 'Nov - Apr • 27°C - 32°C Sunny & Tropical',
+  aiSummary: 'A curated journey tailored for Bangladeshi travelers departing Dhaka, featuring the iconic Petronas Twin Towers, sacred Batu Caves, Genting SkyWorlds mountain cable car, shopping in Bukit Bintang, and authentic halal cuisine.',
   days: [
     {
       dayNumber: 1,
-      title: 'Day 1: Arrival & Higashiyama',
-      summary: 'Explore historic wooden streets and iconic hillside temples.',
+      title: 'Day 1: Arrival in Kuala Lumpur & Sunset at KLCC',
+      summary: 'Arrive at KLIA from Dhaka, check in to your Bukit Bintang hotel, and witness sunset behind the illuminated Petronas Twin Towers.',
       spots: [
         {
-          id: 'k1',
-          name: 'Kiyomizu-dera',
-          description: 'Historic temple offering stunning views of the city. Best visited early morning or late afternoon.',
-          timeSlot: '14:00 - 16:00',
-          category: 'Culture',
-          imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHzDtzxEsbeDsDrCdoNLEjTI_xuY-7wlUYq5ucT5Sl5URGnyJ1FWvjE5BPxE5SQUaGNKlsYlPalBk5SIZlZDwQ5ALiHCKPRK_tWth1bQbUu_B-eYcYoayo5QBhhDzreiCStQq35vn2gqDvsLLV1-S8cyJLXiVq6OsKfUZwdu0lKKD5eRgT9r44zdDLwiRIWHmiog-8gmKoxaIqvCCf5F0pBXgDAy9FuocuDV0oxqQYkhnA-d2NMqFU',
-          aiTip: 'Beat the crowds by taking the scenic route up Ninenzaka street. Try the matcha soft serve near the entrance!',
-          lat: 34.9949,
-          lng: 135.7850
+          id: 'my-1',
+          name: 'KLIA to City Hotel Check-In',
+          description: 'Take the KLIA Ekspres train (28 mins) or pre-arranged private AC transfer directly to your central Kuala Lumpur hotel.',
+          timeSlot: '14:00 - 15:30',
+          category: 'Sightseeing',
+          imageUrl: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=800&q=75',
+          aiTip: 'Keep your passport and Malaysia Digital Arrival Card (MDAC) QR code handy on your phone.',
+          lat: 3.1390,
+          lng: 101.6869
         },
         {
-          id: 'k2',
-          name: 'Ninenzaka & Sannenzaka Slopes',
-          description: 'Preserved pedestrian stone lanes lined with wooden tea houses and artisan craft shops.',
-          timeSlot: '16:30 - 18:30',
-          category: 'Sightseeing',
-          imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCptuAAzn_9bWzXKI9IgoizFj6EhV7JeaF96_xK_QNQRfiTAk_Spi4bVq7yXVIyJS1lze2USOQn17rW3Um1FF1I1BSO0D0SOKg3DztPPMtfa1gZ-UFiBxeuTuHLfeQ4Mjpo4Ib75SFq_klem821sVYHqyswM-63tYPDepO3oEV0Z0NPJTaimKRhaWOsyURpcH2gEJObS8Bc2qiIwOlqHOeyEVf83mSF8BrlopCRAf-dbNwYvjqDVtkx',
-          aiTip: 'Look out for traditional paper lantern lightings around dusk for incredible photo opportunities.',
-          lat: 34.9980,
-          lng: 135.7810
+          id: 'my-2',
+          name: 'Petronas Twin Towers & KLCC Park',
+          description: 'Stroll around the fountain lake in KLCC Park and capture wide-angle photos under the world’s tallest twin towers.',
+          timeSlot: '17:00 - 19:30',
+          category: 'Culture',
+          imageUrl: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?auto=format&fit=crop&w=800&q=75',
+          aiTip: 'Position yourself near the fountain bridge for the widest angle shot of both towers without distortion.',
+          lat: 3.1578,
+          lng: 101.7119
+        },
+        {
+          id: 'my-3',
+          name: 'Jalan Alor Night Food Street',
+          description: 'Experience bustling open-air street dining with fresh Nasi Lemak, chicken satay with peanut sauce, and tropical mango smoothies.',
+          timeSlot: '20:00 - 22:00',
+          category: 'Food',
+          imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=75',
+          aiTip: 'Look for halal-certified stalls with green signs along the pedestrian walkway.',
+          lat: 3.1458,
+          lng: 101.7088
         }
       ],
-      aiInsight: 'Higashiyama is best experienced on foot. Wear comfortable walking shoes as stone steps are frequent.'
+      aiInsight: 'Kuala Lumpur’s central Golden Triangle is easily walkable. Use the Grab app for quick rides when traveling with luggage.'
     },
     {
       dayNumber: 2,
-      title: 'Day 2: Arashiyama Bamboo Grove & River Cruise',
-      summary: 'Walk through towering bamboo stalks and take a traditional wooden boat down Hozu River.',
+      title: 'Day 2: Batu Caves & Genting Highlands Cable Car',
+      summary: 'Climb the colorful 272 steps at Batu Caves followed by a scenic mountain drive and Awana SkyWay cable car to Genting SkyWorlds.',
       spots: [
         {
-          id: 'k3',
-          name: 'Arashiyama Bamboo Grove',
-          description: 'Soaring green stalks rustling in the breeze, creating a tranquil acoustic sanctuary.',
-          timeSlot: '08:00 - 10:30',
-          category: 'Nature',
-          imageUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCptuAAzn_9bWzXKI9IgoizFj6EhV7JeaF96_xK_QNQRfiTAk_Spi4bVq7yXVIyJS1lze2USOQn17rW3Um1FF1I1BSO0D0SOKg3DztPPMtfa1gZ-UFiBxeuTuHLfeQ4Mjpo4Ib75SFq_klem821sVYHqyswM-63tYPDepO3oEV0Z0NPJTaimKRhaWOsyURpcH2gEJObS8Bc2qiIwOlqHOeyEVf83mSF8BrlopCRAf-dbNwYvjqDVtkx',
-          aiTip: 'Arrive before 8:30 AM to capture clear photos without crowd clutter.',
-          lat: 35.0170,
-          lng: 135.6713
+          id: 'my-4',
+          name: 'Batu Caves Lord Murugan Statue',
+          description: 'Iconic limestone caves and the 140-foot golden statue of Lord Murugan. Climb the rainbow stairs into Cathedral Cave.',
+          timeSlot: '08:30 - 11:00',
+          category: 'Culture',
+          imageUrl: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=75',
+          aiTip: 'Arrive early before 9:00 AM to avoid midday heat. Modest dress covering shoulders and knees is required.',
+          lat: 3.2379,
+          lng: 101.6840
         },
         {
-          id: 'k4',
-          name: 'Tenryu-ji Zen Garden',
-          description: 'UNESCO World Heritage temple with 14th-century pond garden reflecting autumn foliage.',
-          timeSlot: '11:00 - 13:00',
-          category: 'Culture',
-          aiTip: 'Sit on the main veranda for 15 minutes to take in the quiet landscape design.',
-          lat: 35.0158,
-          lng: 135.6777
+          id: 'my-5',
+          name: 'Awana SkyWay Cable Car & Genting Highlands',
+          description: 'Glide over 130-million-year-old tropical rainforest canopy with cool mountain air (18°C - 22°C).',
+          timeSlot: '12:30 - 16:30',
+          category: 'Adventure',
+          imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=75',
+          aiTip: 'Stop at Chin Swee Station midway at no extra cost to view the 9-story Pagoda and mountain clouds.',
+          lat: 3.4243,
+          lng: 101.7932
         }
       ],
-      aiInsight: 'Book a Kaiseki lunch near Togetsukyo Bridge for authentic Kyoto seasonal delicacies.'
+      aiInsight: 'Genting Highlands is 10°C cooler than the city. Pack a light jacket or cardigan for the hilltop.'
     },
     {
       dayNumber: 3,
-      title: 'Day 3: Fushimi Inari & Gion Night Walk',
-      summary: 'Hike through thousands of vermilion torii gates followed by evening Geisha spotting in Gion.',
+      title: 'Day 3: Historical Merdeka Square & Bukit Bintang Shopping',
+      summary: 'Explore colonial architecture at Sultan Abdul Samad Building followed by duty-free shopping at Pavilion KL.',
       spots: [
         {
-          id: 'k5',
-          name: 'Fushimi Inari Taisha',
-          description: 'Mountain shrine dedicated to the Shinto god of rice and sake with over 10,000 torii gates.',
-          timeSlot: '07:30 - 11:00',
+          id: 'my-6',
+          name: 'Merdeka Square & Sultan Abdul Samad Building',
+          description: 'Moorish-style historic landmark where Malaysian independence was declared, alongside the River of Life.',
+          timeSlot: '09:00 - 11:30',
           category: 'Sightseeing',
-          aiTip: 'Hike up past Yotsutsuji intersection for panoramic views of Kyoto without the crowd.',
-          lat: 34.9671,
-          lng: 135.7727
+          imageUrl: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=800&q=75',
+          aiTip: 'The River of Life misting system operates every 15 minutes for picturesque photos.',
+          lat: 3.1492,
+          lng: 101.6938
+        },
+        {
+          id: 'my-7',
+          name: 'Pavilion Kuala Lumpur & Bukit Bintang',
+          description: 'Premier multi-level shopping district with high-street fashion, electronics, and Japanese Tokyo Street food hall.',
+          timeSlot: '14:00 - 18:00',
+          category: 'Shopping',
+          imageUrl: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=800&q=75',
+          aiTip: 'Visit the tourist concierge desk on Level 1 with your passport for an exclusive VIP Tourist Privilege shopping card.',
+          lat: 3.1488,
+          lng: 101.7132
         }
       ],
-      aiInsight: 'Reserve a spot at Pontocho Alley for dinner alongside the Kamogawa River.'
+      aiInsight: 'Most major stores in Pavilion and Suria KLCC accept international Visa/Mastercard without currency surcharge.'
     }
   ],
   packingList: [
     {
       category: 'Clothing & Layering',
-      items: ['Light jacket or cardigan (12-18°C)', 'Comfortable walking shoes/sneakers', 'Slip-on socks for temple entrances', 'Breathable linen shirt']
+      items: ['Lightweight breathable cotton shirts', 'Modest clothing for Batu Caves (knees & shoulders covered)', 'Light jacket or hoodie for Genting Highlands (18°C)', 'Comfortable walking sneakers']
     },
     {
-      category: 'Essentials & Tech',
-      items: ['IC Card / Suica for transit', 'Portable power bank', 'Compact travel umbrella', 'Universal power adapter (Type A)']
+      category: 'Travel Documents & Essentials',
+      items: ['Original passport (min 6 months validity)', 'Printed Malaysian eVisa & MDAC Arrival QR confirmation', 'Return air ticket and hotel vouchers', 'Universal travel adapter (UK 3-pin Type G)']
     },
     {
-      category: 'Smart Accessories',
-      items: ['Reusable water bottle', 'Coin purse for cash transactions', 'Travel journal & camera']
+      category: 'Finances & Connectivity',
+      items: ['Touch ‘n Go card or cash for LRT transit', 'Dual-currency debit/credit card or MYR cash', 'Local tourist 5G eSIM / SIM card']
     }
   ]
 };
+
+// Aliased for seamless backward compatibility across all views
+export const INITIAL_KYOTO_ITINERARY: Itinerary = INITIAL_AZRAQ_ITINERARY;
+

@@ -391,6 +391,8 @@ export async function createPost({
   location,
   caption,
   mediaUrls,
+  postType = 'story',
+  tripDetails,
   isAdmin = false,
 }: {
   userId: string;
@@ -398,6 +400,8 @@ export async function createPost({
   location: string;
   caption: string;
   mediaUrls: string[];
+  postType?: string;
+  tripDetails?: any;
   isAdmin?: boolean;
 }): Promise<{ success: boolean; post?: Post; error?: string }> {
   const isApproved = true; // Instantly visible to the traveler and community
@@ -417,7 +421,9 @@ export async function createPost({
     reaction_counts: { love: 0, fire: 0, wow: 0, like: 0 },
   };
 
-  // Attach canonical imageUrl and photoURL for maximum cross-compatibility
+  // Attach canonical properties for maximum cross-compatibility
+  (newPost as any).post_type = postType;
+  (newPost as any).trip_details = tripDetails;
   (newPost as any).imageUrl = mediaUrls.length > 0 ? mediaUrls[0] : '';
   (newPost as any).authorAvatar = userProfile.avatar_url;
   (newPost as any).authorName = userProfile.full_name || userProfile.username;
@@ -462,7 +468,23 @@ export async function createPost({
     console.warn('Local storage write notice:', e);
   }
 
-  // 2. Asynchronously background-sync to Firestore (non-blocking, will not stall UI)
+  // 2. Asynchronously background sync to server REST API
+  try {
+    fetch('/api/travel-buddies/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId,
+        caption: newPost.caption,
+        location: newPost.location,
+        mediaUrls: newPost.media_urls,
+        postType,
+        tripDetails,
+      }),
+    }).catch(() => {});
+  } catch {}
+
+  // 3. Asynchronously background-sync to Firestore (non-blocking, will not stall UI)
   if (db) {
     const syncFirestore = async () => {
       try {

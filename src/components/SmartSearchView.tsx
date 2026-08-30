@@ -29,6 +29,7 @@ import { NavView, SmartSearchResponse, SmartSearchResultItem, SmartSearchResultT
 import { executeSmartSearch } from '../services/smartSearchService';
 import { POPULAR_SEARCH_SUGGESTIONS } from '../data/searchCatalogData';
 import { useAuth } from '../context/AuthContext';
+import { SEOHead } from './SEOHead';
 
 interface SmartSearchViewProps {
   initialQuery?: string;
@@ -220,18 +221,23 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
   }) || [];
 
   return (
-    <div className="min-h-screen bg-slate-50/60 pb-20 pt-6">
+    <article className="min-h-screen bg-slate-50/60 pb-20 pt-6">
+      <SEOHead
+        title="Smart Search – Find Tour Packages, Visas & Flight Deals | Azraq Trips"
+        description="Ask questions in plain English or Bengali to instantly search Azraq Trips database for vacation packages, visa requirements, hotel inclusions, and flights."
+        canonical="https://www.azraqtrips.com/search"
+      />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Top Search Banner */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+        <section aria-labelledby="smart-search-heading" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 text-[#0759B8] text-xs font-bold font-mono tracking-wide uppercase">
-                <Search className="w-3.5 h-3.5" />
+                <Search className="w-3.5 h-3.5" aria-hidden="true" />
                 <span>Smart Natural Language Search</span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              <h1 id="smart-search-heading" className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
                 Search Azraq Tour Knowledge & Services
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 font-medium">
@@ -310,7 +316,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
               </button>
             ))}
           </div>
-        </div>
+        </section>
 
         {/* Search History Chips (if any) */}
         {searchHistory.length > 0 && !searchData && !isLoading && (
@@ -636,6 +642,6 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
         )}
 
       </div>
-    </div>
+    </article>
   );
 };

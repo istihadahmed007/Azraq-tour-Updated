@@ -13,6 +13,9 @@ import {
   Plus,
   Lock,
   ArrowRight,
+  Bell,
+  MapPin,
+  MessageSquare,
 } from 'lucide-react';
 import {
   TravelBuddyProfile,
@@ -29,17 +32,29 @@ import {
   cancelBuddyRequest,
   calculateBuddyMatch,
   filterBuddyProfiles,
+  fetchSocialNotifications,
   AVAILABLE_DESTINATIONS,
   AVAILABLE_TRAVEL_STYLES,
 } from '../../lib/travelBuddyQueries';
 import { useAuth } from '../../context/AuthContext';
 import { TravelBuddyCard } from './TravelBuddyCard';
+import { SEOHead } from '../SEOHead';
 import { TravelBuddyConnectModal } from './TravelBuddyConnectModal';
 import { TravelBuddyProfileEditor } from './TravelBuddyProfileEditor';
 import { TravelBuddyRequests } from './TravelBuddyRequests';
 import { TravelBuddiesFeed } from './TravelBuddiesFeed';
+import { CommunitiesView } from './CommunitiesView';
+import { GroupTripsView } from './GroupTripsView';
+import { SocialNotificationsView } from './SocialNotificationsView';
 
-export type BuddyTabType = 'find' | 'profile' | 'requests' | 'stories';
+export type BuddyTabType =
+  | 'stories'
+  | 'find'
+  | 'communities'
+  | 'trips'
+  | 'requests'
+  | 'notifications'
+  | 'profile';
 
 interface TravelBuddiesHubProps {
   initialTab?: BuddyTabType;
@@ -48,7 +63,7 @@ interface TravelBuddiesHubProps {
 }
 
 export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
-  initialTab = 'find',
+  initialTab = 'stories',
   onSelectDestinationByName,
   onNavigateToProfile,
 }) => {
@@ -58,6 +73,7 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
   const [profiles, setProfiles] = useState<TravelBuddyProfile[]>([]);
   const [myProfile, setMyProfile] = useState<TravelBuddyProfile | null>(null);
   const [requests, setRequests] = useState<TravelBuddyRequest[]>([]);
+  const [unreadNotifsCount, setUnreadNotifsCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
 
@@ -74,16 +90,18 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
   // Load all profiles, user profile, and user requests
   const loadData = useCallback(async () => {
     try {
-      const [fetchedProfiles, fetchedMyProfile, fetchedRequests] =
+      const [fetchedProfiles, fetchedMyProfile, fetchedRequests, notifs] =
         await Promise.all([
           fetchBuddyProfiles(),
           user ? fetchMyBuddyProfile(user.uid) : Promise.resolve(null),
           user ? fetchUserRequests(user.uid) : Promise.resolve([]),
+          user ? fetchSocialNotifications(user.uid) : Promise.resolve({ notifications: [], unreadCount: 0 }),
         ]);
 
       setProfiles(fetchedProfiles || []);
       setMyProfile(fetchedMyProfile);
       setRequests(fetchedRequests || []);
+      setUnreadNotifsCount(notifs.unreadCount || 0);
     } catch {
       setProfiles([]);
     } finally {
@@ -142,7 +160,7 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
   const handleRefresh = async () => {
     setIsRefreshing(true);
     await loadData();
-    showToast('Travel buddy list refreshed.', 'info');
+    showToast('Travel Buddies data refreshed.', 'info');
   };
 
   const handleOpenConnectModal = (buddy: MatchedTravelBuddy) => {
@@ -183,7 +201,6 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
 
     if (result.success) {
       showToast('Connection request sent!', 'success');
-      // Refresh requests list
       const updatedRequests = await fetchUserRequests(user.uid);
       setRequests(updatedRequests);
     }
@@ -242,21 +259,26 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
   };
 
   return (
-    <div id="azraq-travel-buddies-hub" className="min-h-screen bg-slate-50/50 pb-20 dark:bg-slate-950">
+    <article id="azraq-travel-buddies-hub" className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+      <SEOHead
+        title="Find Travel Buddies & Join Asian Tour Groups – Azraq Trips"
+        description="Connect with verified solo travelers and small tour groups from Bangladesh exploring Thailand, Malaysia, Maldives, Kashmir, and Vietnam. Safe verified profiles."
+        canonical="https://www.azraqtrips.com/buddies"
+      />
       {/* Hero Header */}
-      <div className="border-b border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <section aria-labelledby="buddies-hero-heading" className="border-b border-white/10 bg-slate-900/60 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-700 dark:bg-sky-950/40 dark:text-sky-300 border border-sky-200 dark:border-sky-800 mb-3">
-                <Users className="h-3.5 w-3.5" />
-                Azraq Travel Buddies
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-400 border border-sky-500/20 mb-3">
+                <Users className="h-3.5 w-3.5 text-sky-400" aria-hidden="true" />
+                Azraq Travel Buddies & Community
               </div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Find someone going your way.
+              <h1 id="buddies-hero-heading" className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                Connect, Share & Explore Together
               </h1>
-              <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                Match with fellow Bangladeshi and international travelers by destination, overlapping dates, language, and travel style. Contact information stays completely private until both travelers accept.
+              <p className="mt-2 text-sm leading-relaxed text-slate-300">
+                Discover verified Bangladeshi and international travelers, join active destination communities, organize group trips, and share authentic travel stories.
               </p>
             </div>
 
@@ -267,11 +289,11 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                 type="button"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
-                className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs font-medium text-slate-700 shadow-xs hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 min-h-[44px]"
+                className="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2.5 text-xs font-medium text-slate-200 hover:bg-white/10 transition-colors min-h-[44px] cursor-pointer"
                 title="Refresh listings"
               >
                 <RefreshCw
-                  className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin' : ''}`}
+                  className={`h-3.5 w-3.5 ${isRefreshing ? 'animate-spin text-sky-400' : ''}`}
                 />
                 <span className="hidden sm:inline">Refresh</span>
               </button>
@@ -282,111 +304,177 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                   type="button"
                   onClick={() => {
                     if (isGuest || !user) {
-                      openAuthModal();
+                      openAuthModal('login');
                       showToast('Please sign in to set up your Travel Buddy profile.', 'info');
                     } else {
                       setActiveTab('profile');
                     }
                   }}
-                  className="flex items-center gap-2 rounded-xl bg-sky-600 px-4 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-500 min-h-[44px]"
+                  className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 px-4 py-2.5 text-xs font-bold text-white shadow-lg transition-all min-h-[44px] cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
-                  <span>Set Up Your Profile</span>
+                  <span>Set Up Buddy Profile</span>
                 </button>
               )}
             </div>
           </div>
 
           {/* Privacy & Safety Statement Banner */}
-          <div className="mt-6 flex items-center gap-3 rounded-xl bg-slate-100/90 px-4 py-3 text-xs text-slate-600 dark:bg-slate-800/80 dark:text-slate-300">
-            <Lock className="h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
+          <div className="mt-6 flex items-center gap-3 rounded-xl bg-slate-900/80 border border-white/10 px-4 py-3 text-xs text-slate-300">
+            <Lock className="h-4 w-4 shrink-0 text-sky-400" />
             <div className="flex-1">
-              <span className="font-semibold text-slate-800 dark:text-slate-200">
-                Privacy Guarantee:
+              <span className="font-semibold text-white">
+                Privacy Protected:
               </span>{' '}
-              Personal contact details remain hidden until you both connect. Never share passports or payment documents.
+              Personal contact details remain confidential until both travelers accept a connection. Zero mock travelers or fabricated statistics.
             </div>
           </div>
 
-          {/* 4 Main Tabs Navigation */}
-          <div className="mt-8 flex overflow-x-auto border-b border-slate-200 no-scrollbar dark:border-slate-800">
+          {/* 7 Main Navigation Tabs */}
+          <div className="mt-8 flex overflow-x-auto border-b border-white/10 scrollbar-none gap-1">
+            {/* 1. Feed */}
+            <button
+              id="tab-community-stories"
+              type="button"
+              onClick={() => setActiveTab('stories')}
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all min-h-[44px] cursor-pointer ${
+                activeTab === 'stories'
+                  ? 'border-sky-400 text-sky-400 bg-sky-500/5'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <BookOpen className="h-4 w-4" />
+              <span>Feed</span>
+            </button>
+
+            {/* 2. Discover Travelers */}
             <button
               id="tab-find-buddies"
               type="button"
               onClick={() => setActiveTab('find')}
-              className={`flex shrink-0 items-center gap-2 border-b-2 px-5 py-3.5 text-xs font-bold transition-all min-h-[44px] ${
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all min-h-[44px] cursor-pointer ${
                 activeTab === 'find'
-                  ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                  ? 'border-sky-400 text-sky-400 bg-sky-500/5'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
               <Compass className="h-4 w-4" />
-              <span>Find Buddies</span>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                {filteredBuddies.length}
-              </span>
-            </button>
-
-            <button
-              id="tab-my-profile"
-              type="button"
-              onClick={() => setActiveTab('profile')}
-              className={`flex shrink-0 items-center gap-2 border-b-2 px-5 py-3.5 text-xs font-bold transition-all min-h-[44px] ${
-                activeTab === 'profile'
-                  ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
-              }`}
-            >
-              <User className="h-4 w-4" />
-              <span>My Profile</span>
-              {myProfile && (
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span>Discover Travelers</span>
+              {filteredBuddies.length > 0 && (
+                <span className="rounded-full bg-slate-800 border border-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-300">
+                  {filteredBuddies.length}
+                </span>
               )}
             </button>
 
+            {/* 3. Communities */}
+            <button
+              id="tab-communities"
+              type="button"
+              onClick={() => setActiveTab('communities')}
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all min-h-[44px] cursor-pointer ${
+                activeTab === 'communities'
+                  ? 'border-emerald-400 text-emerald-400 bg-emerald-500/5'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              <span>Communities</span>
+            </button>
+
+            {/* 4. Group Trips */}
+            <button
+              id="tab-group-trips"
+              type="button"
+              onClick={() => setActiveTab('trips')}
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all min-h-[44px] cursor-pointer ${
+                activeTab === 'trips'
+                  ? 'border-indigo-400 text-indigo-400 bg-indigo-500/5'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <Compass className="h-4 w-4" />
+              <span>Group Trips</span>
+            </button>
+
+            {/* 5. Connections */}
             <button
               id="tab-requests"
               type="button"
               onClick={() => setActiveTab('requests')}
-              className={`flex shrink-0 items-center gap-2 border-b-2 px-5 py-3.5 text-xs font-bold transition-all min-h-[44px] ${
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all min-h-[44px] cursor-pointer ${
                 activeTab === 'requests'
-                  ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+                  ? 'border-sky-400 text-sky-400 bg-sky-500/5'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
               <Inbox className="h-4 w-4" />
-              <span>Requests</span>
+              <span>Connections</span>
               {pendingIncomingCount > 0 && (
-                <span className="rounded-full bg-sky-600 px-2 py-0.5 text-[10px] font-bold text-white">
+                <span className="rounded-full bg-sky-500 px-2 py-0.5 text-[10px] font-bold text-slate-950">
                   {pendingIncomingCount}
                 </span>
               )}
             </button>
 
+            {/* 6. Notifications */}
             <button
-              id="tab-community-stories"
+              id="tab-notifications"
               type="button"
-              onClick={() => setActiveTab('stories')}
-              className={`flex shrink-0 items-center gap-2 border-b-2 px-5 py-3.5 text-xs font-bold transition-all min-h-[44px] ${
-                activeTab === 'stories'
-                  ? 'border-sky-600 text-sky-600 dark:border-sky-400 dark:text-sky-400'
-                  : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
+              onClick={() => setActiveTab('notifications')}
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all min-h-[44px] cursor-pointer ${
+                activeTab === 'notifications'
+                  ? 'border-amber-400 text-amber-400 bg-amber-500/5'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
               }`}
             >
-              <BookOpen className="h-4 w-4" />
-              <span>Community Stories</span>
+              <Bell className="h-4 w-4" />
+              <span>Notifications</span>
+              {unreadNotifsCount > 0 && (
+                <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-bold text-slate-950 animate-pulse">
+                  {unreadNotifsCount}
+                </span>
+              )}
+            </button>
+
+            {/* 7. My Profile */}
+            <button
+              id="tab-my-profile"
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className={`flex shrink-0 items-center gap-2 border-b-2 px-4 py-3.5 text-xs font-bold transition-all min-h-[44px] cursor-pointer ${
+                activeTab === 'profile'
+                  ? 'border-sky-400 text-sky-400 bg-sky-500/5'
+                  : 'border-transparent text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <User className="h-4 w-4" />
+              <span>My Profile</span>
+              {myProfile && (
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              )}
             </button>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Main Tab Views */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* TAB 1: FIND BUDDIES */}
+        {/* TAB 1: FEED (Community Stories, Post Types, Reactions, Comments) */}
+        {activeTab === 'stories' && (
+          <div className="space-y-6">
+            <TravelBuddiesFeed
+              onSelectDestinationByName={onSelectDestinationByName}
+              onNavigateToProfile={onNavigateToProfile}
+            />
+          </div>
+        )}
+
+        {/* TAB 2: DISCOVER TRAVELERS (Real Database Profiles Only) */}
         {activeTab === 'find' && (
           <div className="space-y-6">
             {/* Filter & Search Bar */}
-            <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+            <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 shadow-lg">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-12">
                 {/* Search Input */}
                 <div className="sm:col-span-6 relative">
@@ -397,7 +485,7 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search by name, city, destination, or interests..."
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-10 pr-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-sky-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white min-h-[44px]"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950 pl-10 pr-4 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-sky-500 focus:outline-hidden min-h-[44px]"
                   />
                 </div>
 
@@ -407,7 +495,7 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                     id="select-filter-destination"
                     value={selectedDestination}
                     onChange={(e) => setSelectedDestination(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white min-h-[44px]"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 text-xs text-white focus:border-sky-500 focus:outline-hidden min-h-[44px]"
                   >
                     <option value="All">All Destinations</option>
                     {AVAILABLE_DESTINATIONS.map((d) => (
@@ -424,7 +512,7 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                     id="select-filter-style"
                     value={selectedStyle}
                     onChange={(e) => setSelectedStyle(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-hidden dark:border-slate-700 dark:bg-slate-800 dark:text-white min-h-[44px]"
+                    className="w-full rounded-xl border border-white/10 bg-slate-950 px-3.5 py-2.5 text-xs text-white focus:border-sky-500 focus:outline-hidden min-h-[44px]"
                   >
                     <option value="All">All Travel Styles</option>
                     {AVAILABLE_TRAVEL_STYLES.map((s) => (
@@ -440,21 +528,21 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
               {(searchQuery ||
                 selectedDestination !== 'All' ||
                 selectedStyle !== 'All') && (
-                <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-xs dark:border-slate-800">
+                <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3 text-xs">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-slate-500">Filtered by:</span>
+                    <span className="text-slate-400">Filtered by:</span>
                     {searchQuery && (
-                      <span className="rounded-md bg-sky-50 px-2 py-0.5 font-medium text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
+                      <span className="rounded-md bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 font-medium text-sky-300">
                         Query: "{searchQuery}"
                       </span>
                     )}
                     {selectedDestination !== 'All' && (
-                      <span className="rounded-md bg-sky-50 px-2 py-0.5 font-medium text-sky-700 dark:bg-sky-950/40 dark:text-sky-300">
+                      <span className="rounded-md bg-sky-500/10 border border-sky-500/20 px-2 py-0.5 font-medium text-sky-300">
                         {selectedDestination}
                       </span>
                     )}
                     {selectedStyle !== 'All' && (
-                      <span className="rounded-md bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
+                      <span className="rounded-md bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 font-medium text-emerald-300">
                         {selectedStyle}
                       </span>
                     )}
@@ -463,7 +551,7 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                     id="btn-reset-filters"
                     type="button"
                     onClick={handleResetFilters}
-                    className="font-semibold text-sky-600 hover:text-sky-700 dark:text-sky-400"
+                    className="font-semibold text-sky-400 hover:text-sky-300 cursor-pointer"
                   >
                     Reset Filters
                   </button>
@@ -477,54 +565,54 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div
                     key={i}
-                    className="h-72 animate-pulse rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900"
+                    className="h-72 animate-pulse rounded-2xl border border-white/5 bg-slate-900/40 p-5"
                   />
                 ))}
               </div>
             ) : profiles.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-sky-50 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 mb-4">
+              <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-slate-900/40 p-12 text-center">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-4">
                   <Users className="h-8 w-8" />
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-lg">
-                  No Travel Buddy Profiles Published Yet
+                <h3 className="font-bold text-white text-lg">
+                  No travelers here yet.
                 </h3>
-                <p className="mt-2 max-w-md text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Be the first traveler to create and publish your profile! Connect with other Bangladeshi globetrotters heading to Thailand, Malaysia, UAE, Maldives, and more.
+                <p className="mt-2 max-w-md text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  Be the first traveler to create and publish your profile! Connect with other verified explorers heading to Thailand, Malaysia, UAE, Maldives, and beyond.
                 </p>
                 <button
                   id="btn-be-first-travel-buddy"
                   type="button"
                   onClick={() => {
                     if (isGuest || !user) {
-                      openAuthModal();
+                      openAuthModal('login');
                       showToast('Please sign in to set up your Travel Buddy profile.', 'info');
                     } else {
                       setActiveTab('profile');
                     }
                   }}
-                  className="mt-6 flex items-center gap-2 rounded-xl bg-sky-600 px-6 py-3 text-xs sm:text-sm font-bold text-white shadow-sm hover:bg-sky-500 min-h-[44px] cursor-pointer"
+                  className="mt-6 flex items-center gap-2 rounded-xl bg-sky-500 hover:bg-sky-400 px-6 py-3 text-xs sm:text-sm font-bold text-slate-950 shadow-md transition-all min-h-[44px] cursor-pointer"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Create Your Travel Buddy Profile</span>
                 </button>
               </div>
             ) : filteredBuddies.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 mb-3">
+              <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-slate-900/40 p-12 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-800 text-slate-400 mb-3">
                   <Search className="h-7 w-7" />
                 </div>
-                <h3 className="font-bold text-slate-900 dark:text-white text-base">
-                  No Travel Buddies Found
+                <h3 className="font-bold text-white text-base">
+                  No Travelers Match Your Filters
                 </h3>
-                <p className="mt-1 max-w-sm text-xs text-slate-500 dark:text-slate-400">
+                <p className="mt-1 max-w-sm text-xs text-slate-400">
                   Try adjusting your destination or travel style filters to view more travel companions.
                 </p>
                 <button
                   id="btn-clear-empty-filters"
                   type="button"
                   onClick={handleResetFilters}
-                  className="mt-5 rounded-xl bg-sky-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-sky-500 min-h-[44px]"
+                  className="mt-5 rounded-xl bg-sky-500 hover:bg-sky-400 px-5 py-2.5 text-xs font-bold text-slate-950 shadow-md transition-all min-h-[44px] cursor-pointer"
                 >
                   Clear All Filters
                 </button>
@@ -545,16 +633,17 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
           </div>
         )}
 
-        {/* TAB 2: MY PROFILE */}
-        {activeTab === 'profile' && (
-          <TravelBuddyProfileEditor
-            existingProfile={myProfile}
-            onSave={handleSaveProfile}
-            onViewBuddiesTab={() => setActiveTab('find')}
+        {/* TAB 3: COMMUNITIES */}
+        {activeTab === 'communities' && (
+          <CommunitiesView
+            onSelectCommunity={() => setActiveTab('stories')}
           />
         )}
 
-        {/* TAB 3: REQUESTS */}
+        {/* TAB 4: GROUP TRIPS */}
+        {activeTab === 'trips' && <GroupTripsView />}
+
+        {/* TAB 5: CONNECTIONS & REQUESTS */}
         {activeTab === 'requests' && (
           <TravelBuddyRequests
             requests={requests}
@@ -566,14 +655,25 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
           />
         )}
 
-        {/* TAB 4: COMMUNITY STORIES */}
-        {activeTab === 'stories' && (
-          <div className="space-y-6">
-            <TravelBuddiesFeed
-              onSelectDestinationByName={onSelectDestinationByName}
-              onNavigateToProfile={onNavigateToProfile}
-            />
-          </div>
+        {/* TAB 6: SOCIAL NOTIFICATIONS */}
+        {activeTab === 'notifications' && (
+          <SocialNotificationsView
+            onNavigateTab={(tab) => {
+              if (tab === 'requests') setActiveTab('requests');
+              else if (tab === 'trips') setActiveTab('trips');
+              else if (tab === 'communities') setActiveTab('communities');
+              else setActiveTab('stories');
+            }}
+          />
+        )}
+
+        {/* TAB 7: MY PROFILE */}
+        {activeTab === 'profile' && (
+          <TravelBuddyProfileEditor
+            existingProfile={myProfile}
+            onSave={handleSaveProfile}
+            onViewBuddiesTab={() => setActiveTab('find')}
+          />
         )}
       </div>
 
@@ -586,6 +686,6 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
         onAcceptIncoming={handleAcceptRequest}
         onDeclineIncoming={handleDeclineRequest}
       />
-    </div>
+    </article>
   );
 };

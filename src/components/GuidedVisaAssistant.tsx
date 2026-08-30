@@ -104,7 +104,7 @@ export const GuidedVisaAssistant: React.FC<GuidedVisaAssistantProps> = ({
     { id: 'photo', title: 'Recent Passport-size Color Photographs (2 Copies)', desc: activeVisaReq?.photoSpec || '35mm x 50mm, white matte background, 80% face view, no spectacles/white clothes', mandatory: true },
     { id: 'bank_solvency', title: 'Personal Bank Statement & Bank Solvency Certificate', desc: `Original 6-month statement with official bank stamp & seal. Minimum closing balance: ${activeVisaReq?.minBankBalance || '৳ 1,00,000 to ৳ 1,50,000 per person'}`, mandatory: true },
     { id: 'nid', title: 'National ID (NID) or Digital Birth Certificate Copy', desc: 'Photocopy of smart NID card', mandatory: true },
-    { id: 'tickets_hotel', title: 'Round-trip Air Ticket Itinerary & Confirmed Hotel Voucher', desc: 'Flight booking reservation (Azraq Tours provides verified dummy bookings for visa)', mandatory: true },
+    { id: 'tickets_hotel', title: 'Round-trip Air Ticket Itinerary & Confirmed Hotel Voucher', desc: 'Flight booking reservation (Azraq Trips provides embassy-verifiable PNR reservations and hotel holds for visa processing)', mandatory: true },
   ], [activeVisaReq]);
 
   const totalRequiredCount = generalMandatoryDocs.length + professionSpecificDocs.length;
@@ -332,7 +332,7 @@ export const GuidedVisaAssistant: React.FC<GuidedVisaAssistantProps> = ({
           <div className="p-3.5 rounded-2xl bg-sky-950/60 border border-sky-400/30 text-xs text-sky-200 flex items-start gap-2.5">
             <AlertCircle className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
             <p className="text-[11px] leading-relaxed">
-              Azraq Tours & Travels provides full document vetting, English translation notarization, confirmed flight dummy bookings, and Embassy appointment booking directly from our Dhaka Operations Desk.
+              Azraq Trips & Travels provides full document vetting, English translation notarization, embassy-verifiable flight & hotel itinerary reservations, and Embassy/VFS appointment booking directly from our Dhaka Operations Desk.
             </p>
           </div>
         </div>

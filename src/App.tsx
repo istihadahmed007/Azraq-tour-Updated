@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import { BrandTheme, Destination, Itinerary, NavView, Spot } from './types';
 import { INITIAL_DESTINATIONS, INITIAL_KYOTO_ITINERARY } from './data/mockData';
 import { findDestinationBySlug } from './data/destinationsData';
@@ -23,14 +24,7 @@ import { DestinationsView } from './components/DestinationsView';
 import { VisaView } from './components/VisaView';
 import { AboutView } from './components/AboutView';
 import { ContactView } from './components/ContactView';
-import { PackagesView } from './components/PackagesView';
-import { PlannerView } from './components/PlannerView';
-import { FeedView } from './components/FeedView';
-import { MapView } from './components/MapView';
-import { ProfileView } from './components/ProfileView';
-import { SmartSearchView } from './components/SmartSearchView';
 import { DestinationModal } from './components/DestinationModal';
-import { AdminDashboard } from './components/AdminDashboard';
 import { Footer } from './components/Footer';
 import { FloatingWhatsAppButton } from './components/FloatingWhatsAppButton';
 import { VisaQuoteModal } from './components/VisaQuoteModal';
@@ -43,15 +37,33 @@ import { POPULAR_AIRPORTS, buildWhiteLabelSearchUrl } from './data/flightsData';
 import { SEOHead } from './components/SEOHead';
 import { getOrganizationSchema, getWebSiteSchema } from './lib/seo';
 
-// Dedicated SEO Route Components
-import { DestinationSeoView } from './components/DestinationSeoView';
-import { TravelGuidesView } from './components/TravelGuidesView';
-import { TravelGuideDetailView } from './components/TravelGuideDetailView';
-import { ItinerariesView } from './components/ItinerariesView';
-import { ItineraryDetailView } from './components/ItineraryDetailView';
-import { VisaSeoDetailView } from './components/VisaSeoDetailView';
-import { AiPlannerLandingView } from './components/AiPlannerLandingView';
-import { NotFoundView } from './components/NotFoundView';
+// Lazy-loaded routes for code-splitting and faster initial bundle loading
+const PackagesView = lazy(() => import('./components/PackagesView').then((m) => ({ default: m.PackagesView })));
+const PlannerView = lazy(() => import('./components/PlannerView').then((m) => ({ default: m.PlannerView })));
+const FeedView = lazy(() => import('./components/FeedView').then((m) => ({ default: m.FeedView })));
+const MapView = lazy(() => import('./components/MapView').then((m) => ({ default: m.MapView })));
+const ProfileView = lazy(() => import('./components/ProfileView').then((m) => ({ default: m.ProfileView })));
+const SmartSearchView = lazy(() => import('./components/SmartSearchView').then((m) => ({ default: m.SmartSearchView })));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard').then((m) => ({ default: m.AdminDashboard })));
+const HotelsView = lazy(() => import('./components/HotelsView').then((m) => ({ default: m.HotelsView })));
+const ActivitiesView = lazy(() => import('./components/ActivitiesView').then((m) => ({ default: m.ActivitiesView })));
+
+// Lazy-loaded Dedicated SEO Route Components
+const DestinationSeoView = lazy(() => import('./components/DestinationSeoView').then((m) => ({ default: m.DestinationSeoView })));
+const TravelGuidesView = lazy(() => import('./components/TravelGuidesView').then((m) => ({ default: m.TravelGuidesView })));
+const TravelGuideDetailView = lazy(() => import('./components/TravelGuideDetailView').then((m) => ({ default: m.TravelGuideDetailView })));
+const ItinerariesView = lazy(() => import('./components/ItinerariesView').then((m) => ({ default: m.ItinerariesView })));
+const ItineraryDetailView = lazy(() => import('./components/ItineraryDetailView').then((m) => ({ default: m.ItineraryDetailView })));
+const VisaSeoDetailView = lazy(() => import('./components/VisaSeoDetailView').then((m) => ({ default: m.VisaSeoDetailView })));
+const AiPlannerLandingView = lazy(() => import('./components/AiPlannerLandingView').then((m) => ({ default: m.AiPlannerLandingView })));
+const NotFoundView = lazy(() => import('./components/NotFoundView').then((m) => ({ default: m.NotFoundView })));
+
+const RouteLoadingFallback = () => (
+  <div className="w-full min-h-[60vh] flex flex-col items-center justify-center space-y-4 py-16 px-4 animate-pulse">
+    <div className="w-12 h-12 rounded-full border-3 border-slate-200 border-t-[#0D6EFD] animate-spin" aria-label="Loading page content" />
+    <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">Loading Travel Data...</p>
+  </div>
+);
 
 interface RouteState {
   view: NavView;
@@ -154,6 +166,12 @@ function parseUrlToRoute(): RouteState {
   if (pathname.startsWith('/packages/') || pathname.startsWith('/package/') || pathname.startsWith('/tours/') || pathname.startsWith('/tour/')) {
     return { view: 'packages' };
   }
+  if (pathname === '/hotels' || pathname === '/hotel' || pathname === '/resorts') {
+    return { view: 'hotels' };
+  }
+  if (pathname === '/activities' || pathname === '/activity' || pathname === '/tours-activities' || pathname === '/experiences') {
+    return { view: 'activities' };
+  }
   if (pathname === '/planner' || pathname === '/trip-planner') {
     return { view: 'planner' };
   }
@@ -240,6 +258,10 @@ function getViewUrl(view: NavView, slug?: string): string {
       return '/';
     case 'packages':
       return '/packages';
+    case 'hotels':
+      return '/hotels';
+    case 'activities':
+      return '/activities';
     case 'planner':
       return '/planner';
     case 'feed':
@@ -264,6 +286,7 @@ function getViewUrl(view: NavView, slug?: string): string {
 }
 
 function AppContent() {
+  const shouldReduceMotion = useReducedMotion();
   const [routeState, setRouteState] = useState<RouteState>(() => parseUrlToRoute());
 
   const currentView = routeState.view;
@@ -286,21 +309,26 @@ function AppContent() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  // Handle Supabase Auth Callback URL if redirected here
-  const isAuthCallbackRoute =
-    typeof window !== 'undefined' &&
-    (window.location.pathname.startsWith('/auth/callback') ||
-      window.location.hash.includes('access_token=') ||
-      window.location.search.includes('code='));
-
-  if (isAuthCallbackRoute) {
-    return <AuthCallback />;
-  }
-
   // Application State
   const [destinations] = useState<Destination[]>(INITIAL_DESTINATIONS);
   const [currentItinerary, setCurrentItinerary] = useState<Itinerary>(INITIAL_KYOTO_ITINERARY);
-  const [savedItineraries, setSavedItineraries] = useState<Itinerary[]>([INITIAL_KYOTO_ITINERARY]);
+  const [savedItineraries, setSavedItineraries] = useState<Itinerary[]>(() => {
+    try {
+      const stored = localStorage.getItem('azraq_saved_itineraries');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('azraq_saved_itineraries', JSON.stringify(savedItineraries));
+    } catch {
+      // Local storage fallback
+    }
+  }, [savedItineraries]);
+
   const [modalDestination, setModalDestination] = useState<Destination | null>(null);
   const [mapSpot, setMapSpot] = useState<Spot | undefined>(undefined);
   const [activeSearchQuery, setActiveSearchQuery] = useState<string>('');
@@ -527,10 +555,21 @@ function AppContent() {
       })
     : undefined;
 
+  // Handle Supabase Auth Callback URL if redirected here
+  const isAuthCallbackRoute =
+    typeof window !== 'undefined' &&
+    (window.location.pathname.startsWith('/auth/callback') ||
+      window.location.hash.includes('access_token=') ||
+      window.location.search.includes('code='));
+
+  if (isAuthCallbackRoute) {
+    return <AuthCallback />;
+  }
+
   return (
     <ClientLayout
       className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#0D6EFD] selection:text-white"
-      mainClassName="w-full min-h-screen flex flex-col transition-all duration-300"
+      mainClassName="w-full min-h-screen flex flex-col transition-all duration-300 pb-16 md:pb-0"
       navbar={(navRef) => (
         <Navigation
           ref={navRef as React.Ref<HTMLElement>}
@@ -562,24 +601,31 @@ function AppContent() {
         />
       )}
 
-      <div className="flex-1 w-full">
-        {/* Main Views */}
-        {currentView === 'discover' && (
-          <DiscoverView
-            destinations={destinations}
-            onSelectDestination={(dest) => handleNavigate('destination-detail', { slug: dest.id })}
-            onPlanTripPrompt={handlePlanTripPrompt}
-            onQuickGenerateItinerary={handleQuickGenerateItinerary}
-            onNavigateToView={handleNavigate}
-            onSearchFlights={handleSearchFlights}
-            onOpenVisaModal={handleOpenVisaQuote}
-            onOpenQuote={() => handleOpenVisaQuote()}
-            onOpenLocationFinder={() => {
-              setLocationFinderQuery('');
-              setIsLocationFinderOpen(true);
-            }}
-          />
-        )}
+      <motion.div
+        key={currentView + (currentSlug || '')}
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2, ease: 'easeOut' }}
+        className="flex-1 w-full"
+      >
+        <Suspense fallback={<RouteLoadingFallback />}>
+          {/* Main Views */}
+          {currentView === 'discover' && (
+            <DiscoverView
+              destinations={destinations}
+              onSelectDestination={(dest) => handleNavigate('destination-detail', { slug: dest.id })}
+              onPlanTripPrompt={handlePlanTripPrompt}
+              onQuickGenerateItinerary={handleQuickGenerateItinerary}
+              onNavigateToView={handleNavigate}
+              onSearchFlights={handleSearchFlights}
+              onOpenVisaModal={handleOpenVisaQuote}
+              onOpenQuote={() => handleOpenVisaQuote()}
+              onOpenLocationFinder={() => {
+                setLocationFinderQuery('');
+                setIsLocationFinderOpen(true);
+              }}
+            />
+          )}
 
         {currentView === 'destinations' && (
           <DestinationsView
@@ -668,6 +714,17 @@ function AppContent() {
 
         {currentView === 'packages' && <PackagesView />}
 
+        {currentView === 'hotels' && (
+          <HotelsView onNavigateToView={handleNavigate} />
+        )}
+
+        {currentView === 'activities' && (
+          <ActivitiesView
+            onNavigateToView={handleNavigate}
+            onOpenQuote={() => handleOpenVisaQuote()}
+          />
+        )}
+
         {currentView === 'about' && (
           <AboutView
             onNavigateToContact={() => handleNavigate('contact')}
@@ -736,7 +793,8 @@ function AppContent() {
         {currentView === 'not-found' && (
           <NotFoundView onNavigateToView={handleNavigate} />
         )}
-      </div>
+        </Suspense>
+      </motion.div>
 
       {/* Global Travel Agency Footer */}
       <Footer
@@ -794,7 +852,7 @@ function AppContent() {
       />
 
       {/* Auth Modal & Toast Notifications */}
-      <AuthModal brandTitle="Azraq" />
+      <AuthModal brandTitle="Azraq" onNavigate={handleNavigate} />
       <Toast />
     </ClientLayout>
   );

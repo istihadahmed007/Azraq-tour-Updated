@@ -224,3 +224,30 @@ export function getSoftwareApplicationSchema(app: {
     },
   };
 }
+
+export function getTourPackageSchema(
+  packageName: string,
+  description: string,
+  price: number | string,
+  currency: string = 'BDT',
+  imageUrl?: string
+) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: packageName,
+    description,
+    image: imageUrl || DEFAULT_OG_IMAGE,
+    offers: {
+      '@type': 'Offer',
+      price: String(price),
+      priceCurrency: currency,
+      availability: 'https://schema.org/InStock',
+      seller: {
+        '@type': 'TravelAgency',
+        name: SITE_NAME,
+        url: SITE_URL,
+      },
+    },
+  };
+}

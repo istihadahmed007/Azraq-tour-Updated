@@ -1,12 +1,38 @@
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, browserLocalPersistence, setPersistence } from 'firebase/auth';
-import { initializeFirestore, setLogLevel } from 'firebase/firestore';
+import { initializeApp, getApps, getApp, FirebaseApp, FirebaseOptions } from 'firebase/app';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  browserLocalPersistence,
+  setPersistence,
+  Auth,
+} from 'firebase/auth';
+import { initializeFirestore, setLogLevel, doc, getDocFromServer, Firestore } from 'firebase/firestore';
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
-import firebaseConfig from '../../firebase-applet-config.json';
+import rawFirebaseConfig from '../../firebase-applet-config.json';
 
-export const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+// Normalize standard options for FirebaseApp initialization
+const firebaseOptions: FirebaseOptions = {
+  apiKey: rawFirebaseConfig.apiKey,
+  authDomain: rawFirebaseConfig.authDomain,
+  projectId: rawFirebaseConfig.projectId,
+  storageBucket: rawFirebaseConfig.storageBucket,
+  messagingSenderId: rawFirebaseConfig.messagingSenderId,
+  appId: rawFirebaseConfig.appId,
+  measurementId: rawFirebaseConfig.measurementId,
+};
 
-export const auth = getAuth(app);
+export const app: FirebaseApp =
+  getApps().length > 0 ? getApp() : initializeApp(firebaseOptions);
+
+// Initialize Firebase Auth with safe fallback
+let authInstance: Auth;
+try {
+  authInstance = getAuth(app);
+} catch (err) {
+  console.warn('[Firebase Auth fallback initialization]:', err);
+  authInstance = getAuth(app);
+}
+export const auth: Auth = authInstance;
 
 // Suppress transient Firestore internal connection probe logs
 try {
@@ -32,17 +58,29 @@ googleProvider.addScope('email');
 googleProvider.addScope('profile');
 googleProvider.addScope('openid');
 
-export const oAuthClientId = firebaseConfig.oAuthClientId || '';
+export const oAuthClientId = (rawFirebaseConfig as { oAuthClientId?: string }).oAuthClientId || '';
 
 // Initialize Firestore with robust auto-detect long-polling for iframe & web sandbox compatibility
-export const db = initializeFirestore(
+export const db: Firestore = initializeFirestore(
   app,
   {
     experimentalAutoDetectLongPolling: true,
     ignoreUndefinedProperties: true,
   },
-  firebaseConfig.firestoreDatabaseId || '(default)'
+  (rawFirebaseConfig as any).firestoreDatabaseId || '(default)'
 );
+
+// Validate Connection to Firestore on startup per skill guidelines
+async function testConnection() {
+  try {
+    await getDocFromServer(doc(db, 'test', 'connection'));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn('[Firestore Offline Notice]: Client is currently operating with offline cache or network restricted.');
+    }
+  }
+}
+testConnection().catch(() => {});
 
 export enum OperationType {
   CREATE = 'create',
@@ -104,21 +142,29 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 // Initialize Firebase Analytics safely (supported in browser environments)
 export let analytics: Analytics | null = null;
 if (typeof window !== 'undefined') {
-  isSupported()
-    .then((supported) => {
-      if (supported) {
-        analytics = getAnalytics(app);
-      }
-    })
-    .catch(() => {
-      // Analytics not supported in this environment
-    });
+  try {
+    isSupported()
+      .then((supported) => {
+        if (supported && firebaseOptions.measurementId) {
+          try {
+            analytics = getAnalytics(app);
+          } catch (analyticsErr) {
+            console.warn('[Analytics initialization bypassed]:', analyticsErr);
+          }
+        }
+      })
+      .catch(() => {
+        // Analytics not supported in this environment
+      });
+  } catch {
+    // Safe fallback
+  }
 }
 
 export const isFirebaseConfigured = Boolean(
-  firebaseConfig &&
-  firebaseConfig.projectId &&
-  firebaseConfig.apiKey
+  rawFirebaseConfig &&
+  rawFirebaseConfig.projectId &&
+  rawFirebaseConfig.apiKey
 );
 
 

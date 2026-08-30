@@ -1,7 +1,7 @@
 {
-  "name": "Azraq Tours & Travels – Luxury Travel Concierge",
-  "short_name": "Azraq Tours",
-  "description": "Personalized visa assistance, flight quotes, and curated Asian destination guides for Bangladeshi travelers.",
+  "name": "Azraq Trips",
+  "short_name": "Azraq Trips",
+  "description": "Azraq Trips - Travel farther. Experience more. Bangladesh premier Online Travel Agency offering international flights, luxury hotel stays, curated Asian tour packages, fast-track visa processing, activities, and AI trip planning.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

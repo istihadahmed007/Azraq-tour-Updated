@@ -7,6 +7,8 @@ export type NavView =
   | 'itineraries'
   | 'itinerary-detail'
   | 'packages'
+  | 'hotels'
+  | 'activities'
   | 'visa'
   | 'visa-detail'
   | 'ai-planner'
@@ -623,6 +625,13 @@ export interface User {
   email: string;
   phone?: string;
   country?: string;
+  nationality?: string;
+  preferredLanguage?: string;
+  preferredCurrency?: string;
+  travelStyle?: string;
+  travelStyles?: string[];
+  travelInterests?: string[];
+  preferredDestinations?: string[];
   photoURL?: string;
   bio?: string;
   languages?: string[];
@@ -659,6 +668,9 @@ export type AuthModalView =
   | 'register'
   | 'forgot_password'
   | 'email_verification'
+  | 'otp_entry'
+  | 'otp_verify'
+  | 'profile_setup'
   | 'phone_otp'
   | 'onboarding'
   | 'google_prompt';
@@ -843,6 +855,8 @@ export interface TravelBuddyProfile {
   createdAt: string;
   updatedAt: string;
   isDemo?: boolean;
+  email?: string;
+  phone?: string;
 }
 
 export interface TravelBuddyRequest {
@@ -864,6 +878,108 @@ export interface MatchedTravelBuddy extends TravelBuddyProfile {
   requestDirection?: 'incoming' | 'outgoing';
   activeRequestId?: string;
   existingRequest?: TravelBuddyRequest;
+}
+
+export interface TravelCommunity {
+  id: string;
+  name: string;
+  destination: string;
+  image: string;
+  description: string;
+  members: string[]; // user IDs
+  memberCount: number;
+  postsCount: number;
+  createdAt?: string;
+  created_at?: string;
+  creatorId?: string;
+  creator_id?: string;
+  tags?: string[];
+  isJoined?: boolean;
+  is_member?: boolean;
+}
+
+export type GroupTripStatus = 'open' | 'filling_fast' | 'full' | 'completed';
+
+export interface GroupTrip {
+  id: string;
+  title: string;
+  destination: string;
+  startDate?: string;
+  start_date?: string;
+  endDate?: string;
+  end_date?: string;
+  budgetBDT?: number; // budget in Bangladeshi Taka
+  budget_bdt?: number;
+  maxTravelers?: number;
+  max_travelers?: number;
+  currentTravelers?: string[]; // user IDs
+  current_travelers?: string[];
+  travelersCount?: number;
+  travelers_count?: number;
+  travelStyle?: string;
+  travel_style?: string;
+  status: GroupTripStatus;
+  hostId?: string;
+  host_id?: string;
+  hostName?: string;
+  host_name?: string;
+  hostAvatar?: string;
+  host_avatar?: string;
+  hostLocation?: string;
+  hostVerified?: boolean;
+  description: string;
+  itineraryHighlights?: string[];
+  createdAt?: string;
+  created_at?: string;
+  isJoined?: boolean;
+  is_joined?: boolean;
+  isHost?: boolean;
+}
+
+export type SocialPostType =
+  | 'Travel Story'
+  | 'Buddy Request'
+  | 'Trip Plan'
+  | 'Travel Update'
+  | 'story'
+  | 'buddy_request'
+  | 'trip_plan'
+  | 'update';
+
+export interface TripPlanDetails {
+  destination?: string;
+  startDate?: string;
+  start_date?: string;
+  endDate?: string;
+  end_date?: string;
+  estimatedBudgetBDT?: number;
+  estimated_budget?: string | number;
+  travelStyle?: string;
+  slotsAvailable?: number;
+  spots_available?: number;
+  preferredGroupSize?: number;
+}
+
+export interface SocialNotification {
+  id: string;
+  recipientId?: string;
+  recipient_id?: string;
+  senderId?: string;
+  sender_id?: string;
+  senderName?: string;
+  senderAvatar?: string;
+  actor_name?: string;
+  actor_avatar?: string;
+  type: string;
+  title: string;
+  message: string;
+  linkUrl?: string;
+  action_url?: string;
+  isRead?: boolean;
+  is_read?: boolean;
+  createdAt?: string;
+  created_at: string;
+  metadata?: Record<string, any>;
 }
 
 // --- Onboarding Agent Interfaces ---

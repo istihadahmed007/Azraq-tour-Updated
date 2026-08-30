@@ -247,6 +247,59 @@ export const authService = {
     }
   },
 
+  // Send Passwordless 6-Digit Email OTP
+  async sendEmailOtp(email: string): Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; isNewUser?: boolean }> {
+    try {
+      const res = await fetch('/api/auth/send-email-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Failed to send OTP code.' };
+      }
+      return {
+        success: true,
+        message: data.message,
+        demoOtp: data.demoOtp,
+        isNewUser: data.isNewUser,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Network error sending OTP.' };
+    }
+  },
+
+  // Verify 6-Digit Email OTP
+  async verifyEmailOtp(email: string, otp: string): Promise<AuthResponse & { isNewUser?: boolean }> {
+    try {
+      const res = await fetch('/api/auth/verify-email-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), otp: otp.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        return { success: false, error: data.error || 'Invalid OTP code.' };
+      }
+      if (data.token) {
+        this.setSessionToken(data.token, true);
+      }
+      if (data.user) {
+        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(data.user));
+      }
+      return {
+        success: true,
+        user: data.user,
+        token: data.token,
+        message: data.message,
+        isNewUser: data.isNewUser,
+      };
+    } catch (err: any) {
+      return { success: false, error: err.message || 'Verification network error.' };
+    }
+  },
+
   // Logout
   async logout(): Promise<void> {
     try {

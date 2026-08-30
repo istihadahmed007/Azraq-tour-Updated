@@ -23,17 +23,17 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
           loading="lazy"
           className="absolute inset-0 w-full h-full object-cover object-center"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/95 via-[#00224F]/80 to-black/50" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#073B4C]/95 via-[#086788]/85 to-[#073B4C]/70" />
 
         <div className="relative z-10 max-w-2xl mx-auto space-y-6">
           <div className="space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-300 font-mono">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#17BEBB] font-mono">
               Start Exploring
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight text-white font-poppins">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-normal tracking-tight text-white font-serif-display">
               Your next journey starts with a better plan.
             </h2>
-            <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal">
+            <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal font-inter">
               Let our AI travel planner and Dhaka concierge craft a personalized itinerary with live Google Maps grounding, transparent rates, and end-to-end visa assistance.
             </p>
           </div>
@@ -44,24 +44,24 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
               <button
                 onClick={onPlanTrip}
                 type="button"
-                className="min-h-[50px] px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-400 text-slate-950 font-extrabold text-sm sm:text-base shadow-xl hover:brightness-110 active:scale-97 transition-all flex items-center justify-center gap-2 cursor-pointer font-poppins"
+                className="btn-coral-primary !min-h-[50px] !px-7 !py-3.5 !text-sm sm:!text-base"
               >
                 <span>Plan with AI Concierge</span>
-                <ArrowRight className="w-4 h-4 text-slate-950" />
+                <ArrowRight className="w-4 h-4 text-white" />
               </button>
 
               {onNavigateToPackages && (
                 <button
                   onClick={onNavigateToPackages}
                   type="button"
-                  className="min-h-[50px] px-6 py-3.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-bold text-sm border border-white/20 backdrop-blur-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="btn-ghost-ocean !bg-white/15 !text-white !border-white/25 hover:!bg-white/25 !min-h-[50px] !px-6 !py-3.5 !text-sm backdrop-blur-md"
                 >
                   <span>Explore Holiday Packages</span>
                 </button>
               )}
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-sky-200">
+            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-[#EAF7F8] font-inter">
               <button
                 type="button"
                 onClick={() => {
@@ -70,7 +70,7 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
                 }}
                 className="hover:text-white hover:underline flex items-center gap-1.5 cursor-pointer py-1"
               >
-                <Plane className="w-3.5 h-3.5" />
+                <Plane className="w-3.5 h-3.5 text-[#17BEBB]" />
                 <span>Search Flights</span>
               </button>
               <span className="text-white/30 hidden sm:inline">•</span>
@@ -80,7 +80,7 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
                 rel="noreferrer"
                 className="hover:text-white hover:underline flex items-center gap-1.5 cursor-pointer py-1"
               >
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-400" />
+                <MessageCircle className="w-3.5 h-3.5 text-[#17BEBB]" />
                 <span>Contact Azraq Support on WhatsApp</span>
               </a>
             </div>

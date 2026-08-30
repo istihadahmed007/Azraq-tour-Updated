@@ -11,22 +11,22 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
   const steps = [
     {
       step: '01',
-      icon: <Search className="w-5 h-5 text-blue-600" />,
-      bg: 'bg-blue-50',
+      icon: <Search className="w-5 h-5 text-[#086788]" />,
+      bg: 'bg-[#EAF7F8]',
       title: 'Compare Live Airfares',
-      desc: 'Browse direct and 1-stop routes from Dhaka to across Asia and the Middle East with live pricing.',
+      desc: 'Browse direct and 1-stop routes from Dhaka across Asia and the Middle East with live pricing in BDT.',
     },
     {
       step: '02',
-      icon: <FileText className="w-5 h-5 text-amber-600" />,
-      bg: 'bg-amber-50',
+      icon: <FileText className="w-5 h-5 text-[#FF6B5A]" />,
+      bg: 'bg-[#FFEAE8]',
       title: 'Request VIP Quote',
       desc: 'Lock in group rates, baggage allowances, and special requests with our Dhaka travel specialists.',
     },
     {
       step: '03',
-      icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
-      bg: 'bg-emerald-50',
+      icon: <CheckCircle2 className="w-5 h-5 text-[#17BEBB]" />,
+      bg: 'bg-[#EAF7F8]',
       title: 'Receive Instant E-Tickets',
       desc: 'Get your verified PNR and official ticket sent directly via WhatsApp and email with zero hidden fees.',
     },
@@ -35,13 +35,13 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
   return (
     <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6">
       <div className="text-center max-w-2xl mx-auto space-y-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#0D6EFD] font-mono">
+        <span className="text-xs font-bold uppercase tracking-wider text-[#086788] font-mono">
           How Azraq Works
         </span>
-        <h2 className="text-2xl sm:text-3xl font-bold text-[#071A33] tracking-tight font-poppins">
+        <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
           Simple, Transparent Flight & Travel Booking
         </h2>
-        <p className="text-xs sm:text-sm text-slate-500">
+        <p className="text-xs sm:text-sm text-slate-500 font-inter">
           We combine real-time global inventory with dedicated local travel desk support.
         </p>
       </div>
@@ -60,8 +60,8 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <h3 className="text-base font-bold text-[#071A33] font-poppins">{s.title}</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{s.desc}</p>
+              <h3 className="text-base font-bold text-[#073B4C] font-serif-display text-lg">{s.title}</h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-inter">{s.desc}</p>
             </div>
           </div>
         ))}
@@ -74,10 +74,10 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
             if (onNavigateToFlights) onNavigateToFlights();
             else window.location.href = 'https://flights.azraqtrips.com/';
           }}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#0D6EFD] hover:text-blue-700 transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#086788] hover:text-[#073B4C] transition-colors cursor-pointer"
         >
           <span>Start flight search</span>
-          <ArrowRight className="w-4 h-4" />
+          <ArrowRight className="w-4 h-4 text-[#17BEBB]" />
         </button>
       </div>
     </section>

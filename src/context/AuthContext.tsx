@@ -20,13 +20,17 @@ interface AuthContextType {
   authModalOpen: boolean;
   authModalView: AuthModalView;
   pendingAction: PendingAction | null;
+  returnTo: string | null;
   toast: ToastNotification | null;
   isLoading: boolean;
-  openAuthModal: (view?: AuthModalView) => void;
+  openAuthModal: (view?: AuthModalView, returnTo?: string) => void;
   closeAuthModal: () => void;
   setAuthModalView: (view: AuthModalView) => void;
-  requireAuth: (action: PendingAction, onComplete?: () => void) => void;
+  setReturnTo: (pathOrView: string | null) => void;
+  requireAuth: (action: PendingAction, onComplete?: () => void, returnTo?: string) => void;
   loginWithEmail: (email: string, pass: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
+  sendEmailOtp: (email: string) => Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; isNewUser?: boolean }>;
+  verifyEmailOtp: (email: string, otp: string) => Promise<{ success: boolean; user?: User; token?: string; isNewUser?: boolean; error?: string; message?: string }>;
   registerWithEmail: (
     fullName: string,
     email: string,
@@ -108,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalView, setAuthModalView] = useState<AuthModalView>('guest_prompt');
   const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [returnTo, setReturnTo] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastNotification | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -240,7 +245,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const clearToast = () => setToast(null);
 
-  const openAuthModal = (view: AuthModalView = 'login') => {
+  const openAuthModal = (view: AuthModalView = 'login', returnToDestination?: string) => {
+    if (returnToDestination) {
+      setReturnTo(returnToDestination);
+    }
     setAuthModalView(view);
     setAuthModalOpen(true);
   };
@@ -249,8 +257,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthModalOpen(false);
   };
 
-  const requireAuth = (action: PendingAction, onComplete?: () => void) => {
+  const requireAuth = (action: PendingAction, onComplete?: () => void, returnToDestination?: string) => {
     const fullAction = { ...action, onExecute: onComplete };
+    if (returnToDestination) {
+      setReturnTo(returnToDestination);
+    }
     if (user) {
       if (onComplete) onComplete();
       showToast(`${action.label}`, 'success');
@@ -258,6 +269,92 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPendingAction(fullAction);
       setAuthModalView('guest_prompt');
       setAuthModalOpen(true);
+    }
+  };
+
+  // 1a. Passwordless 6-Digit Email OTP Request
+  const sendEmailOtp = async (
+    email: string
+  ): Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; isNewUser?: boolean }> => {
+    try {
+      setIsLoading(true);
+      const cleanEmail = email.trim().toLowerCase();
+      const res = await safeFetchJson('/api/auth/send-email-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+
+      if (res.ok && res.data?.success) {
+        return {
+          success: true,
+          message: res.data.message || `6-digit code sent to ${cleanEmail}`,
+          demoOtp: res.data.demoOtp,
+          isNewUser: res.data.isNewUser,
+        };
+      }
+      return {
+        success: false,
+        error: res.data?.error || res.error || 'Failed to send OTP code. Please try again.',
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.message || 'Network error sending OTP code.',
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 1b. Verify 6-Digit Email OTP
+  const verifyEmailOtp = async (
+    email: string,
+    otp: string
+  ): Promise<{ success: boolean; user?: User; token?: string; isNewUser?: boolean; error?: string; message?: string }> => {
+    try {
+      setIsLoading(true);
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanOtp = otp.trim();
+
+      const res = await safeFetchJson('/api/auth/verify-email-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail, otp: cleanOtp }),
+      });
+
+      if (res.ok && res.data?.success && res.data?.user) {
+        const verifiedUser: User = res.data.user;
+        const userToken: string = res.data.token || `token_${verifiedUser.uid}_${Date.now()}`;
+
+        // Save to Firestore non-blockingly
+        try {
+          setDoc(doc(db, 'users', verifiedUser.uid), verifiedUser, { merge: true }).catch(() => {});
+        } catch {}
+
+        saveUserSession(verifiedUser, userToken);
+        showToast(`Welcome, ${verifiedUser.fullName ? verifiedUser.fullName.split(' ')[0] : 'Traveler'}! Signed in successfully. 🎉`, 'success');
+
+        return {
+          success: true,
+          user: verifiedUser,
+          token: userToken,
+          isNewUser: res.data.isNewUser ?? (!verifiedUser.isProfileComplete || !verifiedUser.homeLocation),
+          message: res.data.message,
+        };
+      }
+
+      return {
+        success: false,
+        error: res.data?.error || res.error || 'Invalid 6-digit code. Please try again.',
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        error: err?.message || 'Verification failed. Please try again.',
+      };
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -765,12 +862,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authModalOpen,
         authModalView,
         pendingAction,
+        returnTo,
         toast,
         isLoading,
         openAuthModal,
         closeAuthModal,
         setAuthModalView,
+        setReturnTo,
         requireAuth,
+        sendEmailOtp,
+        verifyEmailOtp,
         loginWithEmail,
         registerWithEmail,
         loginWithGoogle,

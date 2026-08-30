@@ -72,6 +72,7 @@
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     min-height: 100vh;
+    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 
   h1, h2, h3 {
@@ -97,11 +98,47 @@
     max-width: 100%;
   }
 
+  /* Prevent iOS zoom on input focus */
   @media (max-width: 640px) {
     input, select, textarea {
       font-size: 16px;
     }
   }
+
+  /* Safe Area Inset Helpers */
+  .pb-safe {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 1rem));
+  }
+  .pb-safe-nav {
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0.5rem));
+  }
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top, 0.75rem));
+  }
+}
+
+/* Mobile-First Carousel Utilities */
+.carousel-mobile {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.carousel-mobile::-webkit-scrollbar {
+  display: none;
+}
+.carousel-mobile > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+
+/* Touch Control Helpers (Min 44x44 target area) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
 }
 
 /* Ocean Typography Classes */

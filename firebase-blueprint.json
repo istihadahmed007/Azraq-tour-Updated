@@ -16,7 +16,10 @@
         "createdAt": { "type": "string", "description": "ISO timestamp of account creation" },
         "homeLocation": { "type": "string", "description": "Home city or location" },
         "bio": { "type": "string", "description": "Short bio or travel intro" },
-        "travelPreferences": { "type": "array", "description": "User travel preferences and interests" }
+        "travelPreferences": {
+          "type": "array",
+          "description": "User travel preferences and interests"
+        }
       },
       "required": ["uid", "email"]
     },
@@ -36,13 +39,25 @@
         "likes": { "type": "number", "description": "Total like count" },
         "commentsCount": { "type": "number", "description": "Total comments count" },
         "caption": { "type": "string", "description": "Text caption of post" },
-        "hashtags": { "type": "array", "description": "Hashtag strings associated with post" },
+        "hashtags": {
+          "type": "array",
+          "description": "Hashtag strings associated with post"
+        },
         "timeAgo": { "type": "string", "description": "Relative time string" },
         "isLiked": { "type": "boolean", "description": "Client like state" },
         "isBookmarked": { "type": "boolean", "description": "Client bookmark state" },
-        "commentsList": { "type": "array", "description": "List of comment objects" },
-        "likedBy": { "type": "array", "description": "List of user UIDs who liked this post" },
-        "bookmarkedBy": { "type": "array", "description": "List of user UIDs who bookmarked this post" },
+        "commentsList": {
+          "type": "array",
+          "description": "List of comment objects"
+        },
+        "likedBy": {
+          "type": "array",
+          "description": "List of user UIDs who liked this post"
+        },
+        "bookmarkedBy": {
+          "type": "array",
+          "description": "List of user UIDs who bookmarked this post"
+        },
         "createdAt": { "type": "string", "description": "ISO timestamp of creation" }
       },
       "required": ["id", "authorName", "caption"]
@@ -72,9 +87,18 @@
         "avatarUrl": { "type": "string", "description": "Profile image URL" },
         "homeLocation": { "type": "string", "description": "Departure city or base" },
         "bio": { "type": "string", "description": "Travel bio and expectations" },
-        "destinations": { "type": "array", "description": "Destinations traveler wants to visit" },
-        "travelStyles": { "type": "array", "description": "Travel styles (e.g. adventure, luxury, budget)" },
-        "languages": { "type": "array", "description": "Languages spoken by traveler" },
+        "destinations": {
+          "type": "array",
+          "description": "Destinations traveler wants to visit"
+        },
+        "travelStyles": {
+          "type": "array",
+          "description": "Travel styles (e.g. adventure, luxury, budget)"
+        },
+        "languages": {
+          "type": "array",
+          "description": "Languages spoken by traveler"
+        },
         "travelStart": { "type": "string", "description": "Estimated departure date" },
         "travelEnd": { "type": "string", "description": "Estimated return date" },
         "groupSize": { "type": "number", "description": "Preferred travel group size" },
@@ -84,7 +108,7 @@
         "createdAt": { "type": "string", "description": "ISO timestamp of creation" },
         "updatedAt": { "type": "string", "description": "ISO timestamp of last update" }
       },
-      "required": ["id", "displayName", "destinations"]
+      "required": ["id", "displayName"]
     },
     "buddy_requests": {
       "title": "Travel Buddy Connection Requests",

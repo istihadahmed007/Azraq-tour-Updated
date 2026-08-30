@@ -19,7 +19,7 @@ export const FloatingWhatsAppButton: React.FC<FloatingWhatsAppButtonProps> = ({
     return (
       <button
         onClick={() => setIsDismissed(false)}
-        className="fixed bottom-4 right-4 z-30 p-2.5 rounded-full bg-emerald-600/80 hover:bg-emerald-600 text-white shadow-lg backdrop-blur-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer opacity-70 hover:opacity-100"
+        className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-30 p-2.5 rounded-full bg-emerald-600/80 hover:bg-emerald-600 text-white shadow-lg backdrop-blur-md text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer opacity-70 hover:opacity-100"
         title="Open Concierge Chat"
       >
         <MessageSquare className="w-4 h-4" />
@@ -29,7 +29,7 @@ export const FloatingWhatsAppButton: React.FC<FloatingWhatsAppButtonProps> = ({
   }
 
   return (
-    <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 flex items-center gap-2">
+    <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-30 flex items-center gap-2">
       {/* Tooltip on hover / expanded */}
       <div
         className={`hidden sm:flex items-center gap-2 bg-slate-900/95 text-white text-xs font-semibold py-2 px-3.5 rounded-2xl border border-emerald-400/40 shadow-2xl backdrop-blur-md transition-all duration-300 pointer-events-none ${

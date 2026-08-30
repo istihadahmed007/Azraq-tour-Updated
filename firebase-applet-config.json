@@ -6,7 +6,5 @@
   "firestoreDatabaseId": "(default)",
   "storageBucket": "azraq-tours.firebasestorage.app",
   "messagingSenderId": "147626677042",
-  "measurementId": "G-2VCV15W8Q4",
-  "oAuthClientId": "",
-  "recaptchaSiteKey": ""
+  "measurementId": "G-2VCV15W8Q4"
 }

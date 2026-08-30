@@ -1,23 +1,48 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#2b59ff" />
-      <stop offset="100%" stop-color="#1940e6" />
-    </linearGradient>
-  </defs>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="500" height="500">
+  <!-- Background Circle (White) -->
+  <circle cx="250" cy="250" r="240" fill="#FFFFFF" />
+  
+  <!-- Outer Blue Ring -->
+  <circle cx="250" cy="250" r="236" fill="none" stroke="#0047BA" stroke-width="16" />
 
-  <!-- Background Squircle / Rounded Square -->
-  <rect width="512" height="512" rx="120" fill="url(#blueGrad)" />
+  <!-- Main "A" Graphic with Airplane & Swoosh -->
+  <g fill="#0047BA">
+    <!-- Solid Silhouette Shape for the A with Jet Trail -->
+    <path d="M 250,68 
+             L 266,74 
+             L 362,268 
+             L 300,268 
+             L 272,212 
+             C 285,188 318,162 355,152 
+             C 275,178 220,212 178,268 
+             L 116,268 
+             L 234,68 
+             Z" />
 
-  <!-- White Outlined Airplane Icon angled pointing top-right (45 deg) -->
-  <g transform="translate(256, 256) rotate(45) translate(-256, -256)">
-    <path
-      d="M256,86 C240,86 230,102 230,126 L230,224 L108,284 C92,292 88,310 96,322 C104,334 118,336 132,328 L230,286 L230,374 L186,404 C174,412 172,424 178,432 C184,440 196,442 206,436 L256,412 L306,436 C316,442 328,440 334,432 C340,424 338,412 326,404 L282,374 L282,286 L380,328 C394,336 408,334 416,322 C424,310 420,292 404,284 L282,224 L282,126 C282,102 272,86 256,86 Z"
-      fill="none"
-      stroke="#ffffff"
-      stroke-width="36"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    />
+    <!-- Airplane Flying Out (Upper Right) -->
+    <g transform="translate(370, 142) rotate(32) scale(0.95)">
+      <path d="M 0,-24 C 2,-24 4,-18 4,-4 L 4,14 C 4,18 2,22 0,22 C -2,22 -4,18 -4,14 L -4,-4 C -4,-18 -2,-24 0,-24 Z" />
+      <path d="M 0,-4 L 28,10 L 28,14 L 0,6 L -28,14 L -28,10 Z" />
+      <path d="M 0,16 L 12,22 L 12,25 L 0,21 L -12,25 L -12,22 Z" />
+    </g>
+
+    <!-- AZRAQ Text -->
+    <g transform="translate(250, 358)" text-anchor="middle" font-family="'Cinzel', 'Trajan Pro', 'Baskerville', 'Times New Roman', 'Playfair Display', serif" font-weight="900" font-size="76" letter-spacing="12">
+      <text x="6" y="0">AZRAQ</text>
+    </g>
+
+    <!-- TOURS & TRAVELS Subtitle -->
+    <g transform="translate(250, 400)" text-anchor="middle" font-family="'Montserrat', 'Inter', 'Helvetica Neue', 'Arial', sans-serif" font-weight="800" font-size="25" letter-spacing="6">
+      <text x="3" y="0">TOURS &amp; TRAVELS</text>
+    </g>
+
+    <!-- Bottom Ornament -->
+    <line x1="140" y1="432" x2="225" y2="432" stroke="#0047BA" stroke-width="2.5" stroke-linecap="round" />
+    <g transform="translate(250, 432) scale(0.65)">
+      <path d="M 0,-14 C 1.5,-14 2.5,-10 2.5,-2 L 2.5,8 C 2.5,11 1.5,13 0,13 C -1.5,13 -2.5,11 -2.5,8 L -2.5,-2 C -2.5,-10 -1.5,-14 0,-14 Z" />
+      <path d="M 0,-2 L 18,6 L 18,9 L 0,4 L -18,9 L -18,6 Z" />
+      <path d="M 0,9 L 8,13 L 8,15 L 0,12 L -8,15 L -8,13 Z" />
+    </g>
+    <line x1="275" y1="432" x2="360" y2="432" stroke="#0047BA" stroke-width="2.5" stroke-linecap="round" />
   </g>
 </svg>

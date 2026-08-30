@@ -21,6 +21,22 @@ export interface MediaItem {
   thumbnail_url?: string;
 }
 
+export type SocialPostType =
+  | 'Travel Story'
+  | 'Buddy Request'
+  | 'Trip Plan'
+  | 'Travel Update';
+
+export interface TripPlanDetails {
+  destination?: string;
+  startDate?: string;
+  endDate?: string;
+  estimatedBudgetBDT?: number;
+  travelStyle?: string;
+  slotsAvailable?: number;
+  preferredGroupSize?: number;
+}
+
 export interface Post {
   id: string;
   user_id: string;
@@ -35,6 +51,10 @@ export interface Post {
   approved_at?: string;
   approved_by?: string;
   rejection_reason?: string;
+  // Post type support
+  post_type?: SocialPostType;
+  trip_details?: TripPlanDetails;
+  community_id?: string;
   // Hydrated user profile
   profile?: Profile;
   // Client state

@@ -159,6 +159,34 @@ export const PostCard: React.FC<PostCardProps> = ({
       ? [(post as any).image_url]
       : [];
 
+  const postType = (post as any).post_type || (post as any).postType || 'story';
+  const tripDetails = (post as any).trip_details || (post as any).tripDetails;
+
+  const renderTypeBadge = () => {
+    switch (postType) {
+      case 'buddy_request':
+        return (
+          <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-bold text-emerald-300 flex items-center gap-1">
+            Buddy Request
+          </span>
+        );
+      case 'trip_plan':
+        return (
+          <span className="px-2 py-0.5 rounded-md bg-indigo-500/15 border border-indigo-500/30 text-[10px] font-bold text-indigo-300 flex items-center gap-1">
+            Trip Plan
+          </span>
+        );
+      case 'update':
+        return (
+          <span className="px-2 py-0.5 rounded-md bg-amber-500/15 border border-amber-500/30 text-[10px] font-bold text-amber-300 flex items-center gap-1">
+            Travel Update
+          </span>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <article className="bg-slate-900/80 backdrop-blur-md border border-white/10 rounded-3xl overflow-hidden shadow-xl transition-all hover:border-white/20">
       {/* Post Header */}
@@ -183,13 +211,14 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
 
           <div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <span className="text-xs md:text-sm font-bold text-white">
                 @{post.profile?.username || 'traveler'}
               </span>
               {(post.profile?.is_verified || isAzraqOfficial) && (
                 <CheckCircle2 className="w-3.5 h-3.5 text-sky-400 shrink-0" />
               )}
+              {renderTypeBadge()}
             </div>
             <div className="flex items-center gap-2 text-[11px] text-slate-400">
               {post.location && (
@@ -259,6 +288,42 @@ export const PostCard: React.FC<PostCardProps> = ({
           )}
         </div>
       </div>
+
+      {/* Structured Trip Plan Details Card (if available) */}
+      {tripDetails && (
+        <div className="mx-4 mb-3 p-3 rounded-2xl bg-slate-950/80 border border-white/10 text-xs space-y-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-300">
+            {tripDetails.start_date && (
+              <div>
+                <span className="text-[10px] text-slate-500 block">Dates</span>
+                <span className="font-semibold text-sky-300">
+                  {new Date(tripDetails.start_date).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                  {tripDetails.end_date ? ` - ${new Date(tripDetails.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}` : ''}
+                </span>
+              </div>
+            )}
+            {tripDetails.estimated_budget && (
+              <div>
+                <span className="text-[10px] text-slate-500 block">Est. Budget</span>
+                <span className="font-semibold text-emerald-400">
+                  {tripDetails.estimated_budget}
+                </span>
+              </div>
+            )}
+            {tripDetails.spots_available && (
+              <div>
+                <span className="text-[10px] text-slate-500 block">Spots Open</span>
+                <span className="font-semibold text-amber-300">
+                  {tripDetails.spots_available} travelers
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Post Media Carousel / Video */}
       {resolvedMediaUrls.length > 0 && (
