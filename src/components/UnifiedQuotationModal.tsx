@@ -270,11 +270,11 @@ export const UnifiedQuotationModal: React.FC<UnifiedQuotationModalProps> = ({
         throw new Error(data.error || 'Failed to submit quotation request. Please try again.');
       }
 
-      const generatedId = data.quote?.id || `AZQ-${Date.now().toString().slice(-6)}`;
+      const generatedId = data.requestId || data.quote?.id || data.request?.request_id || `AZQ-${Date.now().toString().slice(-6)}`;
       setSubmittedQuoteId(generatedId);
       setStep(4);
-      onSuccessSubmitted?.(data.quote || payload);
-      showToast?.('Quotation request submitted successfully! Our Dhaka desk is on it.', 'success');
+      onSuccessSubmitted?.(data.request || data.quote || payload);
+      showToast?.(`Request ${generatedId} submitted successfully! A confirmation email has been logged.`, 'success');
     } catch (err: any) {
       console.error('Quote submission error:', err);
       setErrorMessage(err.message || 'An unexpected error occurred. Please contact our WhatsApp desk.');

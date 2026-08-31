@@ -624,6 +624,10 @@ function AppContent() {
                 setLocationFinderQuery('');
                 setIsLocationFinderOpen(true);
               }}
+              onOpenVoiceModal={(text) => {
+                setVoiceModalTranscript(text || '');
+                setIsVoiceModalOpen(true);
+              }}
             />
           )}
 
@@ -709,6 +713,10 @@ function AppContent() {
           <AiPlannerLandingView
             onPlanTripPrompt={handlePlanTripPrompt}
             onNavigateToView={handleNavigate}
+            onOpenVoiceModal={(text) => {
+              setVoiceModalTranscript(text || '');
+              setIsVoiceModalOpen(true);
+            }}
           />
         )}
 

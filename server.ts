@@ -7,6 +7,8 @@ import { v2 as cloudinary } from "cloudinary";
 import { INITIAL_TOUR_PACKAGES } from "./src/data/initialPackagesData";
 import { INITIAL_SOCIAL_PROOF_ACTIVITIES } from "./src/data/socialProofData";
 import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
+import { requestsStore, UnifiedRequestType, UnifiedRequestStatus, RequestPriority } from "./server/requestsStore";
+import { emailService } from "./server/emailService";
 
 const INITIAL_BLOG_POSTS: any[] = [];
 
@@ -586,6 +588,11 @@ app.post("/api/auth/register", (req, res) => {
     usersStore.set(normalizedEmail, newUser);
     saveUsersToDisk();
 
+    // Dispatch real email verification OTP
+    emailService.sendAuthOtpEmail(normalizedEmail, emailVerificationCode).catch((e) => {
+      console.warn('[Register] OTP email dispatch non-blocking error:', e);
+    });
+
     const token = issueSessionToken(newUser);
 
     res.json({
@@ -842,15 +849,24 @@ app.post("/api/auth/verify-phone-otp", (req, res) => {
   }
 });
 
-// 6b. Send Email OTP Endpoint (Passwordless Email Auth)
-app.post("/api/auth/send-email-otp", (req, res) => {
+// 6b. Send Email OTP Endpoint (Passwordless Email Auth & Universal Recipient Resolution)
+app.post(["/api/auth/send-email-otp", "/api/auth/send_otp", "/api/auth/send-otp"], async (req, res) => {
   try {
-    const { email } = req.body;
-    if (!email || typeof email !== "string") {
-      return res.status(400).json({ error: "A valid email address is required." });
+    // Robust extraction: never allow recipient email to be null or empty
+    const rawEmail = (
+      req.body?.email ||
+      req.body?.to ||
+      req.body?.identifier ||
+      req.body?.params?.identifier ||
+      req.body?.user?.email ||
+      ""
+    ).toString().trim();
+
+    if (!rawEmail) {
+      return res.status(400).json({ error: "A valid email address is required (to / email / identifier)." });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = rawEmail.toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return res.status(400).json({ error: "Please enter a valid email address format." });
     }
@@ -887,12 +903,16 @@ app.post("/api/auth/send-email-otp", (req, res) => {
     usersStore.set(normalizedEmail, user);
     saveUsersToDisk();
 
-    console.log(`[AUTH] Sent 6-digit Email OTP to ${normalizedEmail}: ${otpCode}`);
+    // Dispatch real email via unified email provider (Resend API or SMTP)
+    const emailResult = await emailService.sendAuthOtpEmail(normalizedEmail, otpCode);
+    console.log(`[AUTH] Sent 6-digit Email OTP to ${normalizedEmail} via ${emailResult.provider} (${emailResult.status})`);
 
     res.json({
       success: true,
       message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
+      to: normalizedEmail,
       demoOtp: otpCode,
+      provider: emailResult.provider,
       isNewUser: isNew || !user.isProfileComplete,
     });
   } catch (err: any) {
@@ -1888,15 +1908,15 @@ Also include weather summary, smart packing list categories, and realistic budge
   }
 });
 
-// 3b. AI Voice Trip Parser (Converts spoken travel speech into structured prompt & flight search parameters)
+// 3b. AI Voice Trip Parser (Converts spoken travel speech or direct audio into structured prompt & flight search parameters)
 app.post("/api/ai/parse-voice-trip", async (req, res) => {
   try {
-    const { transcript } = req.body;
-    if (!transcript || !transcript.trim()) {
-      return res.status(400).json({ error: "Spoken transcript is required" });
+    const { transcript, audioBase64, mimeType } = req.body;
+    if ((!transcript || !transcript.trim()) && !audioBase64) {
+      return res.status(400).json({ error: "Spoken transcript or audio data is required" });
     }
 
-    const cleanText = transcript.trim();
+    const cleanText = (transcript || "").trim();
 
     // Default dates (2 weeks from now)
     const today = new Date();
@@ -1904,13 +1924,151 @@ app.post("/api/ai/parse-voice-trip", async (req, res) => {
     const defaultEnd = new Date(today.getTime() + 19 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     try {
-      const prompt = `You are an expert AI Flight & Travel Assistant for Azraq Travel.
+      const responseSchema = {
+        type: Type.OBJECT,
+        properties: {
+          transcription: { type: Type.STRING },
+          isFlightIntent: { type: Type.BOOLEAN },
+          destination: { type: Type.STRING },
+          durationDays: { type: Type.INTEGER },
+          startDate: { type: Type.STRING },
+          endDate: { type: Type.STRING },
+          vibes: {
+            type: Type.ARRAY,
+            items: { type: Type.STRING },
+          },
+          travelerCount: { type: Type.INTEGER },
+          travelStyle: { type: Type.STRING },
+          budgetLevel: { type: Type.STRING },
+          structuredPrompt: { type: Type.STRING },
+          spokenSummary: { type: Type.STRING },
+          flightParams: {
+            type: Type.OBJECT,
+            properties: {
+              originCode: { type: Type.STRING },
+              originCity: { type: Type.STRING },
+              originName: { type: Type.STRING },
+              originCountry: { type: Type.STRING },
+              destinationCode: { type: Type.STRING },
+              destinationCity: { type: Type.STRING },
+              destinationName: { type: Type.STRING },
+              destinationCountry: { type: Type.STRING },
+              tripType: { type: Type.STRING },
+              departureDate: { type: Type.STRING },
+              returnDate: { type: Type.STRING },
+              adults: { type: Type.INTEGER },
+              children: { type: Type.INTEGER },
+              infants: { type: Type.INTEGER },
+              cabinClass: { type: Type.STRING },
+              preferredAirline: { type: Type.STRING },
+            },
+            required: [
+              "originCode",
+              "originCity",
+              "originName",
+              "originCountry",
+              "destinationCode",
+              "destinationCity",
+              "destinationName",
+              "destinationCountry",
+              "tripType",
+              "departureDate",
+              "returnDate",
+              "adults",
+              "children",
+              "cabinClass",
+            ],
+          },
+        },
+        required: [
+          "isFlightIntent",
+          "destination",
+          "durationDays",
+          "startDate",
+          "endDate",
+          "vibes",
+          "travelerCount",
+          "travelStyle",
+          "budgetLevel",
+          "structuredPrompt",
+          "spokenSummary",
+          "flightParams",
+        ],
+      };
+
+      let responseText = "";
+
+      if (audioBase64) {
+        // Multimodal direct audio processing
+        const audioMime = mimeType || "audio/webm";
+        const cleanBase64 = audioBase64.replace(/^data:[^;]+;base64,/, "");
+
+        const promptText = `You are an expert AI Flight & Travel Assistant for Azraq Travel.
+Listen to the user's spoken voice in the audio recording (which may be in English, Bengali/Bangla, or mixed).
+1. Transcribe the spoken text accurately into the 'transcription' field.
+2. Analyze the travel request. Detect whether the user wants to search for flights, plan a custom holiday itinerary, or both.
+3. Extract flight search parameters accurately (default origin airport to Dhaka Hazrat Shahjalal DAC unless specified otherwise) and travel itinerary parameters.
+
+Output strictly valid JSON matching the schema:
+- transcription: accurate transcribed spoken words
+- isFlightIntent: boolean (true if the user mentions flights, fly, tickets, airlines, route, airport, or looking for travel tickets)
+- destination: City and Country name (e.g. "Bangkok, Thailand", "Dubai, UAE", "Kuala Lumpur, Malaysia", "Maldives", "Singapore")
+- durationDays: integer duration in days (default 5 or based on context)
+- startDate: departure date in YYYY-MM-DD format (e.g. ${defaultStart})
+- endDate: return date in YYYY-MM-DD format (e.g. ${defaultEnd})
+- vibes: array of 3 to 6 travel keywords (e.g. ["Culture", "Local Cuisine", "Shopping"])
+- travelerCount: integer total passengers/travelers (default 1 or 2)
+- travelStyle: concise description (e.g. "Family Holiday", "Business Trip", "Couples Getaway")
+- budgetLevel: "Budget-Friendly" | "Moderate / Value" | "Luxury" | "Ultra-Luxury"
+- structuredPrompt: detailed 2-3 sentence prompt for itinerary generation
+- spokenSummary: 1-sentence friendly confirmation of the understood route & trip
+- flightParams:
+  - originCode: IATA code (e.g. "DAC", "CGP", "ZYL", "DXB", "BKK", "SIN", "LHR", "JFK")
+  - originCity: city name (e.g. "Dhaka")
+  - originName: airport name (e.g. "Hazrat Shahjalal International Airport")
+  - originCountry: country (e.g. "Bangladesh")
+  - destinationCode: IATA code (e.g. "BKK", "DXB", "KUL", "SIN", "MLE", "DPS", "JED", "IST", "LHR")
+  - destinationCity: city name (e.g. "Bangkok")
+  - destinationName: airport name (e.g. "Suvarnabhumi Airport")
+  - destinationCountry: country name (e.g. "Thailand")
+  - tripType: "round" | "oneway"
+  - departureDate: YYYY-MM-DD
+  - returnDate: YYYY-MM-DD
+  - adults: integer
+  - children: integer
+  - infants: integer
+  - cabinClass: "Economy" | "Premium Economy" | "Business" | "First"
+  - preferredAirline: optional string`;
+
+        responseText = await generateGeminiContentWithRetry({
+          contents: [
+            {
+              role: "user",
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: audioMime,
+                    data: cleanBase64,
+                  },
+                },
+                {
+                  text: promptText,
+                },
+              ],
+            },
+          ],
+          responseMimeType: "application/json",
+          responseSchema,
+        });
+      } else {
+        const prompt = `You are an expert AI Flight & Travel Assistant for Azraq Travel.
 The user spoke their travel/flight request via microphone: "${cleanText}".
 
 Analyze the spoken transcript. Detect whether the user wants to search for flights, plan a custom holiday itinerary, or both.
 Extract flight search parameters accurately (default origin airport to Dhaka Hazrat Shahjalal DAC unless specified otherwise) and travel itinerary parameters.
 
 Output strictly valid JSON matching the schema:
+- transcription: "${cleanText}"
 - isFlightIntent: boolean (true if the user mentions flights, fly, tickets, airlines, route, airport, or looking for travel tickets)
 - destination: City and Country name (e.g. "Bangkok, Thailand", "Dubai, UAE", "Kuala Lumpur, Malaysia", "Maldives", "Singapore")
 - durationDays: integer duration in days (default 5 or based on context)
@@ -1940,80 +2098,12 @@ Output strictly valid JSON matching the schema:
   - cabinClass: "Economy" | "Premium Economy" | "Business" | "First"
   - preferredAirline: optional string (e.g. "Biman Bangladesh Airlines", "Emirates", "Singapore Airlines", "US-Bangla")`;
 
-      const responseText = await generateGeminiContentWithRetry({
-        prompt,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            isFlightIntent: { type: Type.BOOLEAN },
-            destination: { type: Type.STRING },
-            durationDays: { type: Type.INTEGER },
-            startDate: { type: Type.STRING },
-            endDate: { type: Type.STRING },
-            vibes: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING },
-            },
-            travelerCount: { type: Type.INTEGER },
-            travelStyle: { type: Type.STRING },
-            budgetLevel: { type: Type.STRING },
-            structuredPrompt: { type: Type.STRING },
-            spokenSummary: { type: Type.STRING },
-            flightParams: {
-              type: Type.OBJECT,
-              properties: {
-                originCode: { type: Type.STRING },
-                originCity: { type: Type.STRING },
-                originName: { type: Type.STRING },
-                originCountry: { type: Type.STRING },
-                destinationCode: { type: Type.STRING },
-                destinationCity: { type: Type.STRING },
-                destinationName: { type: Type.STRING },
-                destinationCountry: { type: Type.STRING },
-                tripType: { type: Type.STRING },
-                departureDate: { type: Type.STRING },
-                returnDate: { type: Type.STRING },
-                adults: { type: Type.INTEGER },
-                children: { type: Type.INTEGER },
-                infants: { type: Type.INTEGER },
-                cabinClass: { type: Type.STRING },
-                preferredAirline: { type: Type.STRING },
-              },
-              required: [
-                "originCode",
-                "originCity",
-                "originName",
-                "originCountry",
-                "destinationCode",
-                "destinationCity",
-                "destinationName",
-                "destinationCountry",
-                "tripType",
-                "departureDate",
-                "returnDate",
-                "adults",
-                "children",
-                "cabinClass",
-              ],
-            },
-          },
-          required: [
-            "isFlightIntent",
-            "destination",
-            "durationDays",
-            "startDate",
-            "endDate",
-            "vibes",
-            "travelerCount",
-            "travelStyle",
-            "budgetLevel",
-            "structuredPrompt",
-            "spokenSummary",
-            "flightParams",
-          ],
-        },
-      });
+        responseText = await generateGeminiContentWithRetry({
+          prompt,
+          responseMimeType: "application/json",
+          responseSchema,
+        });
+      }
 
       const parsedData = extractCleanJson(responseText);
       if (parsedData) {
@@ -4107,8 +4197,378 @@ function createNotification(title: string, message: string, quoteId?: string, ty
   saveNotificationsToDisk();
 }
 
+// =========================================================================
+// CENTRAL UNIFIED REQUEST & EMAIL NOTIFICATION SYSTEM
+// =========================================================================
+
+// 1. Central Unified Request Submission Endpoint
+app.post("/api/requests/create", async (req, res) => {
+  try {
+    const {
+      userId,
+      requestType,
+      customerName,
+      customerEmail,
+      customerPhone,
+      subject,
+      destination,
+      origin,
+      travelDate,
+      returnDate,
+      passengers,
+      message,
+      metadata,
+      priority,
+      assignedTo,
+    } = req.body;
+
+    if (!customerName || !customerEmail || !customerPhone) {
+      return res.status(400).json({
+        success: false,
+        error: "Please provide your Full Name, Email address, and Phone / WhatsApp number.",
+      });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(customerEmail.trim())) {
+      return res.status(400).json({
+        success: false,
+        error: "Please enter a valid email address.",
+      });
+    }
+
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
+
+    const unifiedReq = await requestsStore.createRequest(
+      {
+        userId,
+        requestType: (requestType as UnifiedRequestType) || "custom",
+        customerName: customerName.trim(),
+        customerEmail: customerEmail.trim(),
+        customerPhone: customerPhone.trim(),
+        subject,
+        destination,
+        origin,
+        travelDate,
+        returnDate,
+        passengers: typeof passengers === "number" ? passengers : Number(passengers) || 1,
+        message,
+        metadata: metadata || {},
+        priority: priority || "NORMAL",
+        assignedTo,
+      },
+      { ip: clientIp, userAgent }
+    );
+
+    // Sync to legacy quotesStore for backward compatibility
+    const legacyQuote: QuoteRecord = {
+      id: unifiedReq.request_id,
+      type: unifiedReq.request_type === "flight" ? "flight" : unifiedReq.request_type === "visa" ? "visa" : "package" as any,
+      customerName: unifiedReq.customer_name,
+      email: unifiedReq.customer_email,
+      phone: unifiedReq.customer_phone,
+      destination: unifiedReq.destination || "",
+      from: unifiedReq.origin || "",
+      to: unifiedReq.destination || "",
+      departureDate: unifiedReq.travel_date || "",
+      returnDate: unifiedReq.return_date,
+      destinationCountry: unifiedReq.destination || "",
+      visaType: unifiedReq.metadata?.visaType || "Tourist",
+      status: "New",
+      createdAt: unifiedReq.created_at,
+      internalNotes: [],
+      acknowledgmentSent: true,
+      assignedStaff: unifiedReq.assigned_to,
+    };
+    quotesStore.unshift(legacyQuote);
+    saveQuotesToDisk();
+
+    // Trigger Admin Notification and Activity Feed
+    logActivity(
+      unifiedReq.request_id,
+      `New ${unifiedReq.request_type.toUpperCase()} Request Created`,
+      `${unifiedReq.customer_name} (Customer)`,
+      `Ref ID: ${unifiedReq.request_id} | Dest: ${unifiedReq.destination || 'N/A'}`
+    );
+    createNotification(
+      `New ${unifiedReq.request_type.toUpperCase()} Request`,
+      `${unifiedReq.customer_name} submitted a request (${unifiedReq.request_id}).`,
+      unifiedReq.request_id,
+      "quote_new"
+    );
+
+    addUserActivity({
+      userEmail: unifiedReq.customer_email,
+      quoteId: unifiedReq.request_id,
+      quoteType: unifiedReq.request_type === "flight" ? "flight" : "visa",
+      routeOrDestination: unifiedReq.destination || unifiedReq.subject || "Azraq Travel Service",
+      status: "NEW",
+      title: `📩 Request ${unifiedReq.request_id} Logged`,
+      message: `Your ${unifiedReq.request_type} request for ${unifiedReq.destination || "Azraq Concierge"} was received. Our team will contact you shortly.`,
+      dotColor: "yellow",
+      iconType: "mail",
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Request submitted successfully. Our Dhaka concierge team has received your inquiry.",
+      requestId: unifiedReq.request_id,
+      request: unifiedReq,
+      quote: legacyQuote,
+    });
+  } catch (err: any) {
+    console.error("[Create Request Error]:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to submit request. Please contact our desk directly via WhatsApp +880 1851-172032.",
+    });
+  }
+});
+
+// 2. Track Request by Request ID or Email
+app.get("/api/requests/track", (req, res) => {
+  try {
+    const query = String(req.query.query || req.query.id || req.query.email || "").trim();
+    if (!query) {
+      return res.status(400).json({ success: false, error: "Please enter a Request ID or Email address to search." });
+    }
+
+    if (query.includes("@")) {
+      const userRequests = requestsStore.getUserRequests({ email: query });
+      return res.json({ success: true, count: userRequests.length, requests: userRequests });
+    }
+
+    const singleReq = requestsStore.getRequestById(query);
+    if (!singleReq) {
+      return res.status(404).json({ success: false, error: `No request found matching '${query}'.` });
+    }
+
+    // Strip internal admin notes for client safety
+    const { admin_notes, client_ip, user_agent, ...safeReq } = singleReq;
+    res.json({ success: true, request: safeReq });
+  } catch (err: any) {
+    console.error("[Track Request Error]:", err);
+    res.status(500).json({ success: false, error: "Failed to track request." });
+  }
+});
+
+// 3. Authenticated User's Request History
+app.get("/api/users/me/requests", (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || "";
+    let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
+    if (!token && req.headers["x-auth-token"]) {
+      token = String(req.headers["x-auth-token"]).trim();
+    }
+
+    let userEmail = "";
+    if (token && activeTokensMap.has(token)) {
+      userEmail = activeTokensMap.get(token)!;
+    } else if (req.query.email) {
+      userEmail = String(req.query.email).trim().toLowerCase();
+    }
+
+    if (!userEmail) {
+      return res.json({ success: true, count: 0, requests: [] });
+    }
+
+    const userRequests = requestsStore.getUserRequests({ email: userEmail });
+    res.json({ success: true, count: userRequests.length, requests: userRequests });
+  } catch (err: any) {
+    console.error("[User Requests Error]:", err);
+    res.status(500).json({ success: false, error: "Failed to load user requests." });
+  }
+});
+
+// 4. Admin List Requests CRM (with search, filter, sort, pagination)
+app.get("/api/admin/requests", (req, res) => {
+  try {
+    const search = req.query.search as string | undefined;
+    const type = req.query.type as string | undefined;
+    const status = req.query.status as string | undefined;
+    const priority = req.query.priority as string | undefined;
+    const dateRange = req.query.dateRange as any;
+    const sortBy = req.query.sortBy as any;
+    const limit = req.query.limit ? Number(req.query.limit) : 100;
+    const offset = req.query.offset ? Number(req.query.offset) : 0;
+
+    const result = requestsStore.getAllRequests({
+      search,
+      type,
+      status,
+      priority,
+      dateRange,
+      sortBy,
+      limit,
+      offset,
+    });
+
+    res.json({
+      success: true,
+      total: result.total,
+      counts: result.counts,
+      requests: result.requests,
+    });
+  } catch (err: any) {
+    console.error("[Admin Requests Error]:", err);
+    res.status(500).json({ success: false, error: "Failed to load requests for admin." });
+  }
+});
+
+// 5. Admin Single Request Detail View
+app.get("/api/admin/requests/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const singleReq = requestsStore.getRequestById(id);
+    if (!singleReq) {
+      return res.status(404).json({ success: false, error: "Request not found." });
+    }
+    res.json({ success: true, request: singleReq });
+  } catch (err: any) {
+    console.error("[Admin Single Request Error]:", err);
+    res.status(500).json({ success: false, error: "Failed to retrieve request details." });
+  }
+});
+
+// 6. Admin Update Request Status, Priority, Staff, & Internal Notes
+app.patch("/api/admin/requests/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, priority, assignedTo, internalNote, performedBy, performedEmail } = req.body;
+
+    const actor = {
+      name: performedBy || "Admin Specialist",
+      email: performedEmail || "admin@azraqtrips.com",
+      role: "Admin",
+    };
+
+    const updated = requestsStore.updateRequest(
+      id,
+      {
+        status: status as UnifiedRequestStatus,
+        priority: priority as RequestPriority,
+        assignedTo,
+        internalNote,
+      },
+      actor
+    );
+
+    // Sync legacy quote status if it exists
+    const legacyIdx = quotesStore.findIndex((q) => q.id.toLowerCase() === updated.request_id.toLowerCase());
+    if (legacyIdx !== -1) {
+      quotesStore[legacyIdx].status = updated.status;
+      if (updated.assigned_to) quotesStore[legacyIdx].assignedStaff = updated.assigned_to;
+      saveQuotesToDisk();
+    }
+
+    logActivity(
+      updated.request_id,
+      `Request Updated: ${status || 'Details'}`,
+      actor.name,
+      `Status: ${updated.status} | Priority: ${updated.priority}`
+    );
+
+    res.json({
+      success: true,
+      message: `Request ${updated.request_id} updated successfully.`,
+      request: updated,
+    });
+  } catch (err: any) {
+    console.error("[Admin Update Request Error]:", err);
+    res.status(500).json({ success: false, error: err.message || "Failed to update request." });
+  }
+});
+
+// 7. Admin Resend Notification Email
+app.post("/api/admin/requests/:id/resend-email", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { performedBy, performedEmail } = req.body;
+
+    const result = await requestsStore.resendEmailNotification(id, {
+      name: performedBy || "Admin Specialist",
+      email: performedEmail || "admin@azraqtrips.com",
+    });
+
+    res.json({
+      success: true,
+      message: result.message,
+      request: result.request,
+    });
+  } catch (err: any) {
+    console.error("[Resend Email Error]:", err);
+    res.status(500).json({ success: false, error: err.message || "Failed to resend notification email." });
+  }
+});
+
+// 8. Admin Delete Request
+app.delete("/api/admin/requests/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleted = requestsStore.deleteRequest(id);
+    if (!deleted) {
+      return res.status(404).json({ success: false, error: "Request not found." });
+    }
+    // Also remove from legacy quotesStore
+    quotesStore = quotesStore.filter((q) => q.id.toLowerCase() !== id.toLowerCase());
+    saveQuotesToDisk();
+
+    res.json({ success: true, message: `Request ${id} deleted successfully.` });
+  } catch (err: any) {
+    console.error("[Delete Request Error]:", err);
+    res.status(500).json({ success: false, error: "Failed to delete request." });
+  }
+});
+
+// 9. Central Contact Form Handler
+app.post("/api/contact", async (req, res) => {
+  try {
+    const { name, email, phone, subject, message, serviceType, userId } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        error: "Please provide your Name, Email address, and Message.",
+      });
+    }
+
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
+
+    const unifiedReq = await requestsStore.createRequest(
+      {
+        userId,
+        requestType: "contact",
+        customerName: name.trim(),
+        customerEmail: email.trim(),
+        customerPhone: phone ? phone.trim() : "N/A",
+        subject: subject || `General Inquiry from ${name}`,
+        message: message.trim(),
+        metadata: { serviceType: serviceType || "General Inquiry" },
+        priority: "NORMAL",
+      },
+      { ip: clientIp, userAgent }
+    );
+
+    logActivity(unifiedReq.request_id, "Contact Form Message Received", name, `Subject: ${subject || "General Inquiry"}`);
+    createNotification("✉️ Contact Form Submission", `${name} sent a message (${unifiedReq.request_id}).`, unifiedReq.request_id, "quote_new");
+
+    res.status(201).json({
+      success: true,
+      message: "Thank you! Your message has been received and our team will get back to you promptly.",
+      requestId: unifiedReq.request_id,
+      request: unifiedReq,
+    });
+  } catch (err: any) {
+    console.error("[Contact API Error]:", err);
+    res.status(500).json({ success: false, error: "Failed to send message." });
+  }
+});
+
 // 5. Submit Flight Ticket Quotation Request
-app.post("/api/quotes/flight", (req, res) => {
+app.post("/api/quotes/flight", async (req, res) => {
   try {
     const {
       tripType,
@@ -4127,14 +4587,47 @@ app.post("/api/quotes/flight", (req, res) => {
       email,
       phone,
       preferredContactMethod,
+      userId,
     } = req.body;
 
     if (!customerName || !email || !phone || !from || !to || !departureDate) {
       return res.status(400).json({ error: "Please fill in all required fields (Name, Email, Phone, From, To, Departure Date)." });
     }
 
-    const randomId = Math.floor(1000 + Math.random() * 9000);
-    const id = `AZR-${randomId}`;
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
+
+    const unifiedReq = await requestsStore.createRequest(
+      {
+        userId,
+        requestType: "flight",
+        customerName: customerName.trim(),
+        customerEmail: email.trim(),
+        customerPhone: phone.trim(),
+        subject: `Flight Quotation: ${from} ➔ ${to}`,
+        origin: from,
+        destination: to,
+        travelDate: departureDate,
+        returnDate: tripType === "Round Trip" ? returnDate : undefined,
+        passengers: (Number(adults) || 1) + (Number(children) || 0) + (Number(infants) || 0),
+        message: additionalRequirements || "",
+        metadata: {
+          tripType: tripType || "Round Trip",
+          adults: Number(adults) || 1,
+          children: Number(children) || 0,
+          infants: Number(infants) || 0,
+          cabinClass: cabinClass || "Economy",
+          preferredAirline: preferredAirline || "",
+          flexibleDate: flexibleDate || "No",
+          preferredContactMethod: preferredContactMethod || "WhatsApp",
+        },
+        priority: "NORMAL",
+        assignedTo: "Rahim Chowdhury (Flight Specialist)",
+      },
+      { ip: clientIp, userAgent }
+    );
+
+    const id = unifiedReq.request_id;
 
     const newQuote: QuoteRecord = {
       id,
@@ -4156,7 +4649,7 @@ app.post("/api/quotes/flight", (req, res) => {
       phone,
       preferredContactMethod: preferredContactMethod || "WhatsApp",
       status: "New",
-      createdAt: new Date().toISOString(),
+      createdAt: unifiedReq.created_at,
       internalNotes: [],
       acknowledgmentSent: true,
       assignedStaff: "Rahim Chowdhury (Flight Specialist)",
@@ -4167,8 +4660,8 @@ app.post("/api/quotes/flight", (req, res) => {
     saveQuotesToDisk();
 
     // Trigger audit log & notification
-    logActivity(id, "New Flight Quote Submitted", `${customerName} (Client)`, `Route: ${from} ✈️ ${to} on ${departureDate}. Automated acknowledgment sent.`);
-    createNotification("✈️ New Flight Quote", `${customerName} requested a quote for ${from} to ${to}.`, id, "quote_new");
+    logActivity(id, "New Flight Quote Submitted", `${customerName} (Client)`, `Route: ${from} ✈️ ${to} on ${departureDate}. Automated notification email sent.`);
+    createNotification("✈️ New Flight Quote", `${customerName} requested a quote for ${from} to ${to} (${id}).`, id, "quote_new");
 
     // Add to Client Timeline Activity Feed (Type A: Personal Trip Activity)
     addUserActivity({
@@ -4177,7 +4670,7 @@ app.post("/api/quotes/flight", (req, res) => {
       quoteType: "flight",
       routeOrDestination: `${from} ✈️ ${to}`,
       status: "New",
-      title: `📩 Quote Request for ${from} ✈️ ${to} Received`,
+      title: `📩 Quote Request for ${from} ✈️ ${to} Received (${id})`,
       message: `Your flight quote request for ${from} ➔ ${to} (${newQuote.adults} Adult${newQuote.adults > 1 ? 's' : ''}) was received and logged into Azraq priority queue.`,
       dotColor: "yellow",
       iconType: "mail",
@@ -4186,7 +4679,9 @@ app.post("/api/quotes/flight", (req, res) => {
     res.json({
       success: true,
       message: "Flight quote request received! An acknowledgment email and status tracking link have been generated.",
+      requestId: id,
       quote: newQuote,
+      request: unifiedReq,
     });
   } catch (err: any) {
     console.error("Flight Quote Error:", err);
@@ -4195,7 +4690,7 @@ app.post("/api/quotes/flight", (req, res) => {
 });
 
 // 6. Submit Visa Quotation Request
-app.post("/api/quotes/visa", (req, res) => {
+app.post("/api/quotes/visa", async (req, res) => {
   try {
     const {
       destinationCountry,
@@ -4213,14 +4708,47 @@ app.post("/api/quotes/visa", (req, res) => {
       email,
       phone,
       preferredContactMethod,
+      userId,
     } = req.body;
 
     if (!customerName || !email || !phone || !destinationCountry || !visaType || !intendedTravelDate || !applicantNationality) {
       return res.status(400).json({ error: "Please fill in all required fields (Name, Email, Phone, Destination Country, Visa Type, Travel Date, Nationality)." });
     }
 
-    const randomId = Math.floor(1000 + Math.random() * 9000);
-    const id = `AZR-${randomId}`;
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
+
+    const unifiedReq = await requestsStore.createRequest(
+      {
+        userId,
+        requestType: "visa",
+        customerName: customerName.trim(),
+        customerEmail: email.trim(),
+        customerPhone: phone.trim(),
+        subject: `Visa Assistance: ${destinationCountry} (${visaType})`,
+        destination: destinationCountry,
+        travelDate: intendedTravelDate,
+        passengers: Number(applicantsCount) || 1,
+        message: additionalInfo || "",
+        metadata: {
+          destinationCountry,
+          visaType: visaType || "Tourist",
+          applicantsCount: Number(applicantsCount) || 1,
+          applicantNationality,
+          passportValidity: passportValidity || "More than 6 months",
+          previousVisa: previousVisa || "No",
+          previousRefusal: previousRefusal || "No",
+          currentResidence: currentResidence || applicantNationality,
+          requiredService: requiredService || "Visa Processing",
+          preferredContactMethod: preferredContactMethod || "WhatsApp",
+        },
+        priority: "NORMAL",
+        assignedTo: "Tania Sultana (Visa Specialist)",
+      },
+      { ip: clientIp, userAgent }
+    );
+
+    const id = unifiedReq.request_id;
 
     const newQuote: QuoteRecord = {
       id,
@@ -4241,7 +4769,7 @@ app.post("/api/quotes/visa", (req, res) => {
       phone,
       preferredContactMethod: preferredContactMethod || "WhatsApp",
       status: "New",
-      createdAt: new Date().toISOString(),
+      createdAt: unifiedReq.created_at,
       internalNotes: [],
       acknowledgmentSent: true,
       assignedStaff: "Tania Sultana (Visa Specialist)",
@@ -4252,8 +4780,8 @@ app.post("/api/quotes/visa", (req, res) => {
     saveQuotesToDisk();
 
     // Trigger audit log & notification
-    logActivity(id, "New Visa Quote Submitted", `${customerName} (Client)`, `Destination: ${destinationCountry} (${visaType} Visa). Automated acknowledgment sent.`);
-    createNotification("🛂 New Visa Quote", `${customerName} requested ${visaType} visa processing for ${destinationCountry}.`, id, "quote_new");
+    logActivity(id, "New Visa Quote Submitted", `${customerName} (Client)`, `Destination: ${destinationCountry} (${visaType} Visa). Automated notification email sent.`);
+    createNotification("🛂 New Visa Quote", `${customerName} requested ${visaType} visa processing for ${destinationCountry} (${id}).`, id, "quote_new");
 
     // Add to Client Timeline Activity Feed (Type A: Personal Trip Activity)
     addUserActivity({
@@ -4262,7 +4790,7 @@ app.post("/api/quotes/visa", (req, res) => {
       quoteType: "visa",
       routeOrDestination: `${destinationCountry} (${visaType} Visa)`,
       status: "New",
-      title: `📩 Visa Request for ${destinationCountry} Received`,
+      title: `📩 Visa Request for ${destinationCountry} Received (${id})`,
       message: `Your ${visaType} visa application request for ${destinationCountry} (${newQuote.applicantsCount} applicant${newQuote.applicantsCount > 1 ? 's' : ''}) has been received and assigned for consular review.`,
       dotColor: "yellow",
       iconType: "mail",
@@ -4271,7 +4799,9 @@ app.post("/api/quotes/visa", (req, res) => {
     res.json({
       success: true,
       message: "Visa quote request received! An acknowledgment email and status tracking link have been generated.",
+      requestId: id,
       quote: newQuote,
+      request: unifiedReq,
     });
   } catch (err: any) {
     console.error("Visa Quote Error:", err);
@@ -6437,7 +6967,7 @@ app.delete("/api/packages/:id", (req, res) => {
 });
 
 // 5. Submit Customer Package Quotation
-app.post("/api/quotes/package", (req, res) => {
+app.post("/api/quotes/package", async (req, res) => {
   try {
     const {
       customerName,
@@ -6451,6 +6981,7 @@ app.post("/api/quotes/package", (req, res) => {
       children,
       specialRequirements,
       message,
+      userId,
     } = req.body;
 
     if (!customerName || !email || !phone || !destination) {
@@ -6459,8 +6990,35 @@ app.post("/api/quotes/package", (req, res) => {
       });
     }
 
-    const randomId = Math.floor(100000 + Math.random() * 900000);
-    const id = `PKG-${randomId}`;
+    const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress;
+    const userAgent = req.headers["user-agent"];
+
+    const unifiedReq = await requestsStore.createRequest(
+      {
+        userId,
+        requestType: "package",
+        customerName: customerName.trim(),
+        customerEmail: email.trim(),
+        customerPhone: phone.trim(),
+        subject: `Holiday Package Inquiry: ${package_name || destination}`,
+        destination: destination,
+        travelDate: travelDate,
+        passengers: (Number(adults) || 1) + (Number(children) || 0),
+        message: [message, specialRequirements].filter(Boolean).join("\n\nSpecial Requirements: "),
+        metadata: {
+          package_id: package_id || "",
+          package_name: package_name || "",
+          adults: Number(adults) || 1,
+          children: Number(children) || 0,
+          specialRequirements: specialRequirements || "",
+        },
+        priority: "NORMAL",
+        assignedTo: "Tania Sultana (Holiday Packages Specialist)",
+      },
+      { ip: clientIp, userAgent }
+    );
+
+    const id = unifiedReq.request_id;
 
     const newQuote: QuoteRecord = {
       id,
@@ -6477,16 +7035,33 @@ app.post("/api/quotes/package", (req, res) => {
       specialRequirements: specialRequirements || "",
       message: message || "",
       status: "New",
-      createdAt: new Date().toISOString(),
+      createdAt: unifiedReq.created_at,
     };
 
     quotesStore.unshift(newQuote);
     saveQuotesToDisk();
 
+    logActivity(id, "New Package Quote Submitted", `${customerName} (Client)`, `Package: ${package_name || destination}. Notification dispatched.`);
+    createNotification("📦 New Package Quote", `${customerName} requested quote for ${package_name || destination} (${id}).`, id, "quote_new");
+
+    addUserActivity({
+      userEmail: email,
+      quoteId: id,
+      quoteType: "visa",
+      routeOrDestination: package_name || destination,
+      status: "New",
+      title: `📩 Package Inquiry for ${package_name || destination} Received (${id})`,
+      message: `Your tour package inquiry for ${package_name || destination} (${newQuote.adults} Adults) was received. Our holiday team will get in touch shortly.`,
+      dotColor: "yellow",
+      iconType: "mail",
+    });
+
     res.json({
       success: true,
       message: "Tour Package Quotation Request Submitted Successfully! Our travel team will contact you shortly via WhatsApp / Email.",
+      requestId: id,
       quote: newQuote,
+      request: unifiedReq,
     });
   } catch (err: any) {
     console.error("Package Quote Error:", err);

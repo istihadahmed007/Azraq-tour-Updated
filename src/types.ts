@@ -225,6 +225,65 @@ export interface VisaQuoteRequest {
 
 export type QuoteRequest = FlightQuoteRequest | VisaQuoteRequest | PackageQuoteRequest;
 
+export type UnifiedRequestType =
+  | 'flight'
+  | 'visa'
+  | 'package'
+  | 'hotel'
+  | 'ai_planner'
+  | 'contact'
+  | 'custom';
+
+export type UnifiedRequestStatus =
+  | 'NEW'
+  | 'CONTACTED'
+  | 'PROCESSING'
+  | 'WAITING_FOR_CUSTOMER'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export type RequestPriority = 'LOW' | 'NORMAL' | 'HIGH' | 'URGENT';
+
+export type EmailNotificationStatus = 'PENDING' | 'SENT' | 'FAILED';
+
+export interface InternalAdminNote {
+  id: string;
+  authorName: string;
+  authorEmail: string;
+  role: string;
+  text: string;
+  createdAt: string;
+}
+
+export interface UnifiedRequest {
+  id: string;
+  request_id: string; // e.g. AZQ-20260831-00001
+  user_id?: string;
+  request_type: UnifiedRequestType;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  subject?: string;
+  destination?: string;
+  origin?: string;
+  travel_date?: string;
+  return_date?: string;
+  passengers?: number;
+  message?: string;
+  metadata?: Record<string, any>;
+  status: UnifiedRequestStatus;
+  priority: RequestPriority;
+  assigned_to?: string;
+  created_at: string;
+  updated_at: string;
+  email_notification_status: EmailNotificationStatus;
+  email_sent_at?: string;
+  email_error?: string;
+  admin_notes?: InternalAdminNote[];
+  client_ip?: string;
+  user_agent?: string;
+}
+
 export type TimelineDotColor = 'yellow' | 'green' | 'red' | 'blue';
 
 export interface UserFeedItem {

@@ -51,6 +51,21 @@ service cloud.firestore {
     }
 
     // ----------------------------------------------------
+    // 2b. Unified Requests & CRM Requests: OWNER & ADMIN RESTRICTED
+    // Anyone can submit a travel or consultation request.
+    // ONLY the request's owner or an Admin can read or manage it.
+    // ----------------------------------------------------
+    match /requests/{requestId} {
+      allow create: if true;
+      allow read: if isAuthenticated() && (
+        resource.data.customer_email == request.auth.token.email ||
+        resource.data.user_id == request.auth.uid ||
+        isAdmin()
+      );
+      allow update, delete: if isAdmin();
+    }
+
+    // ----------------------------------------------------
     // 3. Community Feed Posts: Public Read, Author/Admin Write
     // ----------------------------------------------------
     match /feed_posts/{postId} {

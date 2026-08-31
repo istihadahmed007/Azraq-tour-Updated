@@ -18,16 +18,19 @@ import {
   HelpCircle,
   Plane,
   Heart,
+  Mic,
 } from 'lucide-react';
 
 interface AiPlannerLandingViewProps {
   onPlanTripPrompt: (prompt: string) => void;
   onNavigateToView: (view: string) => void;
+  onOpenVoiceModal?: (initialTranscript?: string) => void;
 }
 
 export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
   onPlanTripPrompt,
   onNavigateToView,
+  onOpenVoiceModal,
 }) => {
   const [customPrompt, setCustomPrompt] = useState('');
 
@@ -133,14 +136,27 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
               <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">
                 ✨ Powered by AzraqTrips AI Travel Intelligence
               </span>
-              <button
-                type="button"
-                onClick={() => handleStart()}
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
-              >
-                <Sparkles className="w-4 h-4 text-amber-300" />
-                <span>Generate AI Itinerary</span>
-              </button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                {onOpenVoiceModal && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenVoiceModal()}
+                    className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-blue-50 border border-slate-200 text-slate-700 hover:text-[#0D6EFD] font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                    title="Speak your travel request"
+                  >
+                    <Mic className="w-4 h-4 text-[#0D6EFD] animate-pulse" />
+                    <span>Speak</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => handleStart()}
+                  className="flex-1 sm:flex-none px-6 py-3 rounded-xl bg-gradient-to-r from-[#1389E8] to-[#0759B8] hover:from-[#0E7FE3] hover:to-[#064B9C] text-white font-bold text-xs sm:text-sm transition-all shadow-md cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Generate AI Itinerary</span>
+                </button>
+              </div>
             </div>
           </div>
 

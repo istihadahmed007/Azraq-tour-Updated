@@ -10,19 +10,21 @@ import { initializeFirestore, setLogLevel, doc, getDocFromServer, Firestore } fr
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 import rawFirebaseConfig from '../../firebase-applet-config.json';
 
-// Normalize standard options for FirebaseApp initialization
+// Normalize standard options for FirebaseApp initialization with safe fallback
 const firebaseOptions: FirebaseOptions = {
-  apiKey: rawFirebaseConfig.apiKey,
-  authDomain: rawFirebaseConfig.authDomain,
-  projectId: rawFirebaseConfig.projectId,
-  storageBucket: rawFirebaseConfig.storageBucket,
-  messagingSenderId: rawFirebaseConfig.messagingSenderId,
-  appId: rawFirebaseConfig.appId,
-  measurementId: rawFirebaseConfig.measurementId,
+  apiKey: rawFirebaseConfig?.apiKey || undefined,
+  authDomain: rawFirebaseConfig?.authDomain || undefined,
+  projectId: rawFirebaseConfig?.projectId || undefined,
+  storageBucket: rawFirebaseConfig?.storageBucket || undefined,
+  messagingSenderId: rawFirebaseConfig?.messagingSenderId || undefined,
+  appId: rawFirebaseConfig?.appId || undefined,
+  measurementId: rawFirebaseConfig?.measurementId || undefined,
 };
 
 export const app: FirebaseApp =
-  getApps().length > 0 ? getApp() : initializeApp(firebaseOptions);
+  getApps().length > 0
+    ? getApp()
+    : initializeApp(firebaseOptions);
 
 // Initialize Firebase Auth with safe fallback
 let authInstance: Auth;

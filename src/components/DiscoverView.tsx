@@ -35,6 +35,7 @@ interface DiscoverViewProps {
   onOpenFlightModal?: (dest?: string) => void;
   onOpenQuote?: (pkg?: TourPackage) => void;
   onOpenLocationFinder?: () => void;
+  onOpenVoiceModal?: (initialTranscript?: string) => void;
 }
 
 export const DiscoverView: React.FC<DiscoverViewProps> = ({
@@ -48,6 +49,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   onOpenFlightModal,
   onOpenQuote,
   onOpenLocationFinder,
+  onOpenVoiceModal,
 }) => {
   const { showToast } = useAuth();
   const { packages, setActivePackageModal, setActiveQuotationModal } = usePackages();
@@ -57,8 +59,12 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   const [voiceInitialTranscript, setVoiceInitialTranscript] = useState('');
 
   const handleOpenVoicePlanner = (initialTranscript?: string) => {
-    setVoiceInitialTranscript(initialTranscript || '');
-    setIsVoiceModalOpen(true);
+    if (onOpenVoiceModal) {
+      onOpenVoiceModal(initialTranscript);
+    } else {
+      setVoiceInitialTranscript(initialTranscript || '');
+      setIsVoiceModalOpen(true);
+    }
   };
 
   const handleConfirmVoicePlan = (data: StructuredVoiceTripData) => {

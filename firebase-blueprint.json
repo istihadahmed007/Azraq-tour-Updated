@@ -126,6 +126,34 @@
         "updatedAt": { "type": "string", "description": "ISO timestamp of status update" }
       },
       "required": ["id", "senderId", "receiverId", "status"]
+    },
+    "requests": {
+      "title": "Unified Travel Requests & Quotes",
+      "description": "Central customer travel requests from flights, visas, packages, hotels, AI planner, contact forms, and custom itineraries",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique database ID" },
+        "request_id": { "type": "string", "description": "Sequential request reference ID (e.g., AZQ-20260831-00001)" },
+        "user_id": { "type": "string", "description": "Optional Firebase Auth UID" },
+        "request_type": { "type": "string", "description": "Type of service request" },
+        "customer_name": { "type": "string", "description": "Customer display name" },
+        "customer_email": { "type": "string", "format": "email", "description": "Customer email" },
+        "customer_phone": { "type": "string", "description": "Customer phone number" },
+        "subject": { "type": "string", "description": "Subject or request title" },
+        "destination": { "type": "string", "description": "Destination city/country" },
+        "origin": { "type": "string", "description": "Origin city/airport" },
+        "travel_date": { "type": "string", "description": "Intended travel departure date" },
+        "return_date": { "type": "string", "description": "Intended return date" },
+        "passengers": { "type": "number", "description": "Passenger or traveler count" },
+        "message": { "type": "string", "description": "Customer notes and requirements" },
+        "status": { "type": "string", "description": "Status: NEW, CONTACTED, PROCESSING, WAITING_FOR_CUSTOMER, COMPLETED, CANCELLED" },
+        "priority": { "type": "string", "description": "Priority: LOW, NORMAL, HIGH, URGENT" },
+        "assigned_to": { "type": "string", "description": "Staff member assigned" },
+        "email_notification_status": { "type": "string", "description": "Email delivery status: PENDING, SENT, FAILED" },
+        "created_at": { "type": "string", "description": "ISO timestamp of creation" },
+        "updated_at": { "type": "string", "description": "ISO timestamp of last update" }
+      },
+      "required": ["id", "request_id", "customer_name", "customer_email", "status"]
     }
   },
   "firestore": {
@@ -140,6 +168,10 @@
     "/quotes/{quoteId}": {
       "schema": "quotes",
       "description": "Flight and visa quotation inquiries"
+    },
+    "/requests/{requestId}": {
+      "schema": "requests",
+      "description": "Central requests and quotations repository"
     },
     "/buddy_profiles/{userId}": {
       "schema": "buddy_profiles",

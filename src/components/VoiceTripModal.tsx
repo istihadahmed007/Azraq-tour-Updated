@@ -34,6 +34,7 @@ import { POPULAR_AIRPORTS, BANGLADESH_AIRPORTS, Airport } from '../data/flightsD
 
 export interface StructuredVoiceTripData {
   isFlightIntent?: boolean;
+  transcription?: string;
   destination: string;
   durationDays: number;
   startDate: string;
@@ -99,6 +100,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
 }) => {
   const {
     isSupported,
+    isWebSpeechSupported,
     isListening,
     micInitState,
     micDeviceName,
@@ -135,7 +137,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
   const [testResult, setTestResult] = useState<string | null>(null);
   const [showDiagnostics, setShowDiagnostics] = useState(false);
 
-  // When modal opens, initialize
+  // When modal opens, initialize cleanly without auto-capturing mic (avoids browser gesture block)
   useEffect(() => {
     if (isOpen) {
       setParsedData(null);
@@ -145,15 +147,9 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
       setActiveTab(initialMode);
       if (initialTranscript) {
         setTranscriptManual(initialTranscript);
-        parseSpokenSpeech(initialTranscript);
+        parseSpokenSpeech({ spokenText: initialTranscript });
       } else {
         resetTranscript();
-        // Auto start listening if supported
-        if (isSupported) {
-          try {
-            startListening();
-          } catch {}
-        }
       }
     } else {
       stopListening();
@@ -169,7 +165,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
       if (ok) {
         setTestResult('Microphone connected successfully and audio stream is responsive.');
       } else {
-        setTestResult('Microphone test failed. Please verify browser permissions.');
+        setTestResult('Microphone test failed. Please check browser permissions in your URL address bar.');
       }
     } catch {
       setTestResult('Error accessing microphone.');
@@ -178,24 +174,35 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
     }
   };
 
-  // When speech stops or user has spoken a substantial prompt, automatically trigger parsing
-  const handleToggleListening = () => {
+  // When speech stops or user toggles mic button
+  const handleToggleListening = async () => {
     if (isListening) {
-      stopListening();
-      if (transcript.trim().length > 3) {
-        parseSpokenSpeech(transcript);
+      const payload = await stopListening();
+      const textToParse = payload.transcript?.trim() || transcript.trim();
+      if (textToParse || payload.audioBase64) {
+        parseSpokenSpeech({
+          spokenText: textToParse,
+          audioBase64: payload.audioBase64,
+          mimeType: payload.mimeType,
+        });
       }
     } else {
       resetTranscript();
       setParsedData(null);
       setParseError(null);
-      startListening();
+      await startListening();
     }
   };
 
-  // Convert transcript to structured trip data via server Gemini endpoint
-  const parseSpokenSpeech = async (spokenText: string) => {
-    if (!spokenText || !spokenText.trim()) return;
+  // Convert transcript / audio to structured trip data via server Gemini endpoint
+  const parseSpokenSpeech = async (opts: {
+    spokenText?: string;
+    audioBase64?: string;
+    mimeType?: string;
+  }) => {
+    const text = (opts.spokenText || '').trim();
+    if (!text && !opts.audioBase64) return;
+
     setIsParsing(true);
     setParseError(null);
 
@@ -203,13 +210,20 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
       const res = await fetch('/api/ai/parse-voice-trip', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript: spokenText }),
+        body: JSON.stringify({
+          transcript: text,
+          audioBase64: opts.audioBase64,
+          mimeType: opts.mimeType,
+        }),
       });
 
       const json = await res.json();
       if (json && json.data) {
         setParsedData(json.data);
-        setEditablePrompt(json.data.structuredPrompt || spokenText);
+        if (json.data.transcription && !text) {
+          setTranscriptManual(json.data.transcription);
+        }
+        setEditablePrompt(json.data.structuredPrompt || json.data.transcription || text);
         if (json.data.isFlightIntent) {
           setActiveTab('flight');
         }
@@ -221,12 +235,13 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
         throw new Error(json.error || 'Could not parse voice input');
       }
     } catch (err: any) {
-      console.error('Error parsing voice trip:', err);
-      // Heuristic fallback
+      console.warn('Error parsing voice trip:', err);
+      // Fast resilient fallback
       const today = new Date();
       const defaultStart = new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
       const defaultEnd = new Date(today.getTime() + 19 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      
+
+      const fallbackText = text || 'Trip to Bangkok for 2 adults';
       const fallback: StructuredVoiceTripData = {
         isFlightIntent: true,
         destination: 'Bangkok, Thailand',
@@ -237,8 +252,8 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
         travelerCount: 2,
         travelStyle: 'Bespoke Asian Holiday',
         budgetLevel: 'Moderate / Value',
-        structuredPrompt: spokenText,
-        spokenSummary: `Spoken request: "${spokenText}"`,
+        structuredPrompt: fallbackText,
+        spokenSummary: `Got your request: "${fallbackText}". Ready to search flights from Dhaka to Bangkok.`,
         flightParams: {
           originCode: 'DAC',
           originCity: 'Dhaka',
@@ -258,7 +273,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
         },
       };
       setParsedData(fallback);
-      setEditablePrompt(spokenText);
+      setEditablePrompt(fallbackText);
     } finally {
       setIsParsing(false);
     }
@@ -267,7 +282,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
   const handleSelectSample = (sample: string) => {
     stopListening();
     setTranscriptManual(sample);
-    parseSpokenSpeech(sample);
+    parseSpokenSpeech({ spokenText: sample });
   };
 
   const handleGenerateItineraryClick = () => {
@@ -288,44 +303,61 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
 
     return {
       code: code ? code.toUpperCase() : 'BKK',
-      name: `${fallbackCity || 'International'} Airport`,
       city: fallbackCity || 'Bangkok',
+      name: `${fallbackCity || 'Bangkok'} International Airport`,
       country: fallbackCountry || 'Thailand',
     };
   };
 
+  // Helper to trigger flight search with the parsed params
   const handleSearchFlightsClick = () => {
-    if (!parsedData || !onSearchFlights) {
-      handleGenerateItineraryClick();
+    if (!parsedData || !parsedData.flightParams) {
+      const depDate = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
+      const retDate = new Date(Date.now() + 19 * 86400000).toISOString().split('T')[0];
+      if (onSearchFlights) {
+        onSearchFlights({
+          origin: resolveAirport('DAC', 'Dhaka', 'Bangladesh'),
+          destination: resolveAirport('BKK', 'Bangkok', 'Thailand'),
+          tripType: 'round',
+          departureDate: depDate,
+          returnDate: retDate,
+          adults: 2,
+          children: 0,
+          infants: 0,
+          cabinClass: 'Economy',
+          currency: 'BDT',
+        });
+      } else {
+        window.location.href = 'https://flights.azraqtrips.com/';
+      }
+      onClose();
       return;
     }
 
     const fp = parsedData.flightParams;
-    const originAirport = resolveAirport(
-      fp?.originCode || 'DAC',
-      fp?.originCity || 'Dhaka',
-      fp?.originCountry || 'Bangladesh'
-    );
-    const destAirport = resolveAirport(
-      fp?.destinationCode || 'BKK',
-      fp?.destinationCity || 'Bangkok',
-      fp?.destinationCountry || 'Thailand'
-    );
+    const originAirport = resolveAirport(fp.originCode, fp.originCity, fp.originCountry);
+    const destinationAirport = resolveAirport(fp.destinationCode, fp.destinationCity, fp.destinationCountry);
+    const depDate = fp.departureDate || new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
+    const retDate = fp.returnDate || new Date(Date.now() + 19 * 86400000).toISOString().split('T')[0];
 
     const flightParams: FlightSearchParams = {
-      tripType: fp?.tripType || 'round',
       origin: originAirport,
-      destination: destAirport,
-      departureDate: fp?.departureDate || parsedData.startDate,
-      returnDate: fp?.returnDate || parsedData.endDate,
-      adults: fp?.adults || Math.max(1, parsedData.travelerCount || 1),
-      children: fp?.children || 0,
-      infants: fp?.infants || 0,
-      cabinClass: fp?.cabinClass || 'Economy',
+      destination: destinationAirport,
+      tripType: fp.tripType || 'round',
+      departureDate: depDate,
+      returnDate: retDate,
+      adults: fp.adults || 1,
+      children: fp.children || 0,
+      infants: fp.infants || 0,
+      cabinClass: (fp.cabinClass as any) || 'Economy',
       currency: 'BDT',
     };
 
-    onSearchFlights(flightParams);
+    if (onSearchFlights) {
+      onSearchFlights(flightParams);
+    } else {
+      window.location.href = `https://flights.azraqtrips.com/?origin_iata=${originAirport.code}&destination_iata=${destinationAirport.code}&depart_date=${flightParams.departureDate}&adults=${flightParams.adults}&marker=765415&trs=565363&currency=bdt`;
+    }
     onClose();
   };
 
@@ -333,67 +365,91 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
 
   return (
     <div
-      id="voice-planner-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200"
+      id="voice-trip-modal-backdrop"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          stopListening();
+          stopSpeaking();
+          onClose();
+        }
+      }}
     >
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col my-auto max-h-[92vh]">
+      <div
+        id="voice-trip-modal-container"
+        className="bg-white rounded-3xl shadow-2xl border border-slate-200/80 w-full max-w-2xl overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200"
+      >
         {/* Header */}
-        <div className="px-6 py-4 bg-gradient-to-r from-[#003B95] via-[#071A33] to-[#0A2540] text-white flex items-center justify-between border-b border-blue-900/40">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-sky-300">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+        <div className="p-5 sm:p-6 bg-gradient-to-r from-[#073B4C] via-[#086788] to-[#073B4C] text-white flex items-center justify-between relative overflow-hidden">
+          <div className="flex items-center gap-3 relative z-10">
+            <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 text-[#17BEBB]">
+              <Mic className="w-5 h-5 animate-pulse" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
-                <span>Azraq Voice Flight & Trip Planner</span>
-                <span className="px-2 py-0.5 rounded-full bg-blue-400/20 text-sky-200 text-[10px] font-semibold tracking-wide uppercase border border-sky-300/30">
-                  Gemini AI Voice
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg sm:text-xl font-bold tracking-tight text-white font-serif-display">
+                  Azraq Voice AI Assistant
+                </h2>
+                <span className="px-2 py-0.5 rounded-full bg-[#17BEBB]/20 text-[#EAF7F8] border border-[#17BEBB]/30 text-[10px] font-bold tracking-wider uppercase font-mono">
+                  Gemini Voice
                 </span>
-              </h2>
-              <p className="text-xs text-slate-300 font-normal">
-                Search live flight tickets or generate custom holiday itineraries with your voice
+              </div>
+              <p className="text-xs text-slate-200 font-normal">
+                Speak flight routes or custom holidays in English or Bangla
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            {/* Language Selector */}
-            <div className="flex items-center bg-white/10 rounded-lg p-0.5 border border-white/20 text-xs">
+          <div className="flex items-center gap-2 relative z-10">
+            {/* Language Switcher */}
+            <div className="flex items-center bg-white/10 rounded-xl p-1 border border-white/15">
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedLang('en-US');
-                  if (isListening) startListening({ lang: 'en-US' });
-                }}
-                className={`px-2 py-1 rounded font-bold text-[11px] transition-all cursor-pointer ${
-                  selectedLang === 'en-US' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-200 hover:text-white'
+                onClick={() => setSelectedLang('en-US')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  selectedLang === 'en-US'
+                    ? 'bg-white text-[#073B4C] shadow-xs'
+                    : 'text-white/80 hover:text-white'
                 }`}
-                title="English Speech Recognition"
               >
-                EN
+                English
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setSelectedLang('bn-BD');
-                  if (isListening) startListening({ lang: 'bn-BD' });
-                }}
-                className={`px-2 py-1 rounded font-bold text-[11px] transition-all cursor-pointer ${
-                  selectedLang === 'bn-BD' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-200 hover:text-white'
+                onClick={() => setSelectedLang('bn-BD')}
+                className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                  selectedLang === 'bn-BD'
+                    ? 'bg-white text-[#073B4C] shadow-xs'
+                    : 'text-white/80 hover:text-white'
                 }`}
-                title="বাংলা (Bangla) Speech Recognition"
               >
                 বাংলা
               </button>
             </div>
 
+            {/* TTS Audio toggle */}
+            {isSpeaking && (
+              <button
+                type="button"
+                onClick={stopSpeaking}
+                className="w-9 h-9 rounded-xl bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
+                title="Stop AI voice speech"
+              >
+                <VolumeX className="w-4 h-4 text-white animate-pulse" />
+              </button>
+            )}
+
             <button
-              id="close-voice-modal-btn"
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
-              aria-label="Close"
+              id="voice-modal-close-btn"
+              type="button"
+              onClick={() => {
+                stopListening();
+                stopSpeaking();
+                onClose();
+              }}
+              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-colors cursor-pointer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -455,9 +511,13 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
                     ? 'bg-red-500 hover:bg-red-600 text-white ring-8 ring-red-500/20 scale-105 animate-pulse'
                     : 'bg-[#0D6EFD] hover:bg-blue-600 text-white ring-4 ring-blue-500/15 hover:scale-105'
                 }`}
-                title={isListening ? 'Click to stop listening and search' : 'Click to start speaking'}
+                title={isListening ? 'Click to stop listening and parse' : 'Click to start speaking'}
               >
-                <Mic className="w-8 h-8 sm:w-9 sm:h-9 text-white" />
+                {isListening ? (
+                  <MicOff className="w-8 h-8 sm:w-9 sm:h-9 text-white" />
+                ) : (
+                  <Mic className="w-8 h-8 sm:w-9 sm:h-9 text-white" />
+                )}
               </button>
             </div>
 
@@ -600,359 +660,362 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
                 value={transcript}
                 onChange={(e) => setTranscriptManual(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && transcript.trim().length > 2) {
-                    parseSpokenSpeech(transcript);
+                  if (e.key === 'Enter' && transcript.trim()) {
+                    e.preventDefault();
+                    parseSpokenSpeech({ spokenText: transcript.trim() });
                   }
                 }}
                 placeholder={
                   activeTab === 'flight'
-                    ? 'e.g. 2 flights from Dhaka to Bangkok next Friday for 5 days'
-                    : 'e.g. 5 days honeymoon trip to Bali for couple in luxury resort'
+                    ? 'e.g. Find flights from Dhaka to Bangkok for 2 adults next week'
+                    : 'e.g. 5-day luxury family trip to Maldives with ocean villa'
                 }
-                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 focus:border-[#0D6EFD] focus:ring-2 focus:ring-blue-100 text-xs text-slate-800 placeholder-slate-400 font-medium outline-none bg-slate-50/50"
+                className="flex-1 px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0D6EFD]/20 focus:border-[#0D6EFD]"
               />
               <button
                 type="button"
-                id="submit-typed-voice-btn"
+                onClick={() => {
+                  if (transcript.trim()) {
+                    parseSpokenSpeech({ spokenText: transcript.trim() });
+                  }
+                }}
                 disabled={!transcript.trim() || isParsing}
-                onClick={() => parseSpokenSpeech(transcript)}
-                className="px-4 py-2.5 rounded-xl bg-[#0D6EFD] hover:bg-blue-600 disabled:opacity-40 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
+                className="px-4 py-2.5 rounded-xl bg-[#073B4C] hover:bg-[#086788] disabled:bg-slate-200 disabled:text-slate-400 text-white text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Process with AI</span>
+                {isParsing ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Parsing...</span>
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-3.5 h-3.5" />
+                    <span>Parse &amp; Search</span>
+                  </>
+                )}
               </button>
             </div>
           </div>
 
-          {/* 2. Real-Time Transcript Display */}
-          {(transcript || interimTranscript || isListening) && (
-            <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <Volume2 className="w-3.5 h-3.5 text-[#0D6EFD]" />
-                  <span>Captured Voice Transcript</span>
-                </span>
-                {transcript && !isListening && (
-                  <button
-                    id="reparse-voice-btn"
-                    onClick={() => parseSpokenSpeech(transcript)}
-                    disabled={isParsing}
-                    className="text-xs font-bold text-[#0D6EFD] hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <RefreshCw className={`w-3 h-3 ${isParsing ? 'animate-spin' : ''}`} />
-                    <span>Re-parse with AI</span>
-                  </button>
-                )}
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-sm font-medium text-slate-800 leading-relaxed min-h-[48px]">
-                {transcript ? (
-                  <span>
-                    {transcript}{' '}
-                    {interimTranscript && (
-                      <span className="text-slate-400 italic">{interimTranscript}</span>
-                    )}
-                  </span>
-                ) : interimTranscript ? (
-                  <span className="text-slate-400 italic">{interimTranscript}...</span>
-                ) : (
-                  <span className="text-slate-400 italic">Waiting for your voice input...</span>
-                )}
-              </div>
+          {/* Quick Prompts Samples */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                {activeTab === 'flight' ? 'Popular Voice Flight Queries:' : 'Popular Voice Holiday Queries:'}
+              </span>
             </div>
-          )}
+            <div className="flex flex-wrap gap-2">
+              {(activeTab === 'flight' ? SAMPLE_FLIGHT_PROMPTS : SAMPLE_ITINERARY_PROMPTS).map(
+                (sample, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleSelectSample(sample)}
+                    className="text-left px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-200 text-slate-700 hover:text-[#0D6EFD] text-xs font-medium transition-colors cursor-pointer"
+                  >
+                    "{sample}"
+                  </button>
+                )
+              )}
+            </div>
+          </div>
 
-          {/* 3. Parsing Status Spinner */}
+          {/* 2. Loading State */}
           {isParsing && (
-            <div className="p-5 rounded-2xl bg-blue-50/70 border border-blue-200 flex items-center justify-center gap-3 text-sm text-[#0D6EFD] font-bold">
-              <RefreshCw className="w-4 h-4 animate-spin text-blue-600" />
-              <span>Analyzing speech & extracting flight route parameters with Gemini AI...</span>
+            <div className="p-8 rounded-2xl bg-blue-50/50 border border-blue-100 flex flex-col items-center justify-center text-center space-y-3">
+              <div className="w-10 h-10 rounded-full border-3 border-blue-200 border-t-[#0D6EFD] animate-spin" />
+              <div className="space-y-1">
+                <h4 className="text-sm font-bold text-[#071A33]">AI is Analyzing Your Spoken Travel Request...</h4>
+                <p className="text-xs text-slate-500">
+                  Extracting flight routes, IATA codes, dates, cabin class, and itinerary preferences via Gemini.
+                </p>
+              </div>
             </div>
           )}
 
-          {/* 4. Structured AI Output Card */}
+          {/* 3. Parsed Output Results Card */}
           {parsedData && !isParsing && (
-            <div className="p-5 rounded-2xl bg-white border-2 border-[#0D6EFD]/30 shadow-md space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                    <CheckCircle2 className="w-4 h-4" />
+            <div className="space-y-4 animate-in fade-in duration-200">
+              {/* Spoken AI Summary Banner */}
+              {parsedData.spokenSummary && (
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50/60 border border-blue-200 flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-xl bg-[#0D6EFD] text-white flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-[#071A33]">Parsed Travel Request</h4>
-                    <p className="text-[11px] text-slate-500">Gemini AI voice understanding</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {/* TTS Speaker Button */}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isSpeaking) {
-                        stopSpeaking();
-                      } else if (parsedData.spokenSummary) {
-                        speakText(parsedData.spokenSummary);
-                      }
-                    }}
-                    className={`px-2.5 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer border ${
-                      isSpeaking
-                        ? 'bg-blue-600 text-white border-blue-600 animate-pulse'
-                        : 'bg-blue-50 text-[#0D6EFD] border-blue-200 hover:bg-blue-100'
-                    }`}
-                    title={isSpeaking ? 'Mute AI Voice' : 'Listen to AI Voice response'}
-                  >
-                    {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                    <span>{isSpeaking ? 'Mute Voice' : 'Listen'}</span>
-                  </button>
-
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
-                    {parsedData.flightParams?.tripType === 'oneway' ? 'One-Way' : 'Round-Trip'} Flight
-                  </span>
-                </div>
-              </div>
-
-              {/* Summary Sentence */}
-              <div className="p-3 rounded-xl bg-slate-50 text-xs font-semibold text-slate-700 leading-relaxed border border-slate-100 flex items-start gap-2">
-                <Sparkles className="w-4 h-4 text-[#0D6EFD] shrink-0 mt-0.5" />
-                <span>"{parsedData.spokenSummary}"</span>
-              </div>
-
-              {/* Flight Route Banner */}
-              {parsedData.flightParams && (
-                <div className="p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50/50 border border-blue-200/80">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Origin</span>
-                      <div className="text-base font-extrabold text-[#071A33]">
-                        {parsedData.flightParams.originCity} ({parsedData.flightParams.originCode || 'DAC'})
-                      </div>
-                      <div className="text-[11px] text-slate-500 truncate max-w-[150px]">
-                        {parsedData.flightParams.originName || 'Hazrat Shahjalal Int.'}
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center px-3">
-                      <span className="text-[10px] font-bold text-blue-600 uppercase">
-                        {parsedData.flightParams.tripType === 'oneway' ? 'One-Way' : 'Round-Trip'}
-                      </span>
-                      <div className="flex items-center gap-1.5 my-1">
-                        <div className="w-8 sm:w-12 h-0.5 bg-blue-300 rounded" />
-                        <Plane className="w-4 h-4 text-[#0D6EFD]" />
-                        <div className="w-8 sm:w-12 h-0.5 bg-blue-300 rounded" />
-                      </div>
-                      <span className="text-[10px] text-slate-500 font-medium">
-                        {parsedData.durationDays} Days
-                      </span>
-                    </div>
-
-                    <div className="space-y-0.5 text-right">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Destination</span>
-                      <div className="text-base font-extrabold text-[#071A33]">
-                        {parsedData.flightParams.destinationCity} ({parsedData.flightParams.destinationCode || 'BKK'})
-                      </div>
-                      <div className="text-[11px] text-slate-500 truncate max-w-[150px]">
-                        {parsedData.flightParams.destinationName || 'Destination Airport'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Structured Parameter Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {/* Departure Date */}
-                <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-100 space-y-1">
-                  <div className="flex items-center gap-1 text-slate-500 text-[10px] font-bold uppercase">
-                    <Calendar className="w-3 h-3 text-[#0D6EFD]" />
-                    <span>Departure</span>
-                  </div>
-                  <div className="text-xs font-bold text-[#071A33] truncate">
-                    {parsedData.flightParams?.departureDate || parsedData.startDate}
-                  </div>
-                </div>
-
-                {/* Return Date */}
-                <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-100 space-y-1">
-                  <div className="flex items-center gap-1 text-slate-500 text-[10px] font-bold uppercase">
-                    <Calendar className="w-3 h-3 text-amber-600" />
-                    <span>Return</span>
-                  </div>
-                  <div className="text-xs font-bold text-[#071A33] truncate">
-                    {parsedData.flightParams?.tripType === 'oneway'
-                      ? 'None (One-way)'
-                      : parsedData.flightParams?.returnDate || parsedData.endDate}
-                  </div>
-                </div>
-
-                {/* Travelers */}
-                <div className="p-3 rounded-xl bg-teal-50/50 border border-teal-100 space-y-1">
-                  <div className="flex items-center gap-1 text-slate-500 text-[10px] font-bold uppercase">
-                    <Users className="w-3 h-3 text-teal-600" />
-                    <span>Passengers</span>
-                  </div>
-                  <div className="text-xs font-bold text-[#071A33]">
-                    {parsedData.flightParams?.adults || parsedData.travelerCount} Adult(s)
-                    {parsedData.flightParams?.children ? `, ${parsedData.flightParams.children} Child` : ''}
-                  </div>
-                </div>
-
-                {/* Cabin Class */}
-                <div className="p-3 rounded-xl bg-purple-50/50 border border-purple-100 space-y-1">
-                  <div className="flex items-center gap-1 text-slate-500 text-[10px] font-bold uppercase">
-                    <Tag className="w-3 h-3 text-purple-600" />
-                    <span>Cabin</span>
-                  </div>
-                  <div className="text-xs font-bold text-[#071A33] truncate">
-                    {parsedData.flightParams?.cabinClass || 'Economy'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Vibes Tags */}
-              {parsedData.vibes && parsedData.vibes.length > 0 && (
-                <div className="space-y-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Travel Highlights & Inclusions
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {parsedData.vibes.map((vibe, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-800 text-xs font-semibold border border-slate-200"
+                  <div className="space-y-1 flex-1">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-bold text-[#071A33] uppercase tracking-wider">
+                        AI Interpretation
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => speakText(parsedData.spokenSummary)}
+                        className="text-[11px] font-bold text-[#0D6EFD] hover:underline flex items-center gap-1 cursor-pointer"
                       >
-                        {vibe}
-                      </span>
-                    ))}
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Listen</span>
+                      </button>
+                    </div>
+                    <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                      {parsedData.spokenSummary}
+                    </p>
                   </div>
                 </div>
               )}
 
-              {/* Structured AI Generator Prompt Preview / Edit */}
-              <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    AI Travel Generator Prompt
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingPrompt(!isEditingPrompt)}
-                    className="text-[11px] font-bold text-[#0D6EFD] hover:underline flex items-center gap-1 cursor-pointer"
-                  >
-                    <Edit3 className="w-3 h-3" />
-                    <span>{isEditingPrompt ? 'Done Editing' : 'Fine-tune Prompt'}</span>
-                  </button>
-                </div>
-
-                {isEditingPrompt ? (
-                  <textarea
-                    rows={2}
-                    value={editablePrompt}
-                    onChange={(e) => setEditablePrompt(e.target.value)}
-                    className="w-full p-2.5 rounded-xl border border-blue-400 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs text-slate-800 font-medium leading-relaxed bg-white"
-                  />
-                ) : (
-                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 leading-relaxed font-mono">
-                    {editablePrompt || parsedData.structuredPrompt}
+              {/* Tab Content 1: Flight Search Card */}
+              {activeTab === 'flight' && (
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#0D6EFD] flex items-center justify-center">
+                        <Plane className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                        Flight Search Parameters
+                      </h4>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold uppercase">
+                      {parsedData.flightParams?.tripType === 'oneway' ? 'One Way' : 'Round Trip'}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
-          )}
 
-          {/* 5. Quick Sample Ideas */}
-          {!parsedData && !isListening && (
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                  <Compass className="w-3.5 h-3.5 text-[#0D6EFD]" />
-                  <span>
-                    {activeTab === 'flight'
-                      ? 'Or try speaking these popular flight searches'
-                      : 'Or try speaking these popular holiday plans'}
-                  </span>
-                </span>
-              </div>
-              <div className="grid grid-cols-1 gap-2">
-                {(activeTab === 'flight' ? SAMPLE_FLIGHT_PROMPTS : SAMPLE_ITINERARY_PROMPTS).map(
-                  (sample, idx) => (
+                  {/* Route & Airport Visualizer */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Origin */}
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Departure (From)</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-lg font-mono font-bold text-[#071A33]">
+                          {parsedData.flightParams?.originCode || 'DAC'}
+                        </span>
+                        <div className="text-xs text-slate-600 truncate">
+                          <div className="font-semibold text-slate-800">{parsedData.flightParams?.originCity || 'Dhaka'}</div>
+                          <div className="text-[11px] text-slate-500">{parsedData.flightParams?.originCountry || 'Bangladesh'}</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Destination */}
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Destination (To)</div>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-lg font-mono font-bold text-[#0D6EFD]">
+                          {parsedData.flightParams?.destinationCode || 'BKK'}
+                        </span>
+                        <div className="text-xs text-slate-600 truncate">
+                          <div className="font-semibold text-slate-800">{parsedData.flightParams?.destinationCity || parsedData.destination}</div>
+                          <div className="text-[11px] text-slate-500">{parsedData.flightParams?.destinationCountry || 'International'}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Flight Details Pills */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Departure Date</span>
+                      <span className="font-bold text-slate-800">{parsedData.flightParams?.departureDate || parsedData.startDate}</span>
+                    </div>
+
+                    {parsedData.flightParams?.tripType !== 'oneway' && (
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                        <span className="text-[10px] text-slate-400 block font-semibold">Return Date</span>
+                        <span className="font-bold text-slate-800">{parsedData.flightParams?.returnDate || parsedData.endDate}</span>
+                      </div>
+                    )}
+
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Passengers</span>
+                      <span className="font-bold text-slate-800">
+                        {parsedData.flightParams?.adults || 1} Adult{parsedData.flightParams?.children ? `, ${parsedData.flightParams.children} Child` : ''}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Cabin Class</span>
+                      <span className="font-bold text-slate-800">{parsedData.flightParams?.cabinClass || 'Economy'}</span>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons for Flights */}
+                  <div className="pt-2 flex flex-col sm:flex-row gap-2">
                     <button
-                      key={idx}
                       type="button"
-                      onClick={() => handleSelectSample(sample)}
-                      className="w-full text-left p-3 rounded-xl bg-white hover:bg-blue-50/60 border border-slate-200/80 hover:border-blue-300 text-xs font-medium text-slate-700 transition-all flex items-center justify-between group cursor-pointer"
+                      onClick={handleSearchFlightsClick}
+                      className="flex-1 py-3 px-4 rounded-xl bg-[#0D6EFD] hover:bg-blue-600 text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <span className="line-clamp-1">"{sample}"</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-[#0D6EFD] group-hover:translate-x-0.5 transition-all shrink-0 ml-2" />
+                      <Plane className="w-4 h-4" />
+                      <span>Search Flights on Azraq Engine</span>
+                      <ArrowRight className="w-4 h-4" />
                     </button>
-                  )
-                )}
-              </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('itinerary')}
+                      className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-[#0D6EFD]" />
+                      <span>Plan Full Tour Itinerary</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tab Content 2: Itinerary Plan Card */}
+              {activeTab === 'itinerary' && (
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <Compass className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                        Holiday Plan Parameters
+                      </h4>
+                    </div>
+                    <span className="text-xs font-bold text-[#0D6EFD]">{parsedData.durationDays} Days</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Destination</span>
+                      <span className="font-bold text-slate-800 truncate block">{parsedData.destination}</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Travel Dates</span>
+                      <span className="font-bold text-slate-800 truncate block">
+                        {parsedData.startDate} ~ {parsedData.endDate}
+                      </span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Travelers</span>
+                      <span className="font-bold text-slate-800">{parsedData.travelerCount} Person(s)</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70">
+                      <span className="text-[10px] text-slate-400 block font-semibold">Style / Budget</span>
+                      <span className="font-bold text-slate-800 truncate block">{parsedData.budgetLevel}</span>
+                    </div>
+                  </div>
+
+                  {/* Vibes */}
+                  {parsedData.vibes && parsedData.vibes.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {parsedData.vibes.map((vibe, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200"
+                        >
+                          #{vibe}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Structured Prompt Preview / Edit */}
+                  <div className="space-y-1.5 pt-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                        Generated AI Planning Prompt:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingPrompt(!isEditingPrompt)}
+                        className="text-[#0D6EFD] hover:underline flex items-center gap-1 font-semibold text-[11px] cursor-pointer"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                        <span>{isEditingPrompt ? 'Save' : 'Fine-Tune'}</span>
+                      </button>
+                    </div>
+
+                    {isEditingPrompt ? (
+                      <textarea
+                        rows={3}
+                        value={editablePrompt}
+                        onChange={(e) => setEditablePrompt(e.target.value)}
+                        className="w-full p-3 rounded-xl border border-slate-300 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0D6EFD]/20 focus:border-[#0D6EFD]"
+                      />
+                    ) : (
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed font-normal italic">
+                        "{editablePrompt || parsedData.structuredPrompt}"
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons for Itinerary */}
+                  <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                    <button
+                      type="button"
+                      onClick={handleGenerateItineraryClick}
+                      className="flex-1 py-3 px-4 rounded-xl bg-[#073B4C] hover:bg-[#086788] text-white text-xs font-bold transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Sparkles className="w-4 h-4 text-[#17BEBB]" />
+                      <span>Generate Full Day-by-Day Itinerary</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('flight')}
+                      className="py-3 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <Plane className="w-3.5 h-3.5 text-[#0D6EFD]" />
+                      <span>View Matched Flights</span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="text-xs text-slate-500 font-medium">
-            {parsedData ? (
-              <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> Ready to search flights or build itinerary
-              </span>
-            ) : isListening ? (
-              <span className="text-blue-700 font-semibold animate-pulse">
-                Listening to your microphone ({selectedLang === 'bn-BD' ? 'বাংলা' : 'English'})...
-              </span>
+        {/* Footer */}
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span>Real-time voice processing backed by Gemini 3.7 &amp; Aviasales</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowDiagnostics(!showDiagnostics)}
+            className="text-[11px] font-bold text-slate-400 hover:text-slate-700 underline cursor-pointer"
+          >
+            {showDiagnostics ? 'Hide Logs' : 'Diagnostics'}
+          </button>
+        </div>
+
+        {/* Diagnostics Drawer if toggled */}
+        {showDiagnostics && (
+          <div className="p-4 bg-slate-900 text-slate-300 font-mono text-[11px] border-t border-slate-800 max-h-48 overflow-y-auto space-y-1">
+            <div className="flex items-center justify-between text-slate-400 pb-1 border-b border-slate-800">
+              <span>Event Logs ({eventLogs.length})</span>
+              <button
+                type="button"
+                onClick={clearEventLogs}
+                className="text-rose-400 hover:underline cursor-pointer"
+              >
+                Clear
+              </button>
+            </div>
+            {eventLogs.length === 0 ? (
+              <div className="text-slate-500 py-1">No event logs recorded yet.</div>
             ) : (
-              <span>Web Speech & Gemini AI active</span>
+              eventLogs.map((log) => (
+                <div
+                  key={log.id}
+                  className={`py-0.5 leading-tight ${log.isError ? 'text-rose-400' : 'text-slate-300'}`}
+                >
+                  <span className="text-slate-500">[{log.timestamp}]</span>{' '}
+                  <span className="text-cyan-400 font-bold">[{log.type.toUpperCase()}]</span>{' '}
+                  <span>{log.message}</span>
+                  {log.details && <span className="text-slate-400"> - {log.details}</span>}
+                </div>
+              ))
             )}
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <button
-              id="cancel-voice-btn"
-              type="button"
-              onClick={onClose}
-              className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
-            >
-              Cancel
-            </button>
-
-            {parsedData ? (
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  id="confirm-voice-flight-search-btn"
-                  type="button"
-                  onClick={handleSearchFlightsClick}
-                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-[#006ce4] hover:bg-[#0057b8] text-white font-bold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
-                >
-                  <Plane className="w-4 h-4" />
-                  <span>Search Flights</span>
-                </button>
-
-                <button
-                  id="confirm-voice-itinerary-btn"
-                  type="button"
-                  onClick={handleGenerateItineraryClick}
-                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#0D6EFD] hover:bg-blue-600 text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>AI Itinerary</span>
-                </button>
-              </div>
-            ) : transcript ? (
-              <button
-                id="process-spoken-trip-btn"
-                type="button"
-                onClick={() => parseSpokenSpeech(transcript)}
-                disabled={isParsing}
-                className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl bg-[#0D6EFD] hover:bg-blue-600 text-white font-bold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4" />
-                <span>Process Spoken Route</span>
-              </button>
-            ) : null}
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
