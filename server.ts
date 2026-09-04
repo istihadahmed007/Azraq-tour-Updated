@@ -8371,6 +8371,15 @@ app.use((req, res, next) => {
 });
 
 // Explicit SEO & Verification Endpoint Routes for Crawlers
+app.get("/google8c244b3abfc7b998.html", (req, res) => {
+  const filePath = path.join(process.cwd(), "public", "google8c244b3abfc7b998.html");
+  if (fs.existsSync(filePath)) {
+    res.type("text/html").sendFile(filePath);
+  } else {
+    res.type("text/html").send("google-site-verification: google8c244b3abfc7b998.html");
+  }
+});
+
 app.get(["/travelpayouts.txt", "/.well-known/travelpayouts.txt", "/tp.txt"], (req, res) => {
   res.type("text/plain").send("565363");
 });
