@@ -26,7 +26,7 @@ export const VisaAssistanceSection: React.FC<VisaAssistanceSectionProps> = ({
               <ShieldCheck className="w-3.5 h-3.5 text-[#17BEBB]" />
               <span>Bangladeshi Passport Assistance</span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-normal tracking-tight text-white font-serif-display">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-[-0.025em] text-white">
               Hassle-Free Visa Guidance & Document Prep
             </h2>
             <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-inter">

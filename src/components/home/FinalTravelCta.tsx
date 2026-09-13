@@ -30,7 +30,7 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
             <span className="text-xs font-bold uppercase tracking-wider text-[#17BEBB] font-mono">
               Start Exploring
             </span>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-normal tracking-tight text-white font-serif-display">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-[-0.025em] text-white">
               Your next journey starts with a better plan.
             </h2>
             <p className="text-sm sm:text-base text-slate-200 leading-relaxed font-normal font-inter">

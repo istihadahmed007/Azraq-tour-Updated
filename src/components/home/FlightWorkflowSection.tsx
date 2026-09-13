@@ -38,7 +38,7 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
         <span className="text-xs font-bold uppercase tracking-wider text-[#086788] font-mono">
           How Azraq Works
         </span>
-        <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] tracking-[-0.025em]">
           Simple, Transparent Flight & Travel Booking
         </h2>
         <p className="text-xs sm:text-sm text-slate-500 font-inter">
@@ -60,7 +60,7 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
             </div>
 
             <div className="space-y-1.5">
-              <h3 className="text-base font-bold text-[#073B4C] font-serif-display text-lg">{s.title}</h3>
+              <h3 className="text-lg font-bold text-[#073B4C] tracking-[-0.015em]">{s.title}</h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-inter">{s.desc}</p>
             </div>
           </div>

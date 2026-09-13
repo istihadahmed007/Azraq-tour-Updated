@@ -33,7 +33,7 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
             <BookOpen className="w-3.5 h-3.5" />
             <span>Travel Stories & Insights</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-normal text-[#071A33] tracking-tight font-serif-display">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#071A33] tracking-[-0.025em]">
             Curated Guides for Bangladeshi Travelers
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 font-inter max-w-xl">
@@ -81,7 +81,7 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
               </div>
 
               <div className="absolute bottom-4 left-4 right-4 text-white space-y-2">
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-normal font-serif-display leading-snug group-hover:text-[#17BEBB] transition-colors">
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] leading-snug group-hover:text-[#17BEBB] transition-colors">
                   {featuredGuide.title}
                 </h3>
               </div>

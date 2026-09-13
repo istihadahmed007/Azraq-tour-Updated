@@ -52,7 +52,7 @@ export const WhyAzraqSection: React.FC = () => {
             <Award className="w-3.5 h-3.5 text-[#17BEBB]" />
             <span>Why Choose Azraq</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-normal text-[#071A33] tracking-tight font-serif-display">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#071A33] tracking-[-0.025em]">
             Built for Bangladeshi Travelers
           </h2>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-inter">
@@ -88,7 +88,7 @@ export const WhyAzraqSection: React.FC = () => {
             <span className="text-xs font-semibold uppercase tracking-wider text-[#17BEBB] font-mono">
               Our Commitment
             </span>
-            <h3 className="text-2xl sm:text-3xl font-normal tracking-tight font-serif-display text-white">
+            <h3 className="text-2xl sm:text-3xl font-bold tracking-[-0.02em] text-white">
               Every trip planned with care, precision, and honesty.
             </h3>
           </div>
@@ -96,7 +96,7 @@ export const WhyAzraqSection: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 border-t border-white/10 pt-8">
             {travelPillars.map((p, idx) => (
               <div key={idx} className="space-y-3">
-                <span className="text-3xl font-serif-display font-light text-[#17BEBB]">{p.number}</span>
+                <span className="text-3xl font-bold text-[#17BEBB]">{p.number}</span>
                 <h4 className="text-base font-bold text-white font-inter">{p.title}</h4>
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-inter">{p.description}</p>
               </div>

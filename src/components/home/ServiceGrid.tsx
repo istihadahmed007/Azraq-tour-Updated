@@ -71,7 +71,7 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
         <span className="text-xs font-bold uppercase tracking-wider text-[#086788] font-mono">
           Comprehensive Services
         </span>
-        <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] tracking-[-0.025em]">
           Everything You Need for a Seamless Journey
         </h2>
       </div>

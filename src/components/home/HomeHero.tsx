@@ -52,12 +52,12 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
             </span>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.08] font-serif-display drop-shadow-md">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-[5rem] font-extrabold tracking-[-0.035em] text-white leading-[1.04] drop-shadow-md font-manrope">
             Search smarter. <br className="hidden sm:inline" />
-            <span className="italic text-[#17BEBB]">Fly better.</span>
+            <span className="text-[#17BEBB]">Fly better.</span>
           </h1>
 
-          <p className="text-sm sm:text-base md:text-lg text-slate-100 font-light max-w-2xl mx-auto leading-relaxed drop-shadow-xs font-sans">
+          <p className="text-sm sm:text-base md:text-lg text-slate-100 font-normal max-w-2xl mx-auto leading-relaxed drop-shadow-xs font-manrope">
             Compare live direct airfares from Dhaka and verified partner routes across Asia with transparent BDT pricing.
           </p>
 

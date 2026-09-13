@@ -151,7 +151,7 @@ export const DealsSection: React.FC<DealsSectionProps> = ({
             <Tag className="w-3.5 h-3.5" />
             <span>Limited-Time Offers</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] tracking-[-0.025em]">
             Featured Deals & Exclusive Promotions
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-inter">
@@ -302,7 +302,7 @@ export const DealsSection: React.FC<DealsSectionProps> = ({
             <ShieldCheck className="w-5 h-5 text-[#17BEBB]" />
           </div>
           <div>
-            <h4 className="text-sm font-bold text-white font-serif-display text-base">100% Price & Availability Guarantee</h4>
+            <h4 className="text-sm sm:text-base font-bold text-white">100% Price & Availability Guarantee</h4>
             <p className="text-xs text-slate-200 font-inter">All prices include applicable government taxes, hotel vat, and 24/7 dedicated Dhaka concierge support.</p>
           </div>
         </div>

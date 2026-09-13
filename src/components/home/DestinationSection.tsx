@@ -109,7 +109,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
             <MapPin className="w-3.5 h-3.5" />
             <span>Curated Asian Routes</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-normal text-[#071A33] tracking-tight font-serif-display">
+          <h2 className="text-3xl sm:text-4xl font-bold text-[#071A33] tracking-[-0.025em]">
             Featured Destinations
           </h2>
           <p className="text-sm text-slate-500 font-sans">
@@ -160,7 +160,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
             </div>
 
             <div>
-              <h3 className="text-3xl sm:text-4xl font-normal tracking-tight font-serif-display text-white">
+              <h3 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] text-white">
                 {featuredDest.name}, {featuredDest.country}
               </h3>
               <p className="text-sm text-slate-200/90 font-light mt-1 max-w-md">
@@ -225,7 +225,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                   <span className="text-[11px] font-mono text-[#17BEBB] font-semibold block">
                     {dest.routeTag}
                   </span>
-                  <h4 className="text-xl font-normal font-serif-display tracking-tight text-white group-hover:text-teal-200 transition-colors">
+                  <h4 className="text-xl font-bold tracking-tight text-white group-hover:text-teal-200 transition-colors">
                     {dest.name}, {dest.country}
                   </h4>
                   <p className="text-xs text-slate-300 font-light mt-0.5">

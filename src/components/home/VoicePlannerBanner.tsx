@@ -28,7 +28,7 @@ export const VoicePlannerBanner: React.FC<VoicePlannerBannerProps> = ({
               <span>Voice AI Trip Planner</span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-normal tracking-tight text-white leading-tight font-serif-display">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-[-0.025em] text-white leading-tight">
               Plan your holiday simply by speaking
             </h2>
 

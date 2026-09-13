@@ -28,7 +28,7 @@ export const FeaturedPackagesSection: React.FC<FeaturedPackagesSectionProps> = (
             <Package className="w-3.5 h-3.5 text-[#17BEBB]" />
             <span>Handpicked Holidays</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] tracking-[-0.025em]">
             Featured Tour Packages
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 font-inter">

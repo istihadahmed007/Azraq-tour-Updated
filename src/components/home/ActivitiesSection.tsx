@@ -132,7 +132,7 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
             <Compass className="w-3.5 h-3.5 text-[#17BEBB]" />
             <span>Top Things to Do</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] tracking-[-0.025em]">
             Popular Activities & Day Tours
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 max-w-xl font-inter">
