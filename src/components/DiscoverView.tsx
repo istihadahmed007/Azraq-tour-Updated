@@ -18,7 +18,6 @@ import { VisaAssistanceSection } from './home/VisaAssistanceSection';
 import { FlightWorkflowSection } from './home/FlightWorkflowSection';
 import { WhyAzraqSection } from './home/WhyAzraqSection';
 import { EditorialStoriesSection } from './home/EditorialStoriesSection';
-import { BehanceShowcase } from './home/BehanceShowcase';
 import { TravelBuddiesPreview } from './home/TravelBuddiesPreview';
 import { FinalTravelCta } from './home/FinalTravelCta';
 
@@ -185,12 +184,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         />
       </div>
 
-      {/* 11: Brand Architecture & Visual Identity (Behance Showcase) */}
-      <div className="w-full bg-[#FAF8F5] border-y border-slate-200/60">
-        <BehanceShowcase />
-      </div>
-
-      {/* 12: Concierge & Travel Buddies Support */}
+      {/* 11: Concierge & Travel Buddies Support */}
       <div className="w-full bg-white py-14 sm:py-20">
         <TravelBuddiesPreview
           onNavigateToBuddies={() => onNavigateToView && onNavigateToView('buddies')}

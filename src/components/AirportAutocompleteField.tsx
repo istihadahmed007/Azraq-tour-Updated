@@ -22,6 +22,7 @@ interface AirportAutocompleteFieldProps {
   placeholder?: string;
   id?: string;
   className?: string;
+  variant?: 'default' | 'hero';
 }
 
 export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> = ({
@@ -32,6 +33,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
   placeholder = 'City or airport (e.g. DAC, London, Paris, CDG)...',
   id: customId,
   className = '',
+  variant = 'default',
 }) => {
   const generatedId = useId();
   const inputId = customId || `airport-autocomplete-${generatedId}`;
@@ -99,24 +101,19 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
       isBangladesh: false,
       category: 'ME',
     })),
-    // Popular Southeast & South Asia
+    // Popular Southeast Asia
     ...[
       { code: 'BKK', city: 'Bangkok', country: 'Thailand', name: 'Suvarnabhumi Airport' },
-      { code: 'HKT', city: 'Phuket', country: 'Thailand', name: 'Phuket International Airport' },
+      { code: 'DMK', city: 'Bangkok (Don Mueang)', country: 'Thailand', name: 'Don Mueang International Airport' },
       { code: 'KUL', city: 'Kuala Lumpur', country: 'Malaysia', name: 'Kuala Lumpur International Airport' },
       { code: 'SIN', city: 'Singapore', country: 'Singapore', name: 'Singapore Changi Airport' },
-      { code: 'DPS', city: 'Bali', country: 'Indonesia', name: 'I Gusti Ngurah Rai International Airport' },
-      { code: 'MLE', city: 'Malé', country: 'Maldives', name: 'Velana International Airport' },
+      { code: 'DPS', city: 'Bali / Denpasar', country: 'Indonesia', name: 'Ngurah Rai International Airport' },
+      { code: 'HKT', city: 'Phuket', country: 'Thailand', name: 'Phuket International Airport' },
+      { code: 'KBV', city: 'Krabi', country: 'Thailand', name: 'Krabi International Airport' },
+      { code: 'CNX', city: 'Chiang Mai', country: 'Thailand', name: 'Chiang Mai International Airport' },
       { code: 'KTM', city: 'Kathmandu', country: 'Nepal', name: 'Tribhuvan International Airport' },
+      { code: 'MLE', city: 'Male', country: 'Maldives', name: 'Velana International Airport' },
       { code: 'CMB', city: 'Colombo', country: 'Sri Lanka', name: 'Bandaranaike International Airport' },
-      { code: 'HAN', city: 'Hanoi', country: 'Vietnam', name: 'Noi Bai International Airport' },
-      { code: 'CCU', city: 'Kolkata', country: 'India', name: 'Netaji Subhash Chandra Bose International Airport' },
-      { code: 'DEL', city: 'Delhi', country: 'India', name: 'Indira Gandhi International Airport' },
-      { code: 'MAA', city: 'Chennai', country: 'India', name: 'Chennai International Airport (Medical Hub)' },
-      { code: 'HND', city: 'Tokyo', country: 'Japan', name: 'Tokyo Haneda Airport' },
-      { code: 'ICN', city: 'Seoul', country: 'South Korea', name: 'Incheon International Airport' },
-      { code: 'HKG', city: 'Hong Kong', country: 'Hong Kong', name: 'Hong Kong International Airport' },
-      { code: 'CAN', city: 'Guangzhou', country: 'China', name: 'Guangzhou Baiyun Airport' },
     ].map((a) => ({
       code: a.code,
       name: a.name,
@@ -127,17 +124,15 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
       isBangladesh: false,
       category: 'SEA',
     })),
-    // Popular Europe & UK
+    // Europe & UK
     ...[
-      { code: 'LHR', city: 'London (Heathrow)', country: 'United Kingdom', name: 'London Heathrow Airport' },
-      { code: 'LGW', city: 'London (Gatwick)', country: 'United Kingdom', name: 'London Gatwick Airport' },
-      { code: 'MAN', city: 'Manchester', country: 'United Kingdom', name: 'Manchester Airport' },
-      { code: 'CDG', city: 'Paris (CDG)', country: 'France', name: 'Paris Charles de Gaulle Airport' },
+      { code: 'LHR', city: 'London (Heathrow)', country: 'United Kingdom', name: 'Heathrow Airport' },
+      { code: 'LGW', city: 'London (Gatwick)', country: 'United Kingdom', name: 'Gatwick Airport' },
+      { code: 'CDG', city: 'Paris', country: 'France', name: 'Charles de Gaulle Airport' },
       { code: 'FRA', city: 'Frankfurt', country: 'Germany', name: 'Frankfurt Airport' },
       { code: 'AMS', city: 'Amsterdam', country: 'Netherlands', name: 'Amsterdam Airport Schiphol' },
-      { code: 'ZRH', city: 'Zurich', country: 'Switzerland', name: 'Zurich Airport' },
-      { code: 'FCO', city: 'Rome', country: 'Italy', name: 'Leonardo da Vinci Airport' },
-      { code: 'BCN', city: 'Barcelona', country: 'Spain', name: 'Josep Tarradellas Barcelona Airport' },
+      { code: 'FCO', city: 'Rome', country: 'Italy', name: 'Leonardo da Vinci–Fiumicino Airport' },
+      { code: 'MXP', city: 'Milan', country: 'Italy', name: 'Milan Malpensa Airport' },
     ].map((a) => ({
       code: a.code,
       name: a.name,
@@ -148,16 +143,14 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
       isBangladesh: false,
       category: 'EU',
     })),
-    // Popular North America & Australia
+    // North America
     ...[
       { code: 'JFK', city: 'New York (JFK)', country: 'United States', name: 'John F. Kennedy International Airport' },
       { code: 'EWR', city: 'New York / Newark', country: 'United States', name: 'Newark Liberty International Airport' },
       { code: 'YYZ', city: 'Toronto', country: 'Canada', name: 'Toronto Pearson International Airport' },
-      { code: 'YVR', city: 'Vancouver', country: 'Canada', name: 'Vancouver International Airport' },
-      { code: 'LAX', city: 'Los Angeles', country: 'United States', name: 'Los Angeles International Airport' },
+      { code: 'ORD', city: 'Chicago', country: 'United States', name: 'O\'Hare International Airport' },
       { code: 'SFO', city: 'San Francisco', country: 'United States', name: 'San Francisco International Airport' },
-      { code: 'SYD', city: 'Sydney', country: 'Australia', name: 'Sydney Kingsford Smith Airport' },
-      { code: 'MEL', city: 'Melbourne', country: 'Australia', name: 'Melbourne Airport' },
+      { code: 'LAX', city: 'Los Angeles', country: 'United States', name: 'Los Angeles International Airport' },
     ].map((a) => ({
       code: a.code,
       name: a.name,
@@ -170,46 +163,50 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
     })),
   ];
 
-  const defaultSuggestions = activeCategory === 'ALL'
-    ? allDefaultSuggestions
-    : allDefaultSuggestions.filter((item: any) => item.category === activeCategory);
+  // Category filter
+  const defaultSuggestions =
+    activeCategory === 'ALL'
+      ? allDefaultSuggestions
+      : allDefaultSuggestions.filter((item: any) => item.category === activeCategory);
 
-  // Perform debounced search
-  const performSearch = useCallback(async (searchTerm: string) => {
-    if (searchTerm.trim().length < 2) {
-      setResults([]);
-      setIsLoading(false);
-      setError(null);
-      return;
-    }
-
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      trackFlightSearchEvent('airport_query', { query: searchTerm, field: label });
-      const items = await searchAirportsAndCities(searchTerm, controller.signal);
-      setResults(items);
-      setHighlightedIndex(items.length > 0 ? 0 : -1);
-    } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        setError('Unable to load airports. Showing offline directory.');
+  // Debounced live API & local search
+  const performSearch = useCallback(
+    async (searchTerm: string) => {
+      const trimmed = searchTerm.trim();
+      if (trimmed.length < 2) {
+        setResults([]);
+        setIsLoading(false);
+        setError(null);
+        return;
       }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [label]);
+
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
+
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const searchRes = await searchAirportsAndCities(trimmed, abortControllerRef.current.signal);
+        setResults(searchRes);
+        setHighlightedIndex(searchRes.length > 0 ? 0 : -1);
+      } catch (err: any) {
+        if (err.name !== 'AbortError') {
+          console.warn('[AirportAutocomplete] Search failed:', err);
+          setError('Could not fetch suggestions. Showing popular destinations.');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     setQuery(val);
-    setIsOpen(true);
 
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -217,25 +214,27 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
 
     debounceTimerRef.current = setTimeout(() => {
       performSearch(val);
-    }, 300);
+    }, 200);
   };
 
   const handleSelectLocation = (loc: AutocompleteLocation) => {
-    const airport = normalizeLocationToAirport(loc);
-    onSelect(airport);
+    const normalizedAirport = normalizeLocationToAirport(loc);
+    onSelect(normalizedAirport);
     trackFlightSearchEvent('airport_selected', {
-      code: airport.code,
-      city: airport.city,
-      type: loc.type,
-      field: label,
+      code: normalizedAirport.code,
+      city: normalizedAirport.city,
+      country: normalizedAirport.country,
+      label,
     });
     setIsOpen(false);
     setQuery('');
+    setResults([]);
     setHighlightedIndex(-1);
   };
 
+  // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    const items = query.trim().length >= 2 ? results : defaultSuggestions;
+    const items = isSearching ? results : defaultSuggestions;
 
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -272,8 +271,8 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
     }, 50);
   };
 
-  const displayList = query.trim().length >= 2 ? results : defaultSuggestions;
   const isSearching = query.trim().length >= 2;
+  const displayList = isSearching ? results : defaultSuggestions;
 
   return (
     <div className={`relative ${className}`} ref={containerRef}>
@@ -285,22 +284,42 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-controls={listboxId}
-        className="w-full h-[52px] px-3 py-2 bg-white rounded-lg border border-slate-300 hover:border-[#006ce4] focus:ring-2 focus:ring-blue-600 focus:outline-none shadow-sm flex items-center justify-between cursor-pointer transition-all text-left group"
+        className={`w-full ${
+          variant === 'hero'
+            ? 'min-h-[72px] p-3 sm:p-3.5 bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-md rounded-2xl border border-white/60 hover:border-white shadow-sm focus:ring-2 focus:ring-[#071A33] focus:outline-none'
+            : 'h-[52px] px-3 py-2 bg-white rounded-lg border border-slate-300 hover:border-[#071A33] focus:ring-2 focus:ring-[#071A33] focus:outline-none shadow-xs'
+        } flex items-center justify-between cursor-pointer transition-all text-left group`}
       >
-        <div className="flex items-center gap-2 min-w-0 pr-2">
-          <MapPin className="w-4 h-4 text-slate-500 group-hover:text-[#006ce4] shrink-0 transition-colors" />
+        <div className="flex items-center gap-3 min-w-0 pr-2">
+          <div
+            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+              variant === 'hero'
+                ? 'bg-[#071A33]/10 text-[#17BEBB] backdrop-blur-xs'
+                : 'bg-slate-100 text-slate-500'
+            }`}
+          >
+            <Plane className="w-4 h-4" />
+          </div>
           <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
               {label}
             </div>
-            <div className="text-xs font-bold text-slate-900 truncate">
-              {selectedAirport.city} ({selectedAirport.code})
+            <div className="text-base sm:text-lg font-bold text-[#071A33] truncate leading-tight mt-0.5">
+              {selectedAirport.city}{' '}
+              <span className="font-mono text-xs sm:text-sm font-semibold text-slate-600">
+                ({selectedAirport.code})
+              </span>
             </div>
+            {variant === 'hero' && (
+              <div className="text-xs text-slate-600 truncate font-normal mt-0.5">
+                {selectedAirport.name}
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0">
-          <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded border border-blue-100">
+          <span className="font-mono text-xs font-bold px-2 py-1 bg-[#071A33]/10 text-[#071A33] rounded-lg border border-[#071A33]/15 backdrop-blur-xs">
             {selectedAirport.code}
           </span>
         </div>
@@ -312,7 +331,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
           id={listboxId}
           role="listbox"
           aria-label={`${label} options`}
-          className="absolute top-full left-0 mt-1.5 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-2 text-slate-900 animate-fadeIn"
+          className="absolute top-full left-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-2 text-slate-900 animate-fadeIn"
         >
           {/* Search Input Bar */}
           <div className="p-2 border-b border-slate-100">
@@ -333,7 +352,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
                 autoFocus
-                className="w-full pl-9 pr-8 py-2 text-xs bg-slate-100 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-900"
+                className="w-full pl-9 pr-8 py-2 text-xs bg-slate-100 rounded-lg border-none focus:outline-none focus:ring-2 focus:ring-[#071A33] font-medium text-slate-900"
               />
               {query && (
                 <button
@@ -382,7 +401,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
                 {[
                   { id: 'ALL', label: 'All Popular' },
                   { id: 'BD', label: 'Bangladesh 🇧🇩' },
-                  { id: 'ME', label: 'Middle East & Umrah 🕌' },
+                  { id: 'ME', label: 'Middle East 🕌' },
                   { id: 'SEA', label: 'Southeast Asia 🏖️' },
                   { id: 'EU', label: 'Europe & UK 🇬🇧' },
                   { id: 'NA', label: 'Americas 🇺🇸' },
@@ -396,7 +415,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
                     }}
                     className={`text-[10px] font-bold px-2 py-1 rounded-md transition-all whitespace-nowrap cursor-pointer ${
                       activeCategory === tab.id
-                        ? 'bg-[#1389E8] text-white shadow-xs'
+                        ? 'bg-[#071A33] text-white shadow-xs'
                         : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
                     }`}
                   >
@@ -412,7 +431,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
             {isSearching && !isLoading && results.length === 0 && !error && (
               <div className="p-6 text-center text-xs text-slate-500 space-y-1">
                 <p className="font-semibold text-slate-700">No airports or cities found for "{query}"</p>
-                <p className="text-[11px] text-slate-400">Try searching by 3-letter IATA code (e.g. DAC, LHR, DXB, JFK) or full city name.</p>
+                <p className="text-[11px] text-slate-400">Try searching by 3-letter IATA code (e.g. DAC, LHR, DXB, JFK) or city name.</p>
               </div>
             )}
 
@@ -431,21 +450,21 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
                   onClick={() => handleSelectLocation(loc)}
                   onMouseEnter={() => setHighlightedIndex(idx)}
                   className={`w-full p-2.5 text-left rounded-lg transition-colors cursor-pointer flex items-center justify-between group ${
-                    isHighlighted ? 'bg-[#EAF7FF]' : 'hover:bg-[#F4FAFD]'
-                  } ${isSelected ? 'bg-[#EAF7FF]/90 font-bold' : ''}`}
+                    isHighlighted ? 'bg-[#FAF8F5]' : 'hover:bg-slate-50'
+                  } ${isSelected ? 'bg-[#FAF8F5] font-bold' : ''}`}
                 >
                   <div className="flex items-start gap-2.5 min-w-0">
-                    <div className="mt-0.5 w-6 h-6 rounded-md bg-[#F4FAFD] border border-[#E1EFF8] flex items-center justify-center text-slate-500 shrink-0">
+                    <div className="mt-0.5 w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-500 shrink-0">
                       {loc.type === 'city' ? (
-                        <Building2 className="w-3.5 h-3.5 text-[#0759B8]" />
+                        <Building2 className="w-3.5 h-3.5 text-[#071A33]" />
                       ) : (
-                        <Plane className="w-3.5 h-3.5 text-[#1389E8]" />
+                        <Plane className="w-3.5 h-3.5 text-[#17BEBB]" />
                       )}
                     </div>
                     <div className="min-w-0">
                       <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                         <span>{loc.city}</span>
-                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 bg-[#EAF7FF] text-[#0759B8] border border-[#CDE9FB] rounded">
+                        <span className="font-mono text-[10px] font-bold px-1.5 py-0.5 bg-[#071A33]/5 text-[#071A33] border border-[#071A33]/10 rounded">
                           {loc.code}
                         </span>
                         {loc.country && (
@@ -454,12 +473,12 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
                           </span>
                         )}
                         {loc.type === 'city' && (
-                          <span className="text-[9px] uppercase px-1 bg-[#EAF7FF] text-[#0759B8] border border-[#CDE9FB] rounded font-semibold">
+                          <span className="text-[9px] uppercase px-1 bg-[#071A33]/5 text-[#071A33] border border-[#071A33]/10 rounded font-semibold">
                             All Airports
                           </span>
                         )}
                       </div>
-                      <div className="text-[11px] text-slate-500 truncate max-w-[220px]">
+                      <div className="text-[11px] text-slate-500 truncate font-normal">
                         {loc.name}
                       </div>
                       {isOtherSelected && (

@@ -15,6 +15,8 @@ import {
   AlertCircle,
   ShieldCheck,
   Mic,
+  Loader2,
+  Check,
 } from 'lucide-react';
 import {
   POPULAR_AIRPORTS,
@@ -82,9 +84,14 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
   const [directOnly, setDirectOnly] = useState<boolean>(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
-  // Popover menus
+  // Popover menus & loading state
   const [openTravelersMenu, setOpenTravelersMenu] = useState(false);
+  const [openCabinMenu, setOpenCabinMenu] = useState(false);
+  const [openCurrencyMenu, setOpenCurrencyMenu] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const travelersMenuRef = useRef<HTMLDivElement>(null);
+  const cabinMenuRef = useRef<HTMLDivElement>(null);
+  const currencyMenuRef = useRef<HTMLDivElement>(null);
 
   // Hotel search states
   const [hotelCity, setHotelCity] = useState('Bangkok, Thailand');
@@ -106,8 +113,15 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
   // Close menus on click outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (travelersMenuRef.current && !travelersMenuRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (travelersMenuRef.current && !travelersMenuRef.current.contains(target)) {
         setOpenTravelersMenu(false);
+      }
+      if (cabinMenuRef.current && !cabinMenuRef.current.contains(target)) {
+        setOpenCabinMenu(false);
+      }
+      if (currencyMenuRef.current && !currencyMenuRef.current.contains(target)) {
+        setOpenCurrencyMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -158,6 +172,20 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
     setReturnDate(val);
   };
 
+  // Format date for airline display (e.g. "Wed, 16 Sep")
+  const formatFlightDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      const d = new Date(dateStr + 'T00:00:00');
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const monthName = d.toLocaleDateString('en-US', { month: 'short' });
+      const day = d.getDate();
+      return `${dayName}, ${day} ${monthName}`;
+    } catch {
+      return dateStr;
+    }
+  };
+
   // Format date for Booking.com display (e.g., "Wed 9/2")
   const formatBookingDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -193,6 +221,8 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
     }
 
     setValidationError(null);
+    setIsSubmitting(true);
+
     trackFlightSearchEvent('search_submitted', {
       origin: origin.code,
       destination: destination.code,
@@ -218,6 +248,11 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
       cabinClass,
       currency,
     });
+
+    // Safety fallback to restore button state if navigation doesn't occur immediately
+    setTimeout(() => {
+      setIsSubmitting(false);
+    }, 4000);
   };
 
   // Top quick routes from Dhaka
@@ -314,243 +349,342 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
         </div>
       </div>
 
-      {/* 2. Main Search Container: Floating White Card with Subtle Border */}
-      <div className="w-full bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-200/90 text-slate-900">
+      {/* 2. Main Search Container: Premium Glassmorphic Floating Panel */}
+      <div className="w-full bg-white/30 hover:bg-white/35 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 lg:p-7 shadow-[0_20px_50px_rgba(7,26,51,0.28)] border border-white/45 text-slate-900 ring-1 ring-white/30 relative overflow-hidden transition-all">
+        {/* Luminous top specular refraction highlight */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none" />
+
         {/* ================= MODE 1: FLIGHTS ================= */}
         {activeTab === 'flights' && (
-          <form onSubmit={handleFlightSubmit} className="space-y-4">
-            {/* Top Secondary Controls Row */}
-            <div className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-700 pb-2 border-b border-[#E1EFF8]">
-              {/* Trip Type Selector */}
-              <div className="relative">
-                <select
-                  value={tripType}
-                  onChange={(e) => setTripType(e.target.value as any)}
-                  className="bg-[#EAF7FF] hover:bg-[#DDF4FD] font-bold text-[#0759B8] py-1.5 px-3 rounded-lg border border-[#CDE9FB] focus:ring-2 focus:ring-[#1389E8] focus:outline-none cursor-pointer pr-7 appearance-none"
-                >
-                  <option value="round">Round-trip</option>
-                  <option value="oneway">One-way</option>
-                  <option value="multi">Multi-city</option>
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-2.5 pointer-events-none text-[#0759B8]" />
-              </div>
+          <form onSubmit={handleFlightSubmit} className="space-y-4 relative z-10">
+            {/* Top Secondary Controls Row (Segmented Pills & Popovers) */}
+            <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-white/25">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Trip Type Segmented Control */}
+                <div className="inline-flex p-1 rounded-xl bg-white/35 backdrop-blur-md border border-white/35 text-xs font-semibold shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => setTripType('round')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      tripType === 'round'
+                        ? 'bg-white text-[#071A33] shadow-sm font-bold'
+                        : 'text-[#071A33]/80 hover:text-[#071A33] hover:bg-white/20'
+                    }`}
+                  >
+                    Round-trip
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTripType('oneway')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      tripType === 'oneway'
+                        ? 'bg-white text-[#071A33] shadow-sm font-bold'
+                        : 'text-[#071A33]/80 hover:text-[#071A33] hover:bg-white/20'
+                    }`}
+                  >
+                    One-way
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTripType('multi')}
+                    className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                      tripType === 'multi'
+                        ? 'bg-white text-[#071A33] shadow-sm font-bold'
+                        : 'text-[#071A33]/80 hover:text-[#071A33] hover:bg-white/20'
+                    }`}
+                  >
+                    Multi-city
+                  </button>
+                </div>
 
-              {/* Passenger Selector Button & Popover */}
-              <div className="relative" ref={travelersMenuRef}>
-                <button
-                  type="button"
-                  onClick={() => setOpenTravelersMenu(!openTravelersMenu)}
-                  className="flex items-center gap-1.5 bg-[#EAF7FF] hover:bg-[#DDF4FD] font-bold text-[#0759B8] py-1.5 px-3 rounded-lg border border-[#CDE9FB] transition-colors cursor-pointer"
-                >
-                  <Users className="w-3.5 h-3.5 text-[#1389E8]" />
-                  <span>
-                    {adults} {adults === 1 ? 'adult' : 'adults'}
-                    {children > 0 ? `, ${children} child` : ''}
-                    {infants > 0 ? `, ${infants} infant` : ''}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-[#0759B8]" />
-                </button>
-
-                {openTravelersMenu && (
-                  <div className="absolute top-full left-0 mt-1.5 w-64 bg-white rounded-2xl shadow-2xl border border-[#CDE9FB] z-50 p-4 text-slate-900 space-y-3 animate-fadeIn">
-                    {/* Adults */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">Adults</div>
-                        <div className="text-[10px] text-slate-500">Age 12+</div>
-                      </div>
-                      <div className="flex items-center gap-2">
+                {/* Cabin Class Popover */}
+                <div className="relative" ref={cabinMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenCabinMenu(!openCabinMenu)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/45 hover:bg-white/60 backdrop-blur-md border border-white/45 text-xs font-bold text-[#071A33] shadow-xs transition-colors cursor-pointer"
+                  >
+                    <span>{cabinClass}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-[#071A33]/70" />
+                  </button>
+                  {openCabinMenu && (
+                    <div className="absolute top-full left-0 mt-1.5 w-44 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-white/60 z-50 p-1 text-slate-800 space-y-0.5 animate-fadeIn">
+                      {(['Economy', 'Premium Economy', 'Business', 'First'] as const).map((cls) => (
                         <button
+                          key={cls}
                           type="button"
-                          disabled={adults <= 1}
-                          onClick={() => setAdults(Math.max(1, adults - 1))}
-                          className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold disabled:opacity-30 cursor-pointer"
+                          onClick={() => {
+                            setCabinClass(cls);
+                            setOpenCabinMenu(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-between ${
+                            cabinClass === cls ? 'bg-[#071A33] text-white' : 'hover:bg-slate-100 text-slate-700'
+                          }`}
                         >
-                          -
+                          <span>{cls}</span>
+                          {cabinClass === cls && <Check className="w-3.5 h-3.5 text-[#17BEBB]" />}
                         </button>
-                        <span className="w-4 text-center text-xs font-bold">{adults}</span>
-                        <button
-                          type="button"
-                          disabled={adults >= 9}
-                          onClick={() => setAdults(adults + 1)}
-                          className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
+                      ))}
                     </div>
+                  )}
+                </div>
 
-                    {/* Children */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">Children</div>
-                        <div className="text-[10px] text-slate-500">Age 2-11</div>
+                {/* Passenger Selector Button & Popover */}
+                <div className="relative" ref={travelersMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenTravelersMenu(!openTravelersMenu)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/45 hover:bg-white/60 backdrop-blur-md border border-white/45 text-xs font-bold text-[#071A33] shadow-xs transition-colors cursor-pointer"
+                  >
+                    <Users className="w-3.5 h-3.5 text-[#071A33]" />
+                    <span>
+                      {adults} {adults === 1 ? 'Adult' : 'Adults'}
+                      {children > 0 ? `, ${children} Child` : ''}
+                      {infants > 0 ? `, ${infants} Infant` : ''}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-[#071A33]/70" />
+                  </button>
+
+                  {openTravelersMenu && (
+                    <div className="absolute top-full left-0 mt-1.5 w-68 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/60 z-50 p-4 text-slate-900 space-y-3.5 animate-fadeIn">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">
+                          Travelers
+                        </span>
+                        <span className="text-xs font-bold text-[#071A33]">
+                          {adults + children + infants} Total
+                        </span>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          type="button"
-                          disabled={children <= 0}
-                          onClick={() => setChildren(Math.max(0, children - 1))}
-                          className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold disabled:opacity-30 cursor-pointer"
-                        >
-                          -
-                        </button>
-                        <span className="w-4 text-center text-xs font-bold">{children}</span>
-                        <button
-                          type="button"
-                          disabled={children >= 8}
-                          onClick={() => setChildren(children + 1)}
-                          className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold cursor-pointer"
-                        >
-                          +
-                        </button>
+
+                      {/* Adults */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">Adults</div>
+                          <div className="text-[10px] text-slate-500">Age 12+</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={adults <= 1}
+                            onClick={() => setAdults(Math.max(1, adults - 1))}
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold disabled:opacity-30 cursor-pointer flex items-center justify-center"
+                          >
+                            -
+                          </button>
+                          <span className="w-4 text-center text-xs font-bold">{adults}</span>
+                          <button
+                            type="button"
+                            disabled={adults >= 9}
+                            onClick={() => setAdults(adults + 1)}
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold cursor-pointer flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
+
+                      {/* Children */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">Children</div>
+                          <div className="text-[10px] text-slate-500">Age 2-11</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={children <= 0}
+                            onClick={() => setChildren(Math.max(0, children - 1))}
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold disabled:opacity-30 cursor-pointer flex items-center justify-center"
+                          >
+                            -
+                          </button>
+                          <span className="w-4 text-center text-xs font-bold">{children}</span>
+                          <button
+                            type="button"
+                            disabled={children >= 8}
+                            onClick={() => setChildren(children + 1)}
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold cursor-pointer flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Infants */}
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="text-xs font-bold text-slate-900">Infants</div>
+                          <div className="text-[10px] text-slate-500">Under 2 (on lap)</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            disabled={infants <= 0}
+                            onClick={() => setInfants(Math.max(0, infants - 1))}
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold disabled:opacity-30 cursor-pointer flex items-center justify-center"
+                          >
+                            -
+                          </button>
+                          <span className="w-4 text-center text-xs font-bold">{infants}</span>
+                          <button
+                            type="button"
+                            disabled={infants >= adults}
+                            onClick={() => setInfants(infants + 1)}
+                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold cursor-pointer flex items-center justify-center"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setOpenTravelersMenu(false)}
+                        className="w-full py-2.5 rounded-xl bg-[#071A33] hover:bg-[#0B2545] text-white text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        Done
+                      </button>
                     </div>
+                  )}
+                </div>
 
-                    {/* Infants */}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="text-xs font-bold text-slate-900">Infants</div>
-                        <div className="text-[10px] text-slate-500">Under 2 (on lap)</div>
-                      </div>
-                      <div className="flex items-center gap-2">
+                {/* Currency Selector Popover */}
+                <div className="relative" ref={currencyMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setOpenCurrencyMenu(!openCurrencyMenu)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/45 hover:bg-white/60 backdrop-blur-md border border-white/45 text-xs font-bold text-[#071A33] shadow-xs transition-colors cursor-pointer"
+                  >
+                    <span className="font-mono text-[#071A33] font-bold">
+                      {currency === 'BDT' ? '৳' : currency === 'USD' ? '$' : '€'}
+                    </span>
+                    <span>{currency}</span>
+                    <ChevronDown className="w-3.5 h-3.5 text-[#071A33]/70" />
+                  </button>
+                  {openCurrencyMenu && (
+                    <div className="absolute top-full left-0 mt-1.5 w-32 bg-white/95 backdrop-blur-xl rounded-xl shadow-xl border border-white/60 z-50 p-1 text-slate-800 space-y-0.5 animate-fadeIn">
+                      {[
+                        { code: 'BDT', symbol: '৳' },
+                        { code: 'USD', symbol: '$' },
+                        { code: 'EUR', symbol: '€' },
+                      ].map((c) => (
                         <button
+                          key={c.code}
                           type="button"
-                          disabled={infants <= 0}
-                          onClick={() => setInfants(Math.max(0, infants - 1))}
-                          className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold disabled:opacity-30 cursor-pointer"
+                          onClick={() => {
+                            setCurrency(c.code);
+                            setOpenCurrencyMenu(false);
+                          }}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer flex items-center justify-between ${
+                            currency === c.code ? 'bg-[#071A33] text-white' : 'hover:bg-slate-100 text-slate-700'
+                          }`}
                         >
-                          -
+                          <span>
+                            {c.code} ({c.symbol})
+                          </span>
+                          {currency === c.code && <Check className="w-3.5 h-3.5 text-[#17BEBB]" />}
                         </button>
-                        <span className="w-4 text-center text-xs font-bold">{infants}</span>
-                        <button
-                          type="button"
-                          disabled={infants >= adults}
-                          onClick={() => setInfants(infants + 1)}
-                          className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-sm font-bold cursor-pointer"
-                        >
-                          +
-                        </button>
-                      </div>
+                      ))}
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={() => setOpenTravelersMenu(false)}
-                      className="w-full py-2 rounded-xl bg-[#1389E8] hover:bg-[#0E7FE3] text-white text-xs font-bold transition-colors cursor-pointer"
-                    >
-                      Done
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
 
-              {/* Cabin Class */}
-              <div className="relative">
-                <select
-                  value={cabinClass}
-                  onChange={(e) => setCabinClass(e.target.value as any)}
-                  className="bg-[#EAF7FF] hover:bg-[#DDF4FD] font-bold text-[#0759B8] py-1.5 px-3 rounded-lg border border-[#CDE9FB] focus:ring-2 focus:ring-[#1389E8] focus:outline-none cursor-pointer pr-7 appearance-none"
-                >
-                  <option value="Economy">Economy</option>
-                  <option value="Premium Economy">Premium Economy</option>
-                  <option value="Business">Business</option>
-                  <option value="First">First-class</option>
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-2.5 pointer-events-none text-[#0759B8]" />
-              </div>
-
-              {/* Currency */}
-              <div className="relative">
-                <select
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                  className="bg-[#EAF7FF] hover:bg-[#DDF4FD] font-bold text-[#0759B8] py-1.5 px-3 rounded-lg border border-[#CDE9FB] focus:ring-2 focus:ring-[#1389E8] focus:outline-none cursor-pointer pr-7 appearance-none"
-                >
-                  <option value="BDT">BDT (৳)</option>
-                  <option value="USD">USD ($)</option>
-                  <option value="EUR">EUR (€)</option>
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 absolute right-2 top-2.5 pointer-events-none text-[#0759B8]" />
-              </div>
-
-              {/* Direct flights only */}
-              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-700 cursor-pointer select-none">
+              {/* Direct Flights Only Toggle */}
+              <label className="inline-flex items-center gap-2 text-xs font-bold text-[#071A33] hover:text-black cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={directOnly}
                   onChange={(e) => setDirectOnly(e.target.checked)}
-                  className="rounded text-[#1389E8] focus:ring-[#1389E8] h-3.5 w-3.5 border-slate-300"
+                  className="w-4 h-4 rounded text-[#071A33] border-white/60 focus:ring-[#071A33] cursor-pointer"
                 />
                 <span>Direct flights only</span>
               </label>
             </div>
 
-            {/* Main Primary Search Row (Connected Field Grid) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2 sm:gap-2.5 items-center">
-              {/* Origin Field */}
-              <div className="sm:col-span-2 lg:col-span-3">
-                <AirportAutocompleteField
-                  label="Leaving from"
-                  selectedAirport={origin}
-                  onSelect={handleSelectOrigin}
-                  otherAirportCode={destination.code}
-                  placeholder="Where from? (DAC, LHR...)"
-                />
-              </div>
+            {/* Main Primary Search Row (Unified Flight Engine Grid) */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-2.5 items-center">
+              {/* Origin & Destination with Centered Swap Button */}
+              <div className="lg:col-span-6 relative grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Origin Field */}
+                <div>
+                  <AirportAutocompleteField
+                    label="Leaving from"
+                    selectedAirport={origin}
+                    onSelect={handleSelectOrigin}
+                    otherAirportCode={destination.code}
+                    placeholder="Where from? (DAC, LHR...)"
+                    variant="hero"
+                  />
+                </div>
 
-              {/* Swap Button */}
-              <div className="sm:col-span-2 lg:col-span-1 flex justify-center py-0.5 lg:py-0">
-                <button
-                  type="button"
-                  onClick={handleSwapAirports}
-                  aria-label="Swap origin and destination"
-                  className="w-10 h-10 rounded-full bg-[#EAF7FF] border border-[#CDE9FB] hover:border-[#1389E8] text-[#0759B8] shadow-xs flex items-center justify-center hover:scale-105 transition-all cursor-pointer"
-                >
-                  <ArrowRightLeft className="w-4 h-4 text-[#1389E8]" />
-                </button>
-              </div>
+                {/* Desktop Center Swap Button */}
+                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 hidden sm:flex pointer-events-auto">
+                  <button
+                    type="button"
+                    onClick={handleSwapAirports}
+                    aria-label="Swap origin and destination"
+                    className="w-10 h-10 rounded-full bg-white/85 hover:bg-white backdrop-blur-lg border border-white shadow-md hover:shadow-lg text-[#071A33] hover:text-[#17BEBB] hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer group"
+                  >
+                    <ArrowRightLeft className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" />
+                  </button>
+                </div>
 
-              {/* Destination Field */}
-              <div className="sm:col-span-2 lg:col-span-3">
-                <AirportAutocompleteField
-                  label="Going to"
-                  selectedAirport={destination}
-                  onSelect={handleSelectDestination}
-                  otherAirportCode={origin.code}
-                  placeholder="Where to? (BKK, DXB...)"
-                />
+                {/* Mobile Swap Button */}
+                <div className="flex sm:hidden justify-center -my-1 z-10">
+                  <button
+                    type="button"
+                    onClick={handleSwapAirports}
+                    aria-label="Swap origin and destination"
+                    className="px-3 py-1 rounded-full bg-white/85 hover:bg-white backdrop-blur-lg border border-white shadow-xs text-xs font-bold text-[#071A33] flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
+                  >
+                    <ArrowRightLeft className="w-3.5 h-3.5 text-[#17BEBB]" />
+                    <span>Swap cities</span>
+                  </button>
+                </div>
+
+                {/* Destination Field */}
+                <div>
+                  <AirportAutocompleteField
+                    label="Going to"
+                    selectedAirport={destination}
+                    onSelect={handleSelectDestination}
+                    otherAirportCode={origin.code}
+                    placeholder="Where to? (BKK, DXB...)"
+                    variant="hero"
+                  />
+                </div>
               </div>
 
               {/* Departure Date */}
-              <div className="sm:col-span-1 lg:col-span-2 relative">
-                <div className="w-full h-[54px] px-3 py-1.5 bg-[#F4FAFD] hover:bg-white rounded-xl border border-[#E1EFF8] hover:border-[#1389E8] shadow-xs flex items-center justify-between cursor-pointer transition-all">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Calendar className="w-4 h-4 text-[#1389E8] shrink-0" />
-                    <label className="cursor-pointer">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+              <div className="lg:col-span-2 relative">
+                <div className="w-full min-h-[72px] p-3 sm:p-3.5 bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-md rounded-2xl border border-white/60 hover:border-white focus-within:ring-2 focus-within:ring-[#071A33] shadow-sm flex items-center justify-between cursor-pointer transition-all relative">
+                  <div className="flex items-center gap-3 min-w-0 pr-1">
+                    <div className="w-9 h-9 rounded-xl bg-[#071A33]/10 text-[#17BEBB] flex items-center justify-center shrink-0 backdrop-blur-xs">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block font-mono">
                         Departure
                       </span>
-                      <span className="text-xs font-bold text-slate-900 block truncate">
-                        {formatBookingDate(departureDate)}
+                      <span className="text-base sm:text-lg font-bold text-[#071A33] block truncate leading-tight mt-0.5">
+                        {formatFlightDate(departureDate)}
                       </span>
-                      <input
-                        type="date"
-                        min={todayStr}
-                        value={departureDate}
-                        onChange={(e) => handleDepartureDateChange(e.target.value)}
-                        className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                      />
-                    </label>
+                      <span className="text-xs text-slate-600 block truncate mt-0.5">
+                        {tripType === 'round' ? 'Outbound flight' : 'One-way departure'}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center z-10">
+
+                  {/* Day Stepper */}
+                  <div className="flex items-center z-10 shrink-0">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDepartureDateChange(adjustDateByDays(departureDate, -1));
                       }}
-                      className="p-1 hover:bg-[#EAF7FF] rounded text-slate-600 font-bold text-xs"
+                      className="w-6 h-6 rounded-md hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
                       title="Previous Day"
                     >
                       ‹
@@ -561,44 +695,64 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                         e.stopPropagation();
                         handleDepartureDateChange(adjustDateByDays(departureDate, 1));
                       }}
-                      className="p-1 hover:bg-[#EAF7FF] rounded text-slate-600 font-bold text-xs"
+                      className="w-6 h-6 rounded-md hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
                       title="Next Day"
                     >
                       ›
                     </button>
                   </div>
+
+                  {/* Native Date Picker Overlay */}
+                  <input
+                    type="date"
+                    min={todayStr}
+                    value={departureDate}
+                    onChange={(e) => handleDepartureDateChange(e.target.value)}
+                    aria-label="Departure Date"
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-0"
+                  />
                 </div>
               </div>
 
               {/* Return Date */}
-              <div className="sm:col-span-1 lg:col-span-2 relative">
+              <div className="lg:col-span-2 relative">
                 <div
-                  className={`w-full h-[54px] px-3 py-1.5 bg-[#F4FAFD] hover:bg-white rounded-xl border border-[#E1EFF8] hover:border-[#1389E8] shadow-xs flex items-center justify-between cursor-pointer transition-all ${
-                    tripType === 'oneway' ? 'opacity-50 pointer-events-none bg-slate-100' : ''
+                  onClick={() => {
+                    if (tripType === 'oneway') {
+                      setTripType('round');
+                    }
+                  }}
+                  className={`w-full min-h-[72px] p-3 sm:p-3.5 rounded-2xl border shadow-sm flex items-center justify-between cursor-pointer transition-all relative ${
+                    tripType === 'oneway'
+                      ? 'bg-white/40 hover:bg-white/55 border-dashed border-2 border-white/70 text-slate-600 backdrop-blur-md'
+                      : 'bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-md border border-white/60 hover:border-white focus-within:ring-2 focus-within:ring-[#071A33]'
                   }`}
                 >
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Calendar className="w-4 h-4 text-[#1389E8] shrink-0" />
-                    <label className="cursor-pointer">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                  <div className="flex items-center gap-3 min-w-0 pr-1">
+                    <div
+                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                        tripType === 'oneway'
+                          ? 'bg-white/50 text-slate-500'
+                          : 'bg-[#071A33]/10 text-[#17BEBB] backdrop-blur-xs'
+                      }`}
+                    >
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block font-mono">
                         Return
                       </span>
-                      <span className="text-xs font-bold text-slate-900 block truncate">
-                        {tripType === 'oneway' ? 'One-way' : formatBookingDate(returnDate)}
+                      <span className="text-base sm:text-lg font-bold text-[#071A33] block truncate leading-tight mt-0.5">
+                        {tripType === 'oneway' ? 'Add return' : formatFlightDate(returnDate)}
                       </span>
-                      {tripType === 'round' && (
-                        <input
-                          type="date"
-                          min={departureDate || todayStr}
-                          value={returnDate}
-                          onChange={(e) => handleReturnDateChange(e.target.value)}
-                          className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
-                        />
-                      )}
-                    </label>
+                      <span className="text-xs text-slate-600 block truncate mt-0.5">
+                        {tripType === 'oneway' ? 'Click for round-trip' : 'Return flight'}
+                      </span>
+                    </div>
                   </div>
+
                   {tripType === 'round' && (
-                    <div className="flex items-center z-10">
+                    <div className="flex items-center z-10 shrink-0">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -606,7 +760,7 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                           const newD = adjustDateByDays(returnDate, -1);
                           if (newD >= departureDate) handleReturnDateChange(newD);
                         }}
-                        className="p-1 hover:bg-[#EAF7FF] rounded text-slate-600 font-bold text-xs"
+                        className="w-6 h-6 rounded-md hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
                         title="Previous Day"
                       >
                         ‹
@@ -617,33 +771,54 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                           e.stopPropagation();
                           handleReturnDateChange(adjustDateByDays(returnDate, 1));
                         }}
-                        className="p-1 hover:bg-[#EAF7FF] rounded text-slate-600 font-bold text-xs"
+                        className="w-6 h-6 rounded-md hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
                         title="Next Day"
                       >
                         ›
                       </button>
                     </div>
                   )}
+
+                  {tripType === 'round' && (
+                    <input
+                      type="date"
+                      min={departureDate || todayStr}
+                      value={returnDate}
+                      onChange={(e) => handleReturnDateChange(e.target.value)}
+                      aria-label="Return Date"
+                      className="opacity-0 absolute inset-0 w-full h-full cursor-pointer z-0"
+                    />
+                  )}
                 </div>
               </div>
 
-              {/* Primary Search Button with integrated Voice Mic */}
-              <div className="sm:col-span-2 lg:col-span-1 flex gap-1.5">
+              {/* Primary Search CTA Button with Voice Search Option */}
+              <div className="lg:col-span-2 flex items-center gap-2">
                 <button
                   type="submit"
-                  className="flex-1 h-[54px] px-4 rounded-xl bg-[#071A33] hover:bg-[#073B4C] text-white font-semibold text-sm shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 min-h-[44px]"
+                  disabled={isSubmitting}
+                  className="flex-1 min-h-[72px] px-5 sm:px-6 rounded-2xl bg-[#071A33]/90 hover:bg-[#071A33] backdrop-blur-md border border-white/25 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2 cursor-pointer group disabled:opacity-75"
                 >
-                  <Search className="w-4 h-4 text-[#17BEBB]" />
-                  <span>Search</span>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin text-[#17BEBB]" />
+                      <span>Finding flights...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Search Flights</span>
+                      <ArrowRight className="w-5 h-5 text-[#17BEBB] transition-transform duration-200 group-hover:translate-x-1" />
+                    </>
+                  )}
                 </button>
                 {onOpenVoiceModal && (
                   <button
                     type="button"
                     onClick={() => onOpenVoiceModal()}
-                    className="h-[54px] px-3 rounded-xl bg-[#FAF8F5] hover:bg-slate-100 text-[#071A33] border border-slate-200 font-medium text-xs shadow-xs transition-colors flex items-center justify-center cursor-pointer min-h-[44px]"
+                    className="min-h-[72px] px-3.5 rounded-2xl bg-white/80 hover:bg-white/95 backdrop-blur-md border border-white/60 text-[#071A33] shadow-sm transition-colors flex items-center justify-center cursor-pointer shrink-0"
                     title="Voice Flight Search"
                   >
-                    <Mic className="w-4 h-4 text-[#17BEBB]" />
+                    <Mic className="w-5 h-5 text-[#17BEBB]" />
                   </button>
                 )}
               </div>
@@ -651,32 +826,44 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
 
             {/* Validation Error Message */}
             {validationError && (
-              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+              <div className="p-3 rounded-2xl bg-rose-50/90 backdrop-blur-md border border-rose-200 text-rose-700 text-xs font-medium flex items-center gap-2 shadow-xs">
                 <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{validationError}</span>
               </div>
             )}
 
-            {/* Quick Route Shortcuts */}
-            <div className="pt-2 border-t border-[#E1EFF8] flex flex-wrap items-center gap-2 text-xs">
-              <span className="font-bold text-slate-800 text-[11px]">Popular from Dhaka:</span>
-              {QUICK_ROUTES.map((r) => {
-                const isCurrent = origin.code === 'DAC' && destination.code === r.code;
-                return (
-                  <button
-                    key={r.code}
-                    type="button"
-                    onClick={() => handleSelectQuickRoute(r)}
-                    className={`px-3 py-1 rounded-full text-xs font-semibold transition-all cursor-pointer ${
-                      isCurrent
-                        ? 'bg-[#0759B8] text-white shadow-xs'
-                        : 'bg-[#EAF7FF] hover:bg-[#DDF4FD] text-[#0759B8] border border-[#CDE9FB]'
-                    }`}
-                  >
-                    DAC ➔ {r.city} ({r.code})
-                  </button>
-                );
-              })}
+            {/* Quick Route Shortcuts & Trust Strip */}
+            <div className="pt-3 border-t border-white/30 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-[#071A33] text-[11px] uppercase tracking-wider font-mono">
+                  Direct from Dhaka:
+                </span>
+                {QUICK_ROUTES.map((r) => {
+                  const isCurrent = origin.code === 'DAC' && destination.code === r.code;
+                  return (
+                    <button
+                      key={r.code}
+                      type="button"
+                      onClick={() => handleSelectQuickRoute(r)}
+                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                        isCurrent
+                          ? 'bg-[#071A33] text-white shadow-sm border border-transparent'
+                          : 'bg-white/45 hover:bg-white/65 backdrop-blur-md text-[#071A33] border border-white/50 shadow-xs'
+                      }`}
+                    >
+                      DAC ➔ {r.city} ({r.code})
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="hidden md:flex items-center gap-3 text-[11px] text-[#071A33]/85 font-bold">
+                <span className="inline-flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#17BEBB]" />
+                  Verified Partner Fare Guarantee
+                </span>
+                <span>•</span>
+                <span>Official PNR Tickets</span>
+              </div>
             </div>
           </form>
         )}
