@@ -278,7 +278,7 @@ export function DestinationContent({
                 if (onNavigateToFlights) {
                   onNavigateToFlights(destination.name);
                 } else {
-                  window.location.href = 'https://flights.azraqtrips.com/';
+                  window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
                 }
               }}
               className="mt-4 w-full bg-[#006ce4] hover:bg-[#0057b8] text-white text-xs font-semibold py-3 px-4 rounded-xl transition flex items-center justify-center gap-2 cursor-pointer"

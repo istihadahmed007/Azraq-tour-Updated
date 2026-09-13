@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { useVoiceSpeech } from '../hooks/useVoiceSpeech';
 import { FlightSearchParams } from './AzraqTripFinder';
-import { POPULAR_AIRPORTS, BANGLADESH_AIRPORTS, Airport } from '../data/flightsData';
+import { POPULAR_AIRPORTS, BANGLADESH_AIRPORTS, Airport, buildWhiteLabelSearchUrl } from '../data/flightsData';
 
 export interface StructuredVoiceTripData {
   isFlightIntent?: boolean;
@@ -328,7 +328,7 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
           currency: 'BDT',
         });
       } else {
-        window.location.href = 'https://flights.azraqtrips.com/';
+        window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
       }
       onClose();
       return;
@@ -356,7 +356,18 @@ export const VoiceTripModal: React.FC<VoiceTripModalProps> = ({
     if (onSearchFlights) {
       onSearchFlights(flightParams);
     } else {
-      window.location.href = `https://flights.azraqtrips.com/?origin_iata=${originAirport.code}&destination_iata=${destinationAirport.code}&depart_date=${flightParams.departureDate}&adults=${flightParams.adults}&marker=765415&trs=565363&currency=bdt`;
+      const searchUrl = buildWhiteLabelSearchUrl({
+        origin: originAirport.code,
+        destination: destinationAirport.code,
+        departDate: flightParams.departureDate,
+        returnDate: flightParams.tripType === 'round' ? flightParams.returnDate : undefined,
+        adults: flightParams.adults,
+        children: flightParams.children,
+        infants: flightParams.infants,
+        cabin: flightParams.cabinClass,
+        tripType: flightParams.tripType,
+      });
+      window.location.replace(searchUrl);
     }
     onClose();
   };

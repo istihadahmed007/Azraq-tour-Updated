@@ -95,7 +95,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             if (onSearchFlights) {
               onSearchFlights(params);
             } else {
-              window.location.href = 'https://flights.azraqtrips.com/';
+              window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
             }
           }}
           onNavigateToView={onNavigateToView}
@@ -175,7 +175,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       <div className="w-full bg-[#F8FAFC] py-12 sm:py-16 border-y border-slate-200/60">
         <FlightWorkflowSection
           onNavigateToFlights={() => {
-            window.location.href = 'https://flights.azraqtrips.com/';
+            window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
           }}
         />
       </div>
@@ -218,7 +218,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             if (onNavigateToView) onNavigateToView('packages');
           }}
           onNavigateToFlights={() => {
-            window.location.href = 'https://flights.azraqtrips.com/';
+            window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
           }}
           onNavigateToContact={() => onNavigateToView && onNavigateToView('contact')}
         />
@@ -233,7 +233,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
           if (onSearchFlights) {
             onSearchFlights(params);
           } else {
-            window.location.href = 'https://flights.azraqtrips.com/';
+            window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
           }
         }}
         initialTranscript={voiceInitialTranscript}

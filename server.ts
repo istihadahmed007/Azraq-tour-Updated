@@ -85,7 +85,11 @@ function extractCleanJson(rawText: string): any {
   if (cleaned.startsWith("```")) {
     cleaned = cleaned.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
   }
-  return JSON.parse(cleaned);
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    return null;
+  }
 }
 
 // Check if error is transient (network disconnect, rate limit, overload, fetch failed)
@@ -3723,14 +3727,14 @@ interface InternalNoteRecord {
 
 interface QuoteRecord {
   id: string;
-  type: "flight" | "visa";
+  type: "flight" | "visa" | "package" | "custom";
   status: string;
   createdAt: string;
   updatedAt?: string;
   customerName: string;
   email: string;
   phone: string;
-  preferredContactMethod?: "WhatsApp" | "Email" | "Phone Call";
+  preferredContactMethod?: "WhatsApp" | "Email" | "Phone Call" | string;
   staffNote?: string;
   internalNotes?: InternalNoteRecord[];
   quotedPrice?: string;
@@ -3766,7 +3770,7 @@ export interface UserActivityDbRecord {
   id: string;
   userEmail: string;
   quoteId?: string;
-  quoteType?: "flight" | "visa";
+  quoteType?: "flight" | "visa" | "package" | "custom";
   routeOrDestination?: string;
   status?: string;
   title: string;
@@ -4590,6 +4594,8 @@ app.post("/api/quotes/flight", async (req, res) => {
       userId,
     } = req.body;
 
+    const preferredContact = preferredContactMethod || req.body.preferredContact || "WhatsApp";
+
     if (!customerName || !email || !phone || !from || !to || !departureDate) {
       return res.status(400).json({ error: "Please fill in all required fields (Name, Email, Phone, From, To, Departure Date)." });
     }
@@ -4619,7 +4625,7 @@ app.post("/api/quotes/flight", async (req, res) => {
           cabinClass: cabinClass || "Economy",
           preferredAirline: preferredAirline || "",
           flexibleDate: flexibleDate || "No",
-          preferredContactMethod: preferredContactMethod || "WhatsApp",
+          preferredContactMethod: preferredContact,
         },
         priority: "NORMAL",
         assignedTo: "Rahim Chowdhury (Flight Specialist)",
@@ -4647,7 +4653,7 @@ app.post("/api/quotes/flight", async (req, res) => {
       customerName,
       email: email.trim().toLowerCase(),
       phone,
-      preferredContactMethod: preferredContactMethod || "WhatsApp",
+      preferredContactMethod: preferredContact,
       status: "New",
       createdAt: unifiedReq.created_at,
       internalNotes: [],
@@ -4711,6 +4717,8 @@ app.post("/api/quotes/visa", async (req, res) => {
       userId,
     } = req.body;
 
+    const preferredContact = preferredContactMethod || req.body.preferredContact || "WhatsApp";
+
     if (!customerName || !email || !phone || !destinationCountry || !visaType || !intendedTravelDate || !applicantNationality) {
       return res.status(400).json({ error: "Please fill in all required fields (Name, Email, Phone, Destination Country, Visa Type, Travel Date, Nationality)." });
     }
@@ -4740,7 +4748,7 @@ app.post("/api/quotes/visa", async (req, res) => {
           previousRefusal: previousRefusal || "No",
           currentResidence: currentResidence || applicantNationality,
           requiredService: requiredService || "Visa Processing",
-          preferredContactMethod: preferredContactMethod || "WhatsApp",
+          preferredContactMethod: preferredContact,
         },
         priority: "NORMAL",
         assignedTo: "Tania Sultana (Visa Specialist)",
@@ -4767,7 +4775,7 @@ app.post("/api/quotes/visa", async (req, res) => {
       customerName,
       email: email.trim().toLowerCase(),
       phone,
-      preferredContactMethod: preferredContactMethod || "WhatsApp",
+      preferredContactMethod: preferredContact,
       status: "New",
       createdAt: unifiedReq.created_at,
       internalNotes: [],
@@ -4938,7 +4946,7 @@ app.get("/api/users/me/timeline", (req, res) => {
         ? `${quote.from} ➔ ${quote.to}` 
         : quote.type === 'visa' 
         ? `${quote.destinationCountry} (${quote.visaType} Visa)`
-        : quote.destinationCountry || 'Custom Tour';
+        : quote.package_name || quote.destination || quote.destinationCountry || 'Custom Tour';
 
       // Step 1: Request received milestone (Yellow dot)
       timelineEvents.push({
@@ -5062,7 +5070,9 @@ app.get("/api/feed", (req, res) => {
       userQuotes.forEach((q) => {
         const dest = q.type === 'flight' 
           ? `${q.from} ➔ ${q.to}` 
-          : `${q.destinationCountry} (${q.visaType || 'Visa'})`;
+          : q.type === 'package'
+          ? `${q.package_name || q.destination || 'Holiday Package'}`
+          : `${q.destinationCountry || q.destination || 'Visa Destination'} (${q.visaType || 'Visa'})`;
 
         // Milestone 1: Received
         personalActivities.push({
@@ -6611,7 +6621,9 @@ app.patch("/api/quotes/admin/:id", (req, res) => {
 
       const dest = targetQuote.type === 'flight' 
         ? `${targetQuote.from} ➔ ${targetQuote.to}` 
-        : `${targetQuote.destinationCountry} (${targetQuote.visaType || 'Visa'})`;
+        : targetQuote.type === 'package'
+        ? `${targetQuote.package_name || targetQuote.destination || 'Holiday Package'}`
+        : `${targetQuote.destinationCountry || targetQuote.destination || 'Visa Destination'} (${targetQuote.visaType || 'Visa'})`;
 
       if (['Processing', 'Reviewing'].includes(status)) {
         const staff = assignedStaff || targetQuote.assignedStaff || "Rahim Chowdhury (Flight Specialist)";
@@ -6981,8 +6993,19 @@ app.post("/api/quotes/package", async (req, res) => {
       children,
       specialRequirements,
       message,
+      preferredContactMethod,
       userId,
     } = req.body;
+
+    const rawAdults = Number(adults || req.body.travelers || 1);
+    const rawChildren = Number(children || 0);
+    const rawMessage = message || req.body.notes || "";
+    const rawSpecialReqs = specialRequirements || [
+      req.body.hotelStandard ? `Hotel: ${req.body.hotelStandard}` : '',
+      req.body.budgetPerPerson ? `Budget: ${req.body.budgetPerPerson}` : '',
+      req.body.durationDays ? `Duration: ${req.body.durationDays} Days` : ''
+    ].filter(Boolean).join(' | ');
+    const preferredContact = preferredContactMethod || req.body.preferredContact || "WhatsApp";
 
     if (!customerName || !email || !phone || !destination) {
       return res.status(400).json({
@@ -7003,14 +7026,15 @@ app.post("/api/quotes/package", async (req, res) => {
         subject: `Holiday Package Inquiry: ${package_name || destination}`,
         destination: destination,
         travelDate: travelDate,
-        passengers: (Number(adults) || 1) + (Number(children) || 0),
-        message: [message, specialRequirements].filter(Boolean).join("\n\nSpecial Requirements: "),
+        passengers: rawAdults + rawChildren,
+        message: [rawMessage, rawSpecialReqs].filter(Boolean).join("\n\nSpecial Requirements: "),
         metadata: {
           package_id: package_id || "",
-          package_name: package_name || "",
-          adults: Number(adults) || 1,
-          children: Number(children) || 0,
-          specialRequirements: specialRequirements || "",
+          package_name: package_name || destination,
+          adults: rawAdults,
+          children: rawChildren,
+          specialRequirements: rawSpecialReqs,
+          preferredContactMethod: preferredContact,
         },
         priority: "NORMAL",
         assignedTo: "Tania Sultana (Holiday Packages Specialist)",
@@ -7022,18 +7046,19 @@ app.post("/api/quotes/package", async (req, res) => {
 
     const newQuote: QuoteRecord = {
       id,
-      type: "package" as any,
+      type: "package",
       customerName,
       email: email.trim().toLowerCase(),
       phone,
+      preferredContactMethod: preferredContact,
       destination,
       package_id: package_id || "",
-      package_name: package_name || "",
+      package_name: package_name || destination,
       travelDate: travelDate || "",
-      adults: Number(adults) || 1,
-      children: Number(children) || 0,
-      specialRequirements: specialRequirements || "",
-      message: message || "",
+      adults: rawAdults,
+      children: rawChildren,
+      specialRequirements: rawSpecialReqs,
+      message: rawMessage,
       status: "New",
       createdAt: unifiedReq.created_at,
     };
@@ -7047,7 +7072,7 @@ app.post("/api/quotes/package", async (req, res) => {
     addUserActivity({
       userEmail: email,
       quoteId: id,
-      quoteType: "visa",
+      quoteType: "package",
       routeOrDestination: package_name || destination,
       status: "New",
       title: `📩 Package Inquiry for ${package_name || destination} Received (${id})`,
@@ -7742,8 +7767,8 @@ app.get("/api/social-proof/live", (req, res) => {
           ? `requested a flight quotation for ${q.from} ✈️ ${q.to}`
           : q.type === "visa"
           ? `submitted a ${q.visaType || "Tourist"} Visa request for ${q.destinationCountry}`
-          : `requested personalized pricing for ${q.destinationCountry || "Custom Trip"}`,
-        destination: q.type === "flight" ? q.to : q.destinationCountry,
+          : `requested personalized pricing for ${q.package_name || q.destination || "Custom Trip"}`,
+        destination: q.type === "flight" ? q.to : q.type === "package" ? (q.package_name || q.destination || "Holiday Tour") : (q.destinationCountry || q.destination || "Visa Destination"),
         timeAgo: timeStr,
         iconType: q.type === "flight" ? "plane" : q.type === "visa" ? "visa" : "hotel",
         timestamp: q.createdAt,
@@ -8350,7 +8375,7 @@ app.get(["/flights", "/flight", "/flights/", "/flight/", "/flights/*", "/flight/
     return res.redirect(301, `https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(String(flightSearch))}`);
   }
   const queryString = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
-  return res.redirect(301, `https://flights.azraqtrips.com${queryString ? "/" + queryString : "/"}`);
+  return res.redirect(301, `https://flights.azraqtrips.com${queryString ? "/" + queryString : "/?marker=765415&trs=565363&currency=bdt"}`);
 });
 
 // 301 Permanent Redirects for non-www and trailing slashes

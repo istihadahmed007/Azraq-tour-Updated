@@ -119,12 +119,14 @@ describe('Flight Search Parameter Validation', () => {
   });
 
   it('passes validation for valid round-trip search', () => {
+    const futureDepart = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+    const futureReturn = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
     const res = validateFlightSearchParams({
       origin: dacAirport,
       destination: bkkAirport,
       tripType: 'round',
-      departureDate: '2026-09-10',
-      returnDate: '2026-09-20',
+      departureDate: futureDepart,
+      returnDate: futureReturn,
       adults: 2,
     });
 

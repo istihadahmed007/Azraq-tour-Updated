@@ -138,7 +138,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
     } else if (targetUrl === 'packages') {
       onNavigateToView('packages');
     } else if (targetUrl === 'flights') {
-      window.location.href = 'https://flights.azraqtrips.com/';
+      window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
     } else if (targetUrl === 'planner') {
       onNavigateToView('planner');
     } else if (targetUrl === 'feed') {

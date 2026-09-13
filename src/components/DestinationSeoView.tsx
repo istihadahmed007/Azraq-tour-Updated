@@ -536,7 +536,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    window.location.href = 'https://flights.azraqtrips.com/';
+                    window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
                   }}
                   className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-blue-50/60 text-xs font-semibold text-slate-700 hover:text-[#0D6EFD] transition-colors text-left cursor-pointer"
                 >

@@ -293,7 +293,7 @@ export interface UserFeedItem {
   message: string;
   timestamp: string;
   quoteId?: string;
-  quoteType?: 'flight' | 'visa';
+  quoteType?: 'flight' | 'visa' | 'package' | 'hotel' | 'custom';
   routeOrDestination?: string;
   status?: QuoteStatus | string;
   dotColor: TimelineDotColor;

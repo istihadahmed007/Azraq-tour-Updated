@@ -77,7 +77,10 @@ class RequestsStore {
         const raw = fs.readFileSync(REQUESTS_DB_FILE, 'utf-8');
         const data = JSON.parse(raw);
         if (Array.isArray(data)) {
-          this.requests = data;
+          this.requests = data.map((r) => ({
+            ...r,
+            admin_notes: Array.isArray(r.admin_notes) ? r.admin_notes : [],
+          }));
           // compute current sequence counter for today
           const todayPrefix = this.getTodayDatePrefix();
           const todayMatches = this.requests.filter((r) => r.request_id?.startsWith(`AZQ-${todayPrefix}-`));
@@ -321,6 +324,7 @@ class RequestsStore {
 
     // Add internal audit note
     if (actor) {
+      if (!req.admin_notes) req.admin_notes = [];
       req.admin_notes.push({
         id: `note_${Date.now()}`,
         authorName: actor.name || 'Admin',
@@ -473,6 +477,7 @@ class RequestsStore {
       const oldStatus = req.status;
       req.status = updates.status;
       if (actor) {
+        if (!req.admin_notes) req.admin_notes = [];
         req.admin_notes.push({
           id: `note_${Date.now()}_status`,
           authorName: actor.name,
@@ -493,6 +498,7 @@ class RequestsStore {
     }
 
     if (updates.internalNote && updates.internalNote.trim()) {
+      if (!req.admin_notes) req.admin_notes = [];
       req.admin_notes.push({
         id: `note_${Date.now()}_custom`,
         authorName: actor?.name || 'Admin Specialist',
@@ -532,7 +538,12 @@ class RequestsStore {
    * Delete a request
    */
   public deleteRequest(id: string): boolean {
-    const idx = this.requests.findIndex((r) => r.id === id || r.request_id === id);
+    const normId = (id || '').trim().toLowerCase();
+    const idx = this.requests.findIndex(
+      (r) =>
+        (r.id && r.id.toLowerCase() === normId) ||
+        (r.request_id && r.request_id.toLowerCase() === normId)
+    );
     if (idx === -1) return false;
     this.requests.splice(idx, 1);
     this.saveToDisk();

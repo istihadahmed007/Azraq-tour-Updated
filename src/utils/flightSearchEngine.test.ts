@@ -23,11 +23,13 @@ describe('flightSearchEngine', () => {
 
   describe('validateFlightSearchParams', () => {
     it('validates a correct round trip search', () => {
+      const futureDepart = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+      const futureReturn = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0];
       const result = validateFlightSearchParams({
         origin: dacAirport,
         destination: jsrAirport,
-        departureDate: '2026-08-31',
-        returnDate: '2026-09-07',
+        departureDate: futureDepart,
+        returnDate: futureReturn,
         tripType: 'round',
         adults: 1,
         children: 0,

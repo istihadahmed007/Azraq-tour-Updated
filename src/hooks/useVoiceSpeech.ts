@@ -448,11 +448,15 @@ export function useVoiceSpeech(): UseVoiceSpeechReturn {
             };
 
             recognition.onend = () => {
-              // If user is still actively speaking, auto-resume speech recognition
+              // If user is still actively speaking, auto-resume speech recognition safely
               if (isExplicitlyListeningRef.current && recognitionRef.current) {
-                try {
-                  recognition.start();
-                } catch {}
+                setTimeout(() => {
+                  if (isExplicitlyListeningRef.current && recognitionRef.current) {
+                    try {
+                      recognition.start();
+                    } catch {}
+                  }
+                }, 150);
               }
             };
 

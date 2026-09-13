@@ -72,7 +72,7 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
           type="button"
           onClick={() => {
             if (onNavigateToFlights) onNavigateToFlights();
-            else window.location.href = 'https://flights.azraqtrips.com/';
+            else window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
           }}
           className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#086788] hover:text-[#073B4C] transition-colors cursor-pointer"
         >

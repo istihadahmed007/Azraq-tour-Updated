@@ -66,7 +66,7 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
                 type="button"
                 onClick={() => {
                   if (onNavigateToFlights) onNavigateToFlights();
-                  else window.location.href = 'https://flights.azraqtrips.com/';
+                  else window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
                 }}
                 className="hover:text-white hover:underline flex items-center gap-1.5 cursor-pointer py-1"
               >

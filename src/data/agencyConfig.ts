@@ -54,7 +54,7 @@ export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
   travelpayoutsMarker: '765415',
   travelpayoutsTrsId: '565363',
   // Compatibility fields retained for existing components; the White Label subdomain owns the user journey.
-  aviasalesAffiliateUrl: 'https://flights.azraqtrips.com/',
+  aviasalesAffiliateUrl: 'https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt',
   aviasalesBaseUrl: 'https://flights.azraqtrips.com/',
   officialAffiliateDisclosure:
     'Flight search and booking services are provided through our travel partners. We may earn a commission when you complete a booking through our affiliate links.',

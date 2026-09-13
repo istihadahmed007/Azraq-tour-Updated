@@ -87,7 +87,7 @@ function parseUrlToRoute(): RouteState {
     if (flightSearch) {
       window.location.replace(`https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(flightSearch)}`);
     } else {
-      window.location.replace(`https://flights.azraqtrips.com/${search ? search : ''}`);
+      window.location.replace(`https://flights.azraqtrips.com/${search ? search : '?marker=765415&trs=565363&currency=bdt'}`);
     }
     return { view: 'discover' };
   }
@@ -385,8 +385,8 @@ function AppContent() {
       const requestedFlightParams = extra?.params || extra?.searchParams;
       const redirectUrl = requestedFlightParams
         ? buildWhiteLabelUrlFromFlightParams(requestedFlightParams)
-        : 'https://flights.azraqtrips.com/';
-      window.location.href = redirectUrl;
+        : 'https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt';
+      window.location.replace(redirectUrl);
       return;
     }
 
@@ -404,7 +404,7 @@ function AppContent() {
   const handleSearchFlights = (params: FlightSearchParams) => {
     const redirectUrl = buildWhiteLabelUrlFromFlightParams(params);
     if (typeof window !== 'undefined') {
-      window.location.href = redirectUrl;
+      window.location.replace(redirectUrl);
     }
   };
 
@@ -845,7 +845,7 @@ function AppContent() {
           setVoiceModalTranscript('');
         }}
         onConfirmPlan={(planData: StructuredVoiceTripData) => {
-          handlePlanTripPrompt(planData.structuredPrompt);
+          handlePlanTripPrompt(planData);
         }}
         onSearchFlights={(flightParams: FlightSearchParams) => {
           handleSearchFlights(flightParams);

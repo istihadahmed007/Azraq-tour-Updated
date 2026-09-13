@@ -220,6 +220,7 @@ export const UnifiedQuotationModal: React.FC<UnifiedQuotationModalProps> = ({
           email: email.trim() || undefined,
           phone: phone.trim() || undefined,
           preferredContact,
+          preferredContactMethod: preferredContact,
           userId: user?.uid,
         };
       } else if (serviceType === 'visa') {
@@ -240,21 +241,32 @@ export const UnifiedQuotationModal: React.FC<UnifiedQuotationModalProps> = ({
           email: email.trim() || undefined,
           phone: phone.trim() || undefined,
           preferredContact,
+          preferredContactMethod: preferredContact,
           userId: user?.uid,
         };
       } else {
         endpoint = '/api/quotes/package';
         payload = {
           destination: packageDestination,
+          package_name: packageDestination,
           travelers: travelersCount,
+          adults: travelersCount,
+          children: 0,
           durationDays: tripDurationDays,
           budgetPerPerson,
           hotelStandard,
           notes: additionalNotes.trim() || undefined,
+          message: additionalNotes.trim() || undefined,
+          specialRequirements: [
+            hotelStandard ? `Hotel: ${hotelStandard}` : '',
+            budgetPerPerson ? `Budget: ${budgetPerPerson}` : '',
+            tripDurationDays ? `Duration: ${tripDurationDays} Days` : ''
+          ].filter(Boolean).join(' | ') || undefined,
           customerName: customerName.trim(),
           email: email.trim() || undefined,
           phone: phone.trim() || undefined,
           preferredContact,
+          preferredContactMethod: preferredContact,
           userId: user?.uid,
         };
       }

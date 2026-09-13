@@ -17,7 +17,7 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
       bg: 'bg-[#EAF7F8]',
       border: 'hover:border-[#17BEBB]',
       action: () => {
-        window.location.href = 'https://flights.azraqtrips.com/';
+        window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
       },
     },
     {

@@ -672,25 +672,7 @@ export function validateFlightSearchParams(
     };
   }
 
-  // Current reference date (defaults to system today)
-  const todayStr = options.todayStr || new Date().toISOString().split('T')[0];
-
-  // 3. Past departure date validation
-  if (params.departureDate) {
-    if (params.departureDate < todayStr) {
-      return {
-        isValid: false,
-        error: 'Departure date cannot be in the past.',
-      };
-    }
-  } else if (!options.allowEmptyDates) {
-    return {
-      isValid: false,
-      error: 'Please select a departure date.',
-    };
-  }
-
-  // 4. Return date validations for round-trip searches
+  // 3. Return date validations for round-trip searches
   if (params.tripType === 'round') {
     if (!params.returnDate || params.returnDate.trim() === '') {
       if (!options.allowEmptyDates) {
@@ -705,6 +687,24 @@ export function validateFlightSearchParams(
         error: 'Return date cannot be earlier than departure date.',
       };
     }
+  }
+
+  // Current reference date (defaults to system today)
+  const todayStr = options.todayStr || new Date().toISOString().split('T')[0];
+
+  // 4. Past departure date validation
+  if (params.departureDate) {
+    if (params.departureDate < todayStr) {
+      return {
+        isValid: false,
+        error: 'Departure date cannot be in the past.',
+      };
+    }
+  } else if (!options.allowEmptyDates) {
+    return {
+      isValid: false,
+      error: 'Please select a departure date.',
+    };
   }
 
   return { isValid: true };
