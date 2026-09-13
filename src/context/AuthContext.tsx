@@ -29,7 +29,7 @@ interface AuthContextType {
   setReturnTo: (pathOrView: string | null) => void;
   requireAuth: (action: PendingAction, onComplete?: () => void, returnTo?: string) => void;
   loginWithEmail: (email: string, pass: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
-  sendEmailOtp: (email: string) => Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; isNewUser?: boolean }>;
+  sendEmailOtp: (email: string) => Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; demoCode?: string; isNewUser?: boolean }>;
   verifyEmailOtp: (email: string, otp: string) => Promise<{ success: boolean; user?: User; token?: string; isNewUser?: boolean; error?: string; message?: string }>;
   registerWithEmail: (
     fullName: string,
@@ -156,28 +156,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => {
+      .then(async (res) => {
         if (res.ok) {
-          return res.json();
+          const data = await res.json();
+          if (data?.user) {
+            setUser(data.user);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.user));
+          }
+          return;
         }
-        // If token is invalid or 401, invalidate session completely
-        throw new Error('Session invalid');
-      })
-      .then((data) => {
-        if (data?.user) {
-          setUser(data.user);
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data.user));
-        } else {
+        if (res.status === 401) {
+          // Token explicitly rejected by server
           setUser(null);
           localStorage.removeItem(LOCAL_STORAGE_KEY);
           localStorage.removeItem(TOKEN_STORAGE_KEY);
         }
       })
-      .catch(() => {
-        // Clear invalid token/session
-        setUser(null);
-        localStorage.removeItem(LOCAL_STORAGE_KEY);
-        localStorage.removeItem(TOKEN_STORAGE_KEY);
+      .catch((err) => {
+        // Network error / offline: retain cached user session safely
+        console.warn('Session verification notice (using cached profile):', err);
       })
       .finally(() => {
         setIsLoading(false);
@@ -275,7 +272,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 1a. Passwordless 6-Digit Email OTP Request
   const sendEmailOtp = async (
     email: string
-  ): Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; isNewUser?: boolean }> => {
+  ): Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; demoCode?: string; isNewUser?: boolean }> => {
     try {
       setIsLoading(true);
       const cleanEmail = email.trim().toLowerCase();
@@ -290,6 +287,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           success: true,
           message: res.data.message || `6-digit code sent to ${cleanEmail}`,
           demoOtp: res.data.demoOtp,
+          demoCode: res.data.demoOtp,
           isNewUser: res.data.isNewUser,
         };
       }
@@ -697,7 +695,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       saveUserSession(newUser, serverToken);
-      closeAuthModal();
       showToast(`Welcome to Azraq Tours, ${cleanName.split(' ')[0]}! Your account is ready.`, 'success');
 
       if (pendingAction?.onExecute) {

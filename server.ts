@@ -523,17 +523,31 @@ app.post("/api/auth/register", (req, res) => {
     if (!email || !email.includes("@") || !email.includes(".")) {
       return res.status(400).json({ error: "Please enter a valid email address." });
     }
-    if (!phone || phone.trim().length < 6) {
-      return res.status(400).json({ error: "Please enter a valid Phone / WhatsApp number." });
-    }
-    
-    // Bangladeshi phone format validation
-    const cleanedPhone = phone.replace(/[\s\-()]/g, "");
-    if (country === "Bangladesh" || cleanedPhone.startsWith("+880") || cleanedPhone.startsWith("01")) {
-      const isBdValid = /^\+8801[3-9]\d{8}$/.test(cleanedPhone) || /^01[3-9]\d{8}$/.test(cleanedPhone) || /^8801[3-9]\d{8}$/.test(cleanedPhone);
-      if (!isBdValid) {
-        return res.status(400).json({ error: "Please enter a valid 11-digit Bangladeshi mobile number (e.g. 01712345678 or +8801712345678)." });
+    // Bangladeshi & International phone normalization
+    let normalizedPhone = (phone || "").toString().trim();
+    if (normalizedPhone && normalizedPhone.length >= 3) {
+      let cleaned = normalizedPhone.replace(/[\s\-()]/g, "");
+      if (cleaned.startsWith("+8800")) {
+        cleaned = "+880" + cleaned.substring(5);
+      } else if (cleaned.startsWith("8800")) {
+        cleaned = "+880" + cleaned.substring(4);
+      } else if (cleaned.startsWith("8801")) {
+        cleaned = "+" + cleaned;
+      } else if (cleaned.startsWith("01") && (country === "Bangladesh" || !cleaned.startsWith("+"))) {
+        cleaned = "+880" + cleaned.substring(1);
+      } else if (!cleaned.startsWith("+") && cleaned.length >= 10) {
+        cleaned = "+" + cleaned;
       }
+      normalizedPhone = cleaned;
+
+      if (country === "Bangladesh" || normalizedPhone.startsWith("+880")) {
+        const isBdValid = /^\+8801[3-9]\d{8}$/.test(normalizedPhone);
+        if (!isBdValid) {
+          return res.status(400).json({ error: "Please enter a valid 11-digit Bangladeshi mobile number (e.g. 01712345678 or +8801712345678)." });
+        }
+      }
+    } else {
+      normalizedPhone = "+880";
     }
 
     if (!country || !country.trim()) {
@@ -568,7 +582,7 @@ app.post("/api/auth/register", (req, res) => {
       uid: `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
       fullName: fullName.trim(),
       email: normalizedEmail,
-      phone: phone.trim(),
+      phone: normalizedPhone,
       country: country.trim(),
       passwordHash: hash,
       passwordSalt: salt,
