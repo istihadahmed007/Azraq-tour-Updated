@@ -98,19 +98,22 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
     });
   };
 
+  const featuredDest = curatedList[0]; // Bangkok
+  const supportingDests = curatedList.slice(1); // Dubai, Kuala Lumpur, Maldives
+
   return (
-    <section id="popular-destinations" className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <div className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-[#086788]">
-            <MapPin className="w-3.5 h-3.5 text-[#17BEBB]" />
-            <span>Curated Routes</span>
+    <section id="popular-destinations" className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200/80 pb-5">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#17BEBB]">
+            <MapPin className="w-3.5 h-3.5" />
+            <span>Curated Asian Routes</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-normal text-[#073B4C] tracking-tight font-serif-display">
-            Popular Destinations from Dhaka
+          <h2 className="text-3xl sm:text-4xl font-normal text-[#071A33] tracking-tight font-serif-display">
+            Featured Destinations
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-inter">
-            Direct airline connections, fast visa processing, and curated partner stays.
+          <p className="text-sm text-slate-500 font-sans">
+            Handpicked escapes with direct flights from Dhaka, seamless visas, and verified stays.
           </p>
         </div>
 
@@ -118,87 +121,133 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
           <button
             onClick={onNavigateToDestinations}
             type="button"
-            className="inline-flex items-center gap-1 text-sm font-bold text-[#086788] hover:text-[#073B4C] transition-colors cursor-pointer self-start sm:self-auto min-h-[44px]"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#071A33] hover:text-[#17BEBB] transition-colors cursor-pointer self-start sm:self-auto min-h-[44px]"
           >
-            <span>Explore all destinations</span>
+            <span>View All Destinations</span>
             <ChevronRight className="w-4 h-4 text-[#17BEBB]" />
           </button>
         )}
       </div>
 
-      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto sm:overflow-x-visible no-scrollbar pb-3 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 snap-x snap-mandatory sm:snap-none">
-        {curatedList.map((dest, idx) => (
-          <motion.div
-            key={dest.id}
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.25,
-              delay: shouldReduceMotion ? 0 : idx * 0.05,
-              ease: 'easeOut',
-            }}
-            whileHover={shouldReduceMotion ? undefined : { y: -3 }}
-            className="min-w-[260px] xs:min-w-[280px] sm:min-w-0 w-[80vw] max-w-[320px] sm:w-full snap-start shrink-0 sm:shrink group bg-white rounded-2xl overflow-hidden shadow-xs hover:shadow-lg border border-slate-200/80 transition-all duration-300 flex flex-col justify-between"
-          >
-            <div
-              className="relative h-48 w-full overflow-hidden bg-slate-100 cursor-pointer"
+      {/* Asymmetric Editorial Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Large Featured Story Destination (Span 7) */}
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: 'easeOut' }}
+          className="lg:col-span-7 group relative rounded-3xl overflow-hidden min-h-[420px] sm:min-h-[500px] flex flex-col justify-end p-6 sm:p-10 cursor-pointer shadow-sm border border-slate-200/80"
+          onClick={() => handleCardClick(featuredDest.name)}
+        >
+          <img
+            src={featuredDest.imageUrl}
+            alt={featuredDest.name}
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+          />
+          {/* Subtle dark gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/90 via-[#071A33]/40 to-transparent" />
+
+          {/* Content Overlay */}
+          <div className="relative z-10 space-y-3.5 text-white">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white border border-white/20">
+                Featured Story
+              </span>
+              <span className="px-3 py-1 rounded-full bg-[#17BEBB]/90 text-xs font-bold text-[#071A33]">
+                {featuredDest.routeTag}
+              </span>
+            </div>
+
+            <div>
+              <h3 className="text-3xl sm:text-4xl font-normal tracking-tight font-serif-display text-white">
+                {featuredDest.name}, {featuredDest.country}
+              </h3>
+              <p className="text-sm text-slate-200/90 font-light mt-1 max-w-md">
+                Bustling night markets, tranquil floating temples, world-class shopping, and fast-track Thai visa processing.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFlightClick(featuredDest.code);
+                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#071A33] hover:bg-[#FAF8F5] text-xs font-semibold shadow-sm transition-all min-h-[44px]"
+              >
+                <Plane className="w-3.5 h-3.5 text-[#17BEBB]" />
+                <span>Search Flights from DAC</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCardClick(featuredDest.name);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all min-h-[44px]"
+              >
+                <span>Explore Itinerary</span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#17BEBB]" />
+              </button>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Supporting Destinations Stack (Span 5) */}
+        <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-5">
+          {supportingDests.map((dest, idx) => (
+            <motion.div
+              key={dest.id}
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: shouldReduceMotion ? 0 : (idx + 1) * 0.08,
+                ease: 'easeOut',
+              }}
+              whileHover={shouldReduceMotion ? undefined : { y: -2 }}
               onClick={() => handleCardClick(dest.name)}
+              className="group relative rounded-2xl overflow-hidden min-h-[160px] sm:min-h-[150px] lg:min-h-[155px] flex items-end p-5 cursor-pointer shadow-xs hover:shadow-md border border-slate-200/80 transition-all"
             >
               <img
                 src={dest.imageUrl}
                 alt={dest.name}
                 loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
               />
-              <div className="absolute top-3 left-3 bg-black/65 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-xs font-semibold flex items-center gap-1 shadow-xs">
-                <MapPin className="w-3 h-3 text-white" />
-                <span>{dest.name}</span>
-              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/90 via-[#071A33]/35 to-transparent" />
 
-              <div className="absolute top-3 right-3 bg-[#071A33]/85 backdrop-blur-md px-2.5 py-1 rounded-full text-sky-300 font-mono text-[11px] font-bold shadow-xs">
-                {dest.routeTag}
-              </div>
-            </div>
-
-            <div className="p-4 sm:p-5 flex flex-col justify-between gap-3 flex-1">
-              <div>
-                <div className="flex items-center justify-between">
-                  <h3
-                    onClick={() => handleCardClick(dest.name)}
-                    className="text-base font-bold text-[#073B4C] tracking-tight group-hover:text-[#086788] transition-colors cursor-pointer font-inter"
-                  >
+              <div className="relative z-10 w-full flex items-center justify-between gap-3 text-white">
+                <div>
+                  <span className="text-[11px] font-mono text-[#17BEBB] font-semibold block">
+                    {dest.routeTag}
+                  </span>
+                  <h4 className="text-xl font-normal font-serif-display tracking-tight text-white group-hover:text-teal-200 transition-colors">
                     {dest.name}, {dest.country}
-                  </h3>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-3.5 h-3.5 fill-[#FF6B5A] text-[#FF6B5A]" />
-                    <span className="text-xs font-bold text-slate-800">{dest.rating}</span>
-                  </div>
+                  </h4>
+                  <p className="text-xs text-slate-300 font-light mt-0.5">
+                    Visa: {dest.visaType}
+                  </p>
                 </div>
-                <p className="text-xs text-slate-500 mt-1">Visa: {dest.visaType}</p>
-              </div>
-
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleFlightClick(dest.code)}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-[#086788] hover:text-[#073B4C] hover:underline cursor-pointer min-h-[40px]"
-                >
-                  <Plane className="w-3.5 h-3.5 text-[#17BEBB]" />
-                  <span>Find Flights</span>
-                </button>
 
                 <button
                   type="button"
-                  onClick={() => handleCardClick(dest.name)}
-                  className="text-xs font-bold text-slate-700 hover:text-[#086788] flex items-center gap-0.5 cursor-pointer min-h-[40px]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleFlightClick(dest.code);
+                  }}
+                  className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#17BEBB] group-hover:text-[#071A33] transition-colors shrink-0 shadow-sm"
+                  title="Search Flights"
                 >
-                  <span>Details</span>
-                  <ChevronRight className="w-3.5 h-3.5 text-[#17BEBB]" />
+                  <Plane className="w-4 h-4" />
                 </button>
               </div>
-            </div>
-          </motion.div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );

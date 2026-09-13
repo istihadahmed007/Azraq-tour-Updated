@@ -23,23 +23,23 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variantStyles = {
-    primary: 'bg-[#006ce4] hover:bg-[#0057b8] text-white shadow-sm border border-transparent',
-    secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200',
-    outline: 'bg-transparent border border-slate-300 hover:border-slate-400 text-slate-700 hover:bg-slate-50',
-    ghost: 'bg-transparent hover:bg-slate-100 text-slate-700',
-    danger: 'bg-red-600 hover:bg-red-700 text-white',
-    gold: 'bg-[#febb02] hover:bg-[#e5a802] text-[#002244] font-semibold shadow-sm',
+    primary: 'bg-[#071A33] hover:bg-[#073B4C] text-white shadow-xs border border-transparent active:scale-[0.98]',
+    secondary: 'bg-white hover:bg-[#FAF8F5] text-[#071A33] border border-slate-200 shadow-xs active:scale-[0.98]',
+    outline: 'bg-transparent border border-slate-300 hover:border-[#071A33] text-[#071A33] hover:bg-slate-50 active:scale-[0.98]',
+    ghost: 'bg-transparent hover:bg-slate-100 text-slate-700 active:scale-[0.98]',
+    danger: 'bg-rose-600 hover:bg-rose-700 text-white active:scale-[0.98]',
+    gold: 'bg-[#17BEBB] hover:bg-[#0D9488] text-[#071A33] font-semibold shadow-xs active:scale-[0.98]',
   }[variant];
 
   const sizeStyles = {
-    sm: 'px-3 py-1.5 text-xs rounded-md gap-1.5 min-h-[36px]',
-    md: 'px-4 py-2 text-sm rounded-lg gap-2 min-h-[44px]',
+    sm: 'px-3.5 py-1.5 text-xs rounded-lg gap-1.5 min-h-[36px]',
+    md: 'px-4.5 py-2.5 text-sm rounded-xl gap-2 min-h-[44px]',
     lg: 'px-6 py-3 text-base rounded-xl gap-2.5 min-h-[48px]',
   }[size];
 
   return (
     <button
-      className={`inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-[#006ce4] focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer ${variantStyles} ${sizeStyles} ${className}`}
+      className={`inline-flex items-center justify-center font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#17BEBB]/50 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer ${variantStyles} ${sizeStyles} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >

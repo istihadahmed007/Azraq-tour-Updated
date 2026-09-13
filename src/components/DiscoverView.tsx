@@ -10,19 +10,17 @@ import { getOrganizationSchema } from '../lib/seo';
 // Composed Home Section Components
 import { HomeHero } from './home/HomeHero';
 import { TrustStrip } from './home/TrustStrip';
-import { VoicePlannerBanner } from './home/VoicePlannerBanner';
 import { DestinationSection } from './home/DestinationSection';
-import { FeaturedPackagesSection } from './home/FeaturedPackagesSection';
-import { DealsSection } from './home/DealsSection';
-import { ActivitiesSection } from './home/ActivitiesSection';
-import { FlightWorkflowSection } from './home/FlightWorkflowSection';
 import { ServiceGrid } from './home/ServiceGrid';
+import { FeaturedPackagesSection } from './home/FeaturedPackagesSection';
+import { VoicePlannerBanner } from './home/VoicePlannerBanner';
 import { VisaAssistanceSection } from './home/VisaAssistanceSection';
-import { TravelBuddiesPreview } from './home/TravelBuddiesPreview';
+import { FlightWorkflowSection } from './home/FlightWorkflowSection';
 import { WhyAzraqSection } from './home/WhyAzraqSection';
+import { EditorialStoriesSection } from './home/EditorialStoriesSection';
+import { BehanceShowcase } from './home/BehanceShowcase';
+import { TravelBuddiesPreview } from './home/TravelBuddiesPreview';
 import { FinalTravelCta } from './home/FinalTravelCta';
-import { OnboardingAgentCard } from './OnboardingAgentCard';
-
 
 interface DiscoverViewProps {
   destinations: Destination[];
@@ -46,7 +44,6 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   onNavigateToView,
   onSearchFlights,
   onOpenVisaModal,
-  onOpenFlightModal,
   onOpenQuote,
   onOpenLocationFinder,
   onOpenVoiceModal,
@@ -88,7 +85,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         canonical="https://www.azraqtrips.com/"
         structuredData={getOrganizationSchema()}
       />
-      {/* 1. Brand Hero & 5-Mode Trip Finder (White / Clean) */}
+
+      {/* 01 & 02: Cinematic Hero & Quick Travel Action Area */}
       <div className="w-full bg-white pb-6 sm:pb-8">
         <HomeHero
           onSearchFlights={(params) => {
@@ -106,29 +104,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         />
       </div>
 
-      {/* 2. Trust Strip & Onboarding (Soft Aqua #EAF7F8) */}
-      <div className="w-full bg-[#EAF7F8] py-8 border-y border-[#17BEBB]/15 space-y-6">
+      {/* Trust Strip */}
+      <div className="w-full bg-white py-4 border-y border-slate-200/60">
         <TrustStrip />
-        <OnboardingAgentCard
-          currentView="discover"
-          onNavigateToView={(view, params) => onNavigateToView && onNavigateToView(view, params)}
-          onOpenVisaQuote={onOpenVisaModal}
-        />
       </div>
 
-      {/* 3. Limited-Time OTA Deals & Flash Promotions (White) */}
-      <div className="w-full bg-white py-12 sm:py-16">
-        <DealsSection
-          onOpenQuote={(pkg) => {
-            if (onOpenQuote) onOpenQuote(pkg);
-            else if (pkg) setActiveQuotationModal(pkg);
-          }}
-          onNavigateToView={onNavigateToView}
-        />
-      </div>
-
-      {/* 4. Curated Popular Destinations from Dhaka (Soft Background #F8FAFC) */}
-      <div className="w-full bg-[#F8FAFC] py-12 sm:py-16 border-y border-slate-200/60">
+      {/* 03: Featured Destinations (Asymmetric Editorial Layout) */}
+      <div className="w-full bg-[#FAF8F5] py-14 sm:py-20 border-b border-slate-200/60">
         <DestinationSection
           destinations={destinations}
           onSelectDestination={onSelectDestination}
@@ -138,9 +120,17 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         />
       </div>
 
-      {/* 5. Featured Asian Tour Packages (White) */}
+      {/* 04: Travel Services (5 Core Pillars) */}
+      <div className="w-full bg-white py-14 sm:py-20">
+        <ServiceGrid
+          onNavigateToView={onNavigateToView}
+          onOpenLocationFinder={onOpenLocationFinder}
+        />
+      </div>
+
+      {/* 05: Signature Holiday Packages */}
       {packages && packages.length > 0 && (
-        <div className="w-full bg-white py-12 sm:py-16">
+        <div className="w-full bg-[#FAF8F5] py-14 sm:py-20 border-y border-slate-200/60">
           <FeaturedPackagesSection
             packages={packages}
             onViewDetails={(pkg) => setActivePackageModal(pkg)}
@@ -153,17 +143,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         </div>
       )}
 
-      {/* 6. Activities, Tours & Theme Parks (Soft Aqua #EAF7F8) */}
-      <div className="w-full bg-[#EAF7F8] py-12 sm:py-16 border-y border-[#17BEBB]/15">
-        <ActivitiesSection
-          onNavigateToView={onNavigateToView}
-          onOpenQuote={() => {
-            if (onOpenQuote) onOpenQuote();
-          }}
-        />
-      </div>
-
-      {/* 7. AI Voice & Interactive Trip Planner Banner (White) */}
+      {/* 06: AI Trip Planner Banner */}
       <div className="w-full bg-white py-12 sm:py-16">
         <VoicePlannerBanner
           onOpenVoiceModal={handleOpenVoicePlanner}
@@ -171,8 +151,16 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         />
       </div>
 
-      {/* 8. Flight Booking & Quotation Workflow (Soft Background #F8FAFC) */}
-      <div className="w-full bg-[#F8FAFC] py-12 sm:py-16 border-y border-slate-200/60">
+      {/* 07: Visa Assistance Desk */}
+      <div className="w-full bg-[#FAF8F5] py-14 sm:py-20 border-y border-slate-200/60">
+        <VisaAssistanceSection
+          onOpenVisaModal={onOpenVisaModal}
+          onNavigateToVisa={() => onNavigateToView && onNavigateToView('visa')}
+        />
+      </div>
+
+      {/* 08: Flight Discovery Workflow */}
+      <div className="w-full bg-white py-14 sm:py-20">
         <FlightWorkflowSection
           onNavigateToFlights={() => {
             window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
@@ -180,36 +168,37 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         />
       </div>
 
-      {/* 9. Primary Service Grid (White) */}
-      <div className="w-full bg-white py-12 sm:py-16">
-        <ServiceGrid
-          onNavigateToView={onNavigateToView}
-          onOpenLocationFinder={onOpenLocationFinder}
+      {/* 09: Why Azraq (Authentic Trust & Local Dhaka Office) */}
+      <div className="w-full">
+        <WhyAzraqSection />
+      </div>
+
+      {/* 10: Travel Stories & Editorial Content (Real Guides from Dhaka) */}
+      <div className="w-full bg-white py-14 sm:py-20">
+        <EditorialStoriesSection
+          onSelectGuide={(slug) => {
+            if (onNavigateToView) onNavigateToView('guide-detail', { slug });
+          }}
+          onNavigateToGuides={() => {
+            if (onNavigateToView) onNavigateToView('guides');
+          }}
         />
       </div>
 
-      {/* 10. Visa Assistance & Checklists (Deep Ocean Gradient) */}
-      <div className="w-full bg-[#073B4C] py-12 sm:py-16">
-        <VisaAssistanceSection
-          onOpenVisaModal={onOpenVisaModal}
-          onNavigateToVisa={() => onNavigateToView && onNavigateToView('visa')}
-        />
+      {/* 11: Brand Architecture & Visual Identity (Behance Showcase) */}
+      <div className="w-full bg-[#FAF8F5] border-y border-slate-200/60">
+        <BehanceShowcase />
       </div>
 
-      {/* 11. Travel Buddies Verified Preview (White) */}
-      <div className="w-full bg-white py-12 sm:py-16">
+      {/* 12: Concierge & Travel Buddies Support */}
+      <div className="w-full bg-white py-14 sm:py-20">
         <TravelBuddiesPreview
           onNavigateToBuddies={() => onNavigateToView && onNavigateToView('buddies')}
         />
       </div>
 
-      {/* 12. Built for Bangladeshi Travelers (Soft Aqua #EAF7F8) */}
-      <div className="w-full bg-[#EAF7F8]/60 py-12 sm:py-16 border-y border-[#17BEBB]/15">
-        <WhyAzraqSection />
-      </div>
-
-      {/* 13. Final Focused Travel CTA (White) */}
-      <div className="w-full bg-white py-12 sm:py-16">
+      {/* 12: Final High-Impact Luxury Travel CTA */}
+      <div className="w-full bg-white py-14 sm:py-20">
         <FinalTravelCta
           onPlanTrip={() => {
             if (onNavigateToView) onNavigateToView('planner');

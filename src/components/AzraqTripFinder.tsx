@@ -243,76 +243,79 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
   };
 
   return (
-    <div className={`w-full max-w-full ${className}`}>      {/* 1. Mode Category Tabs (Floating rounded pills) */}
-      <div className="flex items-center gap-1.5 sm:gap-2 pb-2 overflow-x-auto no-scrollbar">
-        <button
-          type="button"
-          onClick={() => setActiveTab('flights')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'flights'
-              ? 'bg-white text-[#0759B8] shadow-md border border-[#CDE9FB]'
-              : 'bg-white/80 hover:bg-white text-slate-700 hover:text-[#0759B8] border border-transparent'
-          }`}
-        >
-          <Plane className="w-4 h-4 text-[#1389E8]" />
-          <span>Flights</span>
-        </button>
+    <div className={`w-full max-w-full ${className}`}>
+      {/* 1. Mode Category Tabs (Refined Segmented Control) */}
+      <div className="flex items-center gap-1 sm:gap-2 pb-3 overflow-x-auto no-scrollbar">
+        <div className="inline-flex p-1.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15">
+          <button
+            type="button"
+            onClick={() => setActiveTab('flights')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'flights'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Plane className={`w-4 h-4 ${activeTab === 'flights' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
+            <span>Flights</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('hotels')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'hotels'
-              ? 'bg-white text-[#0759B8] shadow-md border border-[#CDE9FB]'
-              : 'bg-white/80 hover:bg-white text-slate-700 hover:text-[#0759B8] border border-transparent'
-          }`}
-        >
-          <Building2 className="w-4 h-4 text-[#0759B8]" />
-          <span>Stays & Hotels</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('packages')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'packages'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Package className={`w-4 h-4 ${activeTab === 'packages' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
+            <span>Holiday Packages</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('packages')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'packages'
-              ? 'bg-white text-[#0759B8] shadow-md border border-[#CDE9FB]'
-              : 'bg-white/80 hover:bg-white text-slate-700 hover:text-[#0759B8] border border-transparent'
-          }`}
-        >
-          <Package className="w-4 h-4 text-[#F59E0B]" />
-          <span>Tour Packages</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('visa')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'visa'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <FileCheck2 className={`w-4 h-4 ${activeTab === 'visa' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
+            <span>Visa Assistance</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('visa')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'visa'
-              ? 'bg-white text-[#0759B8] shadow-md border border-[#CDE9FB]'
-              : 'bg-white/80 hover:bg-white text-slate-700 hover:text-[#0759B8] border border-transparent'
-          }`}
-        >
-          <FileCheck2 className="w-4 h-4 text-[#10B981]" />
-          <span>Visa Assistance</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('planner')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'planner'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Sparkles className={`w-4 h-4 ${activeTab === 'planner' ? 'text-amber-500' : 'text-white/70'}`} />
+            <span>AI Trip Planner</span>
+          </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('planner')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap cursor-pointer ${
-            activeTab === 'planner'
-              ? 'bg-white text-[#0759B8] shadow-md border border-[#CDE9FB]'
-              : 'bg-white/80 hover:bg-white text-slate-700 hover:text-[#0759B8] border border-transparent'
-          }`}
-        >
-          <Sparkles className="w-4 h-4 text-sky-500" />
-          <span>AI Trip Planner</span>
-        </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('hotels')}
+            className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              activeTab === 'hotels'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
+            }`}
+          >
+            <Building2 className={`w-4 h-4 ${activeTab === 'hotels' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
+            <span>Hotels</span>
+          </button>
+        </div>
       </div>
 
-      {/* 2. Main Search Container: Floating White Card with Soft Blue Border & Shadow */}
-      <div className="w-full bg-white rounded-3xl p-4 sm:p-6 shadow-floating-search border border-[#CDE9FB] text-slate-900">
+      {/* 2. Main Search Container: Floating White Card with Subtle Border */}
+      <div className="w-full bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-200/90 text-slate-900">
         {/* ================= MODE 1: FLIGHTS ================= */}
         {activeTab === 'flights' && (
           <form onSubmit={handleFlightSubmit} className="space-y-4">
@@ -625,21 +628,22 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
               </div>
 
               {/* Primary Search Button with integrated Voice Mic */}
-              <div className="sm:col-span-2 lg:col-span-1 flex gap-1">
+              <div className="sm:col-span-2 lg:col-span-1 flex gap-1.5">
                 <button
                   type="submit"
-                  className="flex-1 h-[54px] px-3 rounded-xl bg-[#1389E8] hover:bg-[#0E7FE3] text-white font-bold text-sm shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-98 min-h-[44px]"
+                  className="flex-1 h-[54px] px-4 rounded-xl bg-[#071A33] hover:bg-[#073B4C] text-white font-semibold text-sm shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 min-h-[44px]"
                 >
+                  <Search className="w-4 h-4 text-[#17BEBB]" />
                   <span>Search</span>
                 </button>
                 {onOpenVoiceModal && (
                   <button
                     type="button"
                     onClick={() => onOpenVoiceModal()}
-                    className="h-[54px] px-2.5 rounded-xl bg-[#EAF7FF] hover:bg-[#DDF4FD] text-[#1389E8] border border-[#CDE9FB] font-bold text-xs shadow-xs transition-colors flex items-center justify-center cursor-pointer min-h-[44px]"
+                    className="h-[54px] px-3 rounded-xl bg-[#FAF8F5] hover:bg-slate-100 text-[#071A33] border border-slate-200 font-medium text-xs shadow-xs transition-colors flex items-center justify-center cursor-pointer min-h-[44px]"
                     title="Voice Flight Search"
                   >
-                    <Mic className="w-4 h-4 animate-pulse text-[#1389E8]" />
+                    <Mic className="w-4 h-4 text-[#17BEBB]" />
                   </button>
                 )}
               </div>

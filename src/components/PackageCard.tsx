@@ -83,56 +83,53 @@ export const PackageCard: React.FC<PackageCardProps> = ({
         </div>
 
         {/* Price Tag Overlay */}
-        <div className="absolute bottom-3 right-3 z-10 bg-[#073B4C]/95 backdrop-blur-md border border-white/20 rounded-xl px-3 py-1.5 shadow-lg text-right">
-          <p className="text-[10px] uppercase font-bold tracking-wider text-[#17BEBB]">From</p>
-          <p className="text-base sm:text-lg font-bold text-white font-inter leading-tight">
+        <div className="absolute bottom-3 right-3 z-10 bg-[#071A33]/90 backdrop-blur-md border border-white/15 rounded-xl px-3.5 py-1.5 shadow-md text-right">
+          <p className="text-[9px] uppercase font-bold tracking-widest text-[#17BEBB]">From</p>
+          <p className="text-base font-bold text-white font-sans leading-tight">
             {pkg.currency === 'BDT' ? '৳' : pkg.currency || '৳'}{' '}
             {pkg.price.toLocaleString()}
-            <span className="text-[11px] font-normal text-[#EAF7F8]"> / pax</span>
+            <span className="text-[10px] font-normal text-slate-300"> / pax</span>
           </p>
         </div>
       </div>
 
       {/* Body Content */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4 bg-white">
-        <div>
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4 bg-white">
+        <div className="space-y-2">
           {/* Package Title */}
           <h3
             onClick={() => onViewDetails(pkg)}
-            className="text-base sm:text-lg font-bold text-[#073B4C] group-hover:text-[#086788] transition-colors line-clamp-2 cursor-pointer font-inter"
+            className="text-lg font-normal text-[#071A33] font-serif-display group-hover:text-[#0D9488] transition-colors line-clamp-2 cursor-pointer leading-snug"
           >
             {pkg.package_name}
           </h3>
 
           {/* Meta Bar */}
-          <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700">
-            <span className="flex items-center gap-1 bg-[#EAF7F8] px-2.5 py-1 rounded-lg border border-[#17BEBB]/20 text-[#073B4C] font-medium">
-              <Calendar className="w-3.5 h-3.5 text-[#086788]" />
+          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 font-medium">
+            <span className="flex items-center gap-1.5 bg-[#FAF8F5] px-2.5 py-1 rounded-lg border border-slate-200/80 text-[#071A33]">
+              <Calendar className="w-3.5 h-3.5 text-[#17BEBB]" />
               {pkg.duration}
             </span>
-            <span className="flex items-center gap-1 bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200 font-bold">
+            <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-2.5 py-1 rounded-lg border border-emerald-200/80 text-[11px] font-semibold">
               <FileCheck className="w-3.5 h-3.5 text-emerald-600" />
               Visa: {pkg.visa_fee || getVisaFeeForDestination(pkg.country || pkg.destination_name)}
             </span>
           </div>
 
           {/* Description */}
-          <p className="mt-3 text-xs sm:text-sm text-slate-600 leading-relaxed line-clamp-2 font-inter">
+          <p className="text-xs sm:text-sm text-slate-500 leading-relaxed line-clamp-2 font-sans">
             {pkg.description}
           </p>
 
           {/* Highlights */}
           {pkg.highlights && pkg.highlights.length > 0 && (
-            <div className="mt-3.5 pt-3 border-t border-slate-100 space-y-1.5">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-[#086788]">Included Highlights</p>
-              <div className="space-y-1">
-                {pkg.highlights.slice(0, 2).map((hl, idx) => (
-                  <div key={idx} className="flex items-start gap-1.5 text-xs text-slate-700">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#17BEBB] shrink-0 mt-0.5" />
-                    <span className="truncate">{hl}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="pt-2.5 border-t border-slate-100 space-y-1">
+              {pkg.highlights.slice(0, 2).map((hl, idx) => (
+                <div key={idx} className="flex items-start gap-2 text-xs text-slate-600">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-[#17BEBB] shrink-0 mt-0.5" />
+                  <span className="truncate">{hl}</span>
+                </div>
+              ))}
             </div>
           )}
         </div>
@@ -142,19 +139,19 @@ export const PackageCard: React.FC<PackageCardProps> = ({
           <button
             onClick={() => onViewDetails(pkg)}
             type="button"
-            className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-[#EAF7F8] hover:bg-[#17BEBB]/15 text-[#073B4C] font-bold text-xs sm:text-sm border border-[#17BEBB]/30 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+            className="w-full min-h-[44px] py-2 px-3 rounded-xl bg-[#FAF8F5] hover:bg-slate-100 text-[#071A33] font-semibold text-xs border border-slate-200 transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
           >
-            <Eye className="w-4 h-4" />
+            <Eye className="w-3.5 h-3.5 text-slate-600" />
             <span>Itinerary</span>
           </button>
 
           <button
             onClick={() => onRequestQuote(pkg)}
             type="button"
-            className="w-full min-h-[44px] py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#FF6B5A] to-[#FF8577] hover:brightness-105 text-white font-bold text-xs sm:text-sm shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
+            className="w-full min-h-[44px] py-2 px-3 rounded-xl bg-[#071A33] hover:bg-[#073B4C] text-white font-semibold text-xs shadow-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-98"
           >
             <span>Book / Quote</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-3.5 h-3.5 text-[#17BEBB]" />
           </button>
         </div>
       </div>
