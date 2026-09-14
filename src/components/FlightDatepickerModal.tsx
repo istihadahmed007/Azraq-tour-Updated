@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -297,13 +298,20 @@ export const FlightDatepickerModal: React.FC<FlightDatepickerModalProps> = ({
 
   if (!isOpen) return null;
 
-  return (
+  const modalNode = (
     <div
-      ref={containerRef}
       role="dialog"
+      aria-modal="true"
       aria-label="Flight Date Picker"
-      className="absolute top-full left-0 sm:left-1/2 sm:-translate-x-1/2 w-full sm:w-[620px] max-w-[calc(100vw-2rem)] mt-2.5 z-50 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_24px_60px_rgba(7,26,51,0.22)] border border-white/80 p-4 sm:p-5 text-slate-900 animate-fadeIn"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-[#071A33]/65 backdrop-blur-md animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
+      <div
+        ref={containerRef}
+        className="w-full max-w-2xl max-h-[92vh] overflow-y-auto bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_24px_70px_rgba(7,26,51,0.35)] border border-white/80 p-5 sm:p-6 text-slate-900 animate-scaleUp relative"
+      >
       {/* Top Header Controls: Active Tab Switcher & Trip Type */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
         <div className="flex items-center gap-2">
@@ -451,5 +459,8 @@ export const FlightDatepickerModal: React.FC<FlightDatepickerModalProps> = ({
         </button>
       </div>
     </div>
+  </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalNode, document.body) : modalNode;
 };

@@ -292,9 +292,9 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
             : 'h-[52px] px-3 py-2 bg-white rounded-lg border border-slate-300 hover:border-[#071A33] focus:ring-2 focus:ring-[#071A33] focus:outline-none shadow-xs'
         } flex items-center justify-between cursor-pointer transition-all text-left group`}
       >
-        <div className="flex items-center gap-3 min-w-0 pr-2">
+        <div className="flex items-center gap-2.5 min-w-0 pr-1 flex-1">
           <div
-            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+            className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${
               variant === 'hero'
                 ? 'bg-[#071A33]/10 text-[#17BEBB] backdrop-blur-xs'
                 : 'bg-slate-100 text-slate-500'
@@ -302,15 +302,17 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
           >
             {icon ? icon : <Plane className="w-4 h-4" />}
           </div>
-          <div className="min-w-0">
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+          <div className="min-w-0 flex-1">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono whitespace-nowrap">
               {label}
             </div>
-            <div className="text-base sm:text-lg font-bold text-[#071A33] truncate leading-tight mt-0.5">
-              {selectedAirport.city}{' '}
-              <span className="font-mono text-xs sm:text-sm font-semibold text-slate-600">
-                ({selectedAirport.code})
-              </span>
+            <div className="text-base sm:text-lg font-bold text-[#071A33] truncate leading-tight mt-0.5 whitespace-nowrap">
+              {selectedAirport.city}
+              {variant !== 'hero' && (
+                <span className="font-mono text-xs sm:text-sm font-semibold text-slate-600 ml-1">
+                  ({selectedAirport.code})
+                </span>
+              )}
             </div>
             {variant === 'hero' && (
               <div className="text-xs text-slate-600 truncate font-normal mt-0.5">
@@ -320,7 +322,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
           </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 shrink-0 ml-1">
           <span className="font-mono text-xs font-bold px-2 py-1 bg-[#071A33]/10 text-[#071A33] rounded-lg border border-[#071A33]/15 backdrop-blur-xs">
             {selectedAirport.code}
           </span>

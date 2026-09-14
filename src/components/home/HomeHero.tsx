@@ -24,7 +24,7 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="relative w-full text-white pt-10 sm:pt-16 pb-16 sm:pb-24 overflow-hidden bg-transparent">
+    <section className="relative w-full text-white pt-10 sm:pt-16 pb-16 sm:pb-24 bg-transparent">
       {/* Cinematic Commercial Aircraft Background - Blended Glass Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img
