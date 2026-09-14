@@ -100,7 +100,7 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
       </div>
 
       {/* 3 Step Process Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-2xl bg-white border border-[#E1EFF8] shadow-xs">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
         <div className="flex items-start gap-4">
           <div className="w-9 h-9 rounded-xl bg-[#EAF7FF] text-[#0759B8] font-black flex items-center justify-center shrink-0 text-sm">
             1
@@ -134,7 +134,7 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
 
       {/* Quick Destination Filter Pills */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">Popular:</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mr-1">Popular:</span>
         {[
           { label: 'All Destinations', query: '' },
           { label: '🇲🇾 Malaysia', query: 'Malaysia' },
@@ -159,7 +159,7 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               searchQuery.toLowerCase() === f.query.toLowerCase()
                 ? 'bg-[#0759B8] text-white shadow-xs'
-                : 'bg-white border border-[#E1EFF8] text-slate-700 hover:bg-[#F4FAFD]'
+                : 'bg-white/60 backdrop-blur-md border border-white/70 text-slate-700 hover:bg-white/90'
             }`}
           >
             {f.label}
@@ -178,7 +178,7 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search destination (e.g. Malaysia, Thailand)..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#E1EFF8] text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#1389E8] shadow-xs"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/60 border border-white/70 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#1389E8] focus:bg-white/90 shadow-xs"
             />
           </div>
 
@@ -192,7 +192,7 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
                   className={`w-full text-left p-4 rounded-xl border transition-all cursor-pointer flex items-center justify-between ${
                     isSelected
                       ? 'bg-[#EAF7FF] border-[#0759B8] shadow-xs ring-1 ring-[#0759B8]/20'
-                      : 'bg-white border-[#E1EFF8] hover:border-[#CDE9FB] hover:bg-[#F4FAFD]'
+                      : 'bg-white/65 backdrop-blur-md border border-white/60 hover:border-[#CDE9FB] hover:bg-white/85'
                   }`}
                 >
                   <div className="flex items-center gap-3">
@@ -217,7 +217,7 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
         </div>
 
         {/* Right Column: Selected Country Details */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E1EFF8] p-6 sm:p-8 space-y-6 shadow-xs">
+        <div className="lg:col-span-2 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/60 p-6 sm:p-8 space-y-6 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
           {/* Header Row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
             <div>

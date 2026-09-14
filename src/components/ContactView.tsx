@@ -53,7 +53,7 @@ export const ContactView: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Form Container */}
-        <section aria-labelledby="inquiry-form-heading" className="lg:col-span-7 bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs">
+        <section aria-labelledby="inquiry-form-heading" className="lg:col-span-7 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/60 p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
           <h2 id="inquiry-form-heading" className="sr-only">Send an Inquiry</h2>
           {submitted ? (
             <div className="py-12 text-center space-y-4">
@@ -86,7 +86,7 @@ export const ContactView: React.FC = () => {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Istihad Ahmed"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
                     required
                     aria-required="true"
                   />
@@ -103,7 +103,7 @@ export const ContactView: React.FC = () => {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="+880 18XX-XXXXXX"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
                     required
                     aria-required="true"
                   />
@@ -122,7 +122,7 @@ export const ContactView: React.FC = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="name@example.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
                   />
                 </div>
 
@@ -135,7 +135,7 @@ export const ContactView: React.FC = () => {
                     name="category"
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
                   >
                     <option value="Tour Package Inquiry">Tour Package Inquiry</option>
                     <option value="Visa Assistance">Visa Assistance</option>
@@ -156,7 +156,7 @@ export const ContactView: React.FC = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   rows={4}
                   placeholder="Tell us your intended destination, travel dates, and any specific preferences..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200/80 text-sm text-[#071A33] focus:outline-none focus:border-[#0D6EFD] focus-visible:ring-2 focus-visible:ring-[#0D6EFD]"
                   required
                   aria-required="true"
                 />
@@ -176,7 +176,7 @@ export const ContactView: React.FC = () => {
 
         {/* Right Information Cards */}
         <section aria-labelledby="direct-contact-heading" className="lg:col-span-5 space-y-6">
-          <div className="bg-slate-50 rounded-2xl border border-slate-200/80 p-6 space-y-4">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl border border-white/60 p-6 shadow-[0_8px_32px_rgba(7,26,51,0.04)] space-y-4">
             <h2 id="direct-contact-heading" className="text-base font-bold text-[#071A33]">
               Direct Contact Information
             </h2>
@@ -230,7 +230,7 @@ export const ContactView: React.FC = () => {
             </address>
           </div>
 
-          <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200/80 space-y-3">
+          <div className="p-6 rounded-2xl bg-emerald-50/80 backdrop-blur-xl border border-emerald-200/80 shadow-[0_8px_32px_rgba(7,26,51,0.04)] space-y-3">
             <h3 className="text-sm font-bold text-emerald-900">Instant WhatsApp Chat</h3>
             <p className="text-xs text-emerald-800 leading-relaxed">
               Prefer chatting directly on WhatsApp for immediate package details and visa requirements?

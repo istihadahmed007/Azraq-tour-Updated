@@ -39,7 +39,7 @@ export const TravelGuidesView: React.FC<TravelGuidesViewProps> = ({
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="w-full bg-transparent min-h-screen pb-20">
       <SEOHead
         title="Travel Guides for Bangladeshi Travelers – AzraqTrips"
         description="Comprehensive, authentic travel guides for Bangladeshi travelers. Practical visa advice, Dhaka flight routes, BDT budget breakdowns, halal dining, and itinerary suggestions."
@@ -119,7 +119,7 @@ export const TravelGuidesView: React.FC<TravelGuidesViewProps> = ({
           {filteredGuides.map((guide) => (
             <article
               key={guide.slug}
-              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-100 transition-all flex flex-col group cursor-pointer"
+              className="bg-white/75 backdrop-blur-xl rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(7,26,51,0.05)] hover:shadow-[0_12px_40px_rgba(13,110,253,0.14)] border border-white/60 hover:border-[#0D6EFD]/50 hover:bg-white/85 transition-all flex flex-col group cursor-pointer"
               onClick={() => onSelectGuide(guide.slug)}
             >
               <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
@@ -150,7 +150,7 @@ export const TravelGuidesView: React.FC<TravelGuidesViewProps> = ({
                   </p>
                 </div>
 
-                <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-[#0D6EFD]">
+                <div className="mt-4 pt-4 border-t border-white/60 flex items-center justify-between text-xs font-semibold text-[#0D6EFD]">
                   <span className="flex items-center gap-1.5 text-slate-600">
                     <Calendar className="w-3.5 h-3.5" />
                     <span>Updated {guide.modifiedDate}</span>
@@ -166,7 +166,7 @@ export const TravelGuidesView: React.FC<TravelGuidesViewProps> = ({
         </div>
 
         {filteredGuides.length === 0 && (
-          <div className="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm mt-6">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-12 text-center border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] mt-6">
             <BookOpen className="w-10 h-10 text-slate-400 mx-auto mb-3" />
             <h3 className="font-bold text-slate-800 text-base">No guides found for "{searchQuery}"</h3>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">Try clearing your search query or selecting another country.</p>

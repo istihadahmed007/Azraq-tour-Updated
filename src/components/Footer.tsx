@@ -25,7 +25,7 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <>
-      <footer className="w-full bg-[#071A33] border-t border-white/10 text-slate-300 pt-16 pb-28 md:pb-16 px-4 sm:px-6 lg:px-8 font-inter">
+      <footer className="w-full bg-[#071A33]/90 backdrop-blur-2xl border-t border-white/10 text-slate-300 pt-16 pb-28 md:pb-16 px-4 sm:px-6 lg:px-8 font-inter">
         <div className="max-w-7xl mx-auto space-y-12">
           {/* Top Section: Brand + 4 Clean Columns */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-white/10">

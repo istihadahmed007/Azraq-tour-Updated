@@ -236,7 +236,7 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-24 text-slate-900">
+    <div className="w-full bg-transparent min-h-screen pb-24 text-slate-900">
       <SEOHead
         title="Tours, Activities & Theme Park Tickets – AzraqTrips"
         description="Book verified entry tickets, day tours, island speedboats, and theme park passes in Thailand, Singapore, Malaysia, Bali, and Dubai with instant vouchers."
@@ -278,7 +278,7 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
           </div>
 
           {/* Search & Country Filter */}
-          <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-white/30 text-slate-900 space-y-4">
+          <div className="bg-white/85 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 shadow-[0_16px_50px_rgba(0,47,108,0.15)] border border-white/60 text-slate-900 space-y-4">
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -287,7 +287,7 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search activities (e.g. Phi Phi, Gardens by the Bay, Burj Khalifa)..."
-                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs sm:text-sm font-medium text-slate-900 focus:bg-white focus:outline-none focus:border-[#0759B8]"
+                  className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white/60 border border-white/80 text-xs sm:text-sm font-medium text-slate-900 focus:bg-white/95 focus:outline-none focus:border-[#0759B8]"
                 />
               </div>
 
@@ -351,7 +351,7 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
           {filteredActivities.map((act) => (
             <div
               key={act.id}
-              className="bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-[#0759B8]/40 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
+              className="bg-white/75 backdrop-blur-xl rounded-3xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] hover:shadow-[0_12px_40px_rgba(7,89,184,0.14)] hover:border-[#0759B8]/40 hover:bg-white/85 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
             >
               <div>
                 {/* Image & Tags */}
@@ -408,7 +408,7 @@ export const ActivitiesView: React.FC<ActivitiesViewProps> = ({
               </div>
 
               {/* Price & Booking Footer */}
-              <div className="p-5 pt-3 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="p-5 pt-3 border-t border-white/60 flex items-center justify-between bg-white/40">
                 <div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-xl font-black text-[#0759B8] font-poppins">

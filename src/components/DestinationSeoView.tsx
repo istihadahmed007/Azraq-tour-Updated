@@ -95,7 +95,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="w-full bg-transparent min-h-screen pb-20">
       <SEOHead
         title={`${destination.name}, ${destination.country} – Travel Guide, Flights, Budget & Visa for Bangladeshis`}
         description={`Explore ${destination.name}, ${destination.country}. Discover flight routes from Dhaka, BDT budget estimates (${destination.priceRange || destination.estimatedBudget}), best time to visit (${destination.bestTimeToVisit}), visa guidance, and top things to do.`}
@@ -181,7 +181,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
       {/* Main Content Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">
         {/* Quick Highlights Bar */}
-        <div className="bg-white rounded-2xl p-4 sm:p-6 shadow-xl border border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-10">
+        <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-4 sm:p-6 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 mb-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-[#0D6EFD] shrink-0">
               <Calendar className="w-5 h-5" />
@@ -229,7 +229,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
           {/* Left / Center 2 Columns: In-Depth Overview, Things to Do, Visa & Tips */}
           <div className="lg:col-span-2 space-y-8">
             {/* Overview */}
-            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+            <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <Compass className="w-6 h-6 text-[#0D6EFD]" />
                 <span>About {destination.name}, {destination.country}</span>
@@ -257,7 +257,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
             </section>
 
             {/* Things to Do & Top Attractions */}
-            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-6">
+            <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
                   <CheckCircle2 className="w-6 h-6 text-emerald-600" />
@@ -310,7 +310,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
             </section>
 
             {/* Airport Transfers & Local Transportation */}
-            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-4">
+            <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
                 <Car className="w-6 h-6 text-blue-600" />
                 <span>Airport Transfers & Private Rides in {destination.name}</span>
@@ -364,7 +364,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
             </section>
 
             {/* Stay Connected Abroad / eSIM Section */}
-            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-4">
+            <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 space-y-4">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
                 <Wifi className="w-6 h-6 text-sky-600" />
                 <span>Stay Connected in {destination.name}: Instant eSIM</span>
@@ -426,7 +426,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
             </section>
 
             {/* Bangladesh Traveler Advice & Visa Info */}
-            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+            <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 flex items-center gap-2">
                 <ShieldCheck className="w-6 h-6 text-indigo-600" />
                 <span>Visa & Travel Guidelines for Bangladeshi Citizens</span>
@@ -452,7 +452,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
             </section>
 
             {/* FAQs Section */}
-            <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+            <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <HelpCircle className="w-6 h-6 text-amber-500" />
                 <span>Frequently Asked Questions about {destination.name}</span>
@@ -491,7 +491,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
 
             {/* Related Travel Guide Card */}
             {relatedGuide && (
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-5 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0D6EFD] mb-2">
                   <FileText className="w-4 h-4" />
                   <span>Featured Travel Guide</span>
@@ -511,7 +511,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
 
             {/* Related Curated Itinerary Card */}
             {relatedItinerary && (
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+              <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-5 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 mb-2">
                   <Compass className="w-4 h-4" />
                   <span>Recommended Itinerary</span>
@@ -530,7 +530,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
             )}
 
             {/* Flights & Visa Quick Links */}
-            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+            <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-5 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
               <h4 className="font-bold text-slate-900 text-sm mb-3">Dhaka Travel Services</h4>
               <div className="space-y-2">
                 <button

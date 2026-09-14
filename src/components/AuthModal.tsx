@@ -488,7 +488,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={closeAuthModal}
-        className="fixed inset-0 bg-[#071A33]/75 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-[#071A33]/60 backdrop-blur-lg transition-opacity"
       />
 
       {/* Two-Column Editorial Modal Container */}
@@ -497,7 +497,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ duration: 0.22, ease: 'easeOut' }}
-        className="relative z-10 w-full max-w-4xl bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200/80 flex flex-col md:flex-row my-auto"
+        className="relative z-10 w-full max-w-4xl bg-white/90 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-[0_24px_60px_rgba(7,26,51,0.2)] border border-white/70 flex flex-col md:flex-row my-auto"
       >
         {/* LEFT COLUMN: Editorial Visual Brand Panel (Desktop only) */}
         <div className="hidden md:flex md:w-5/12 bg-[#071A33] relative overflow-hidden flex-col justify-between p-8 text-white shrink-0">
@@ -567,7 +567,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* RIGHT COLUMN: Focused Auth Form */}
-        <div className="w-full md:w-7/12 flex flex-col justify-between p-6 sm:p-8 bg-white overflow-y-auto max-h-[85vh] sm:max-h-[90vh]">
+        <div className="w-full md:w-7/12 flex flex-col justify-between p-6 sm:p-8 bg-white/85 backdrop-blur-xl overflow-y-auto max-h-[85vh] sm:max-h-[90vh]">
           {/* Header Bar */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             {/* Mobile Brand indicator */}

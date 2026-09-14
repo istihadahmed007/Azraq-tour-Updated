@@ -91,7 +91,7 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
           <input
@@ -99,7 +99,7 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by city or country (e.g. Bali, Bangkok, Dubai)..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-sm text-[#071A33] focus:bg-white focus:outline-none focus:border-[#0D6EFD]"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/60 border border-white/80 text-sm text-[#071A33] placeholder:text-slate-400 focus:bg-white/90 focus:outline-none focus:border-[#0D6EFD]"
           />
         </div>
 
@@ -111,8 +111,8 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
               onClick={() => setSelectedCategory(cat)}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
                 selectedCategory === cat
-                  ? 'bg-[#0D6EFD] text-white font-bold'
-                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100 hover:text-slate-900 border border-slate-200'
+                  ? 'bg-[#0D6EFD] text-white font-bold shadow-xs'
+                  : 'bg-white/60 backdrop-blur-md text-slate-700 hover:bg-white/90 hover:text-slate-900 border border-white/70'
               }`}
             >
               {cat}
@@ -123,7 +123,7 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
 
       {/* Grid of Clean Destination Cards */}
       {filteredDestinations.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-2xl border border-slate-200/80 p-8 space-y-3">
+        <div className="text-center py-16 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 p-8 space-y-3 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
           <p className="text-base font-bold text-slate-700">No destinations found</p>
           <p className="text-xs text-slate-500">
             Try adjusting your search criteria or category filter.
@@ -143,7 +143,7 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
           {filteredDestinations.map((dest) => (
             <div
               key={dest.id}
-              className="group bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-md hover:border-[#0D6EFD]/60 transition-all duration-300 flex flex-col justify-between"
+              className="group bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 overflow-hidden shadow-[0_8px_32px_rgba(7,26,51,0.05)] hover:shadow-[0_12px_40px_rgba(13,110,253,0.12)] hover:border-[#0D6EFD]/60 hover:bg-white/80 transition-all duration-300 flex flex-col justify-between"
             >
               {/* Image Container */}
               <div
@@ -182,7 +182,7 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
                   </p>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <div className="pt-3 border-t border-white/60 flex items-center justify-between">
                   <span className="text-xs text-slate-500">
                     Visa: <strong className="text-slate-800 font-mono">{dest.visaFee || 'Available'}</strong>
                   </span>

@@ -331,7 +331,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
           id={listboxId}
           role="listbox"
           aria-label={`${label} options`}
-          className="absolute top-full left-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 p-2 text-slate-900 animate-fadeIn"
+          className="absolute top-full left-0 mt-2 w-80 sm:w-96 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_rgba(7,26,51,0.15)] border border-white/70 z-50 p-2 text-slate-900 animate-fadeIn"
         >
           {/* Search Input Bar */}
           <div className="p-2 border-b border-slate-100">
@@ -388,7 +388,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
 
           {/* Region Tabs when not typing search term */}
           {!isSearching && (
-            <div className="p-2 border-b border-slate-100 bg-[#F8FAFC]">
+            <div className="p-2 border-b border-slate-100 bg-slate-50/80 backdrop-blur-md">
               <div className="flex items-center justify-between text-[11px] font-bold text-slate-500 mb-1.5 px-0.5">
                 <span className="flex items-center gap-1 text-slate-700">
                   <Globe className="w-3 h-3 text-[#1389E8]" /> Quick Select Destination

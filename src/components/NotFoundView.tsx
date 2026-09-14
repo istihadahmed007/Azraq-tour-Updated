@@ -41,7 +41,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigateToView }) 
   };
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="w-full bg-transparent min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <SEOHead
         title="Page Not Found (404) – AzraqTrips"
         description="The page you are looking for does not exist or has been moved. Discover top Asian destinations, travel guides, flight searches, and visa requirements on AzraqTrips."
@@ -49,7 +49,7 @@ export const NotFoundView: React.FC<NotFoundViewProps> = ({ onNavigateToView }) 
         noindex={true}
       />
 
-      <div className="max-w-2xl w-full bg-white rounded-3xl p-6 sm:p-10 shadow-xl border border-slate-100 text-center space-y-6">
+      <div className="max-w-2xl w-full bg-white/80 backdrop-blur-2xl rounded-3xl p-6 sm:p-10 shadow-[0_16px_40px_rgba(7,26,51,0.08)] border border-white/70 text-center space-y-6">
         {/* Animated Compass Icon */}
         <div className="w-16 h-16 rounded-2xl bg-blue-50 text-[#0D6EFD] flex items-center justify-center mx-auto shadow-inner">
           <Compass className="w-8 h-8 animate-spin-slow" />

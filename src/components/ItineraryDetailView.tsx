@@ -72,7 +72,7 @@ export const ItineraryDetailView: React.FC<ItineraryDetailViewProps> = ({
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="w-full bg-transparent min-h-screen pb-20">
       <SEOHead
         title={itinerary.seoTitle}
         description={itinerary.metaDescription}
@@ -88,7 +88,7 @@ export const ItineraryDetailView: React.FC<ItineraryDetailViewProps> = ({
       />
 
       {/* Header Banner */}
-      <header className="bg-white border-b border-slate-100 py-6 px-4 sm:px-6 lg:px-8">
+      <header className="bg-white/75 backdrop-blur-xl border-b border-white/60 py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <Breadcrumbs
             items={[
@@ -137,7 +137,7 @@ export const ItineraryDetailView: React.FC<ItineraryDetailViewProps> = ({
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
         {/* Overview Card */}
-        <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+        <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
           <h2 className="text-lg font-bold text-slate-900 mb-2">Trip Overview</h2>
           <p className="text-sm sm:text-base text-slate-700 leading-relaxed">{itinerary.overview}</p>
 
@@ -170,7 +170,7 @@ export const ItineraryDetailView: React.FC<ItineraryDetailViewProps> = ({
           </div>
 
           {itinerary.days.map((day) => (
-            <div key={day.dayNumber} className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+            <div key={day.dayNumber} className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
               <div className="flex items-center gap-3 mb-3">
                 <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#002B66] to-[#0759B8] text-white flex items-center justify-center font-black text-sm shadow-md">
                   D{day.dayNumber}
@@ -322,7 +322,7 @@ export const ItineraryDetailView: React.FC<ItineraryDetailViewProps> = ({
 
         {/* Related Guide Card */}
         {relatedGuide && (
-          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-[#0D6EFD]">Complete Country Guide</span>
               <h3 className="text-lg font-bold text-slate-900 mt-1">{relatedGuide.title}</h3>

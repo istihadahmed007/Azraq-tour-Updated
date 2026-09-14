@@ -261,11 +261,11 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
       <section className="w-full md:w-5/12 lg:w-4/12 flex flex-col gap-6">
         {/* Title */}
         <div>
-          <h2 className="font-serif-display text-2xl md:text-3xl text-white font-bold flex items-center gap-2.5">
+          <h2 className="font-serif-display text-2xl md:text-3xl text-[#071A33] font-bold flex items-center gap-2.5">
             <span>Where to next?</span>
-            <Sparkles className="w-5 h-5 text-sky-400" />
+            <Sparkles className="w-5 h-5 text-[#0759B8]" />
           </h2>
-          <p className="text-xs md:text-sm text-slate-300 mt-1 font-normal">
+          <p className="text-xs md:text-sm text-slate-600 mt-1 font-normal">
             Your personalized AI travel planner with interactive Asia maps & quotes.
           </p>
         </div>

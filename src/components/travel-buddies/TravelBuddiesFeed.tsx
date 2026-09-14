@@ -147,7 +147,7 @@ export const TravelBuddiesFeed: React.FC<TravelBuddiesFeedProps> = ({
   };
 
   return (
-    <div className="w-full min-h-screen bg-slate-950 text-slate-100 pb-24">
+    <div className="w-full min-h-screen bg-slate-950/70 backdrop-blur-xl text-slate-100 pb-24">
       {/* Top Banner Header */}
       <div className="border-b border-white/10 bg-slate-900/60 backdrop-blur-md pt-4 md:pt-6 pb-6 px-4 md:px-8">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">

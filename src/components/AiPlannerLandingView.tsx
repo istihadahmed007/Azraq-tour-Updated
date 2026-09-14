@@ -82,7 +82,7 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
   };
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="w-full bg-transparent min-h-screen pb-20">
       <SEOHead
         title="AI Travel Planner for Bangladeshi Travelers – AzraqTrips"
         description="Free AI-powered travel planner for Bangladeshi travelers. Create personalized day-by-day itineraries with Dhaka flight schedules, BDT budget calculators, halal dining spots, and visa checklists in seconds."
@@ -122,7 +122,7 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
           </p>
 
           {/* Interactive AI Prompt Box */}
-          <div className="mt-8 bg-white rounded-2xl p-3 sm:p-4 shadow-2xl max-w-2xl mx-auto text-left border border-white/20">
+          <div className="mt-8 bg-white/85 backdrop-blur-2xl rounded-2xl p-3 sm:p-4 shadow-[0_16px_48px_rgba(0,43,102,0.18)] max-w-2xl mx-auto text-left border border-white/60">
             <div className="relative">
               <textarea
                 value={customPrompt}
@@ -141,11 +141,10 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onOpenVoiceModal()}
-                    className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-blue-50 border border-slate-200 text-slate-700 hover:text-[#0D6EFD] font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
-                    title="Speak your travel request"
+                    className="p-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+                    title="Speak your travel idea"
                   >
-                    <Mic className="w-4 h-4 text-[#0D6EFD] animate-pulse" />
-                    <span>Speak</span>
+                    <Mic className="w-4 h-4 text-[#0759B8]" />
                   </button>
                 )}
                 <button
@@ -180,7 +179,7 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
       {/* Feature Value Props */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 space-y-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-100">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
             <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-[#0D6EFD] mb-4">
               <DollarSign className="w-6 h-6" />
             </div>
@@ -190,7 +189,7 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-100">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
             <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 mb-4">
               <Zap className="w-6 h-6" />
             </div>
@@ -200,7 +199,7 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-md border border-slate-100">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
             <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 mb-4">
               <ShieldCheck className="w-6 h-6" />
             </div>
@@ -212,7 +211,7 @@ export const AiPlannerLandingView: React.FC<AiPlannerLandingViewProps> = ({
         </div>
 
         {/* FAQs */}
-        <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 max-w-4xl mx-auto">
+        <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 max-w-4xl mx-auto">
           <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
             <HelpCircle className="w-6 h-6 text-amber-500" />
             <span>Frequently Asked Questions</span>

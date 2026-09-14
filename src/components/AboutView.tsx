@@ -20,9 +20,9 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigateToContact, onOpe
       />
 
       {/* Hero Intro */}
-      <section aria-labelledby="about-heading" className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 bg-gradient-to-r from-blue-50/60 via-white to-sky-50/60 p-6 sm:p-8 rounded-3xl border border-blue-100">
+      <section aria-labelledby="about-heading" className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8 bg-white/75 backdrop-blur-xl p-6 sm:p-8 rounded-3xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
         <div className="max-w-2xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200/80 text-[#0047BA] text-xs font-bold uppercase tracking-wider">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50/90 border border-blue-200/80 text-[#0047BA] text-xs font-bold uppercase tracking-wider">
             <Award className="w-3.5 h-3.5" aria-hidden="true" />
             <span>Official Travel Agency &amp; Operator</span>
           </div>
@@ -34,14 +34,14 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigateToContact, onOpe
           </p>
         </div>
 
-        <div className="shrink-0 self-center md:self-auto p-3 rounded-full bg-white shadow-md border border-blue-100/80">
+        <div className="shrink-0 self-center md:self-auto p-3 rounded-full bg-white/80 backdrop-blur-md shadow-md border border-white/70">
           <AzraqLogo size={120} />
         </div>
       </section>
 
       {/* 4 Pillars of Credibility */}
       <section aria-label="Core Pillars of Service" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+        <div className="p-6 rounded-2xl bg-white/75 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.04)] hover:shadow-md transition-all space-y-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#0D6EFD] flex items-center justify-center" aria-hidden="true">
             <ShieldCheck className="w-5 h-5" />
           </div>
@@ -51,7 +51,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigateToContact, onOpe
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+        <div className="p-6 rounded-2xl bg-white/75 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.04)] hover:shadow-md transition-all space-y-3">
           <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center" aria-hidden="true">
             <HeartHandshake className="w-5 h-5" />
           </div>
@@ -61,7 +61,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigateToContact, onOpe
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+        <div className="p-6 rounded-2xl bg-white/75 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.04)] hover:shadow-md transition-all space-y-3">
           <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center" aria-hidden="true">
             <Award className="w-5 h-5" />
           </div>
@@ -71,7 +71,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigateToContact, onOpe
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
+        <div className="p-6 rounded-2xl bg-white/75 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.04)] hover:shadow-md transition-all space-y-3">
           <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center" aria-hidden="true">
             <Clock className="w-5 h-5" />
           </div>
@@ -83,7 +83,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigateToContact, onOpe
       </section>
 
       {/* Office & Operations Card */}
-      <section aria-labelledby="office-heading" className="p-8 sm:p-10 rounded-3xl bg-slate-900 text-white space-y-6">
+      <section aria-labelledby="office-heading" className="p-8 sm:p-10 rounded-3xl bg-[#071A33]/90 backdrop-blur-2xl border border-white/10 text-white shadow-[0_16px_40px_rgba(7,26,51,0.2)] space-y-6">
         <div className="max-w-2xl space-y-2">
           <span className="text-xs font-bold text-sky-400 uppercase tracking-wider">Dhaka Head Office</span>
           <h2 id="office-heading" className="text-2xl sm:text-3xl font-bold">Visit or Contact Our Travel Desk</h2>
@@ -92,7 +92,7 @@ export const AboutView: React.FC<AboutViewProps> = ({ onNavigateToContact, onOpe
           </p>
         </div>
 
-        <address className="not-italic grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-800">
+        <address className="not-italic grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-slate-800/80">
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-xs font-semibold text-sky-400">
               <MapPin className="w-4 h-4" aria-hidden="true" />

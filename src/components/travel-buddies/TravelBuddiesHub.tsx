@@ -259,7 +259,7 @@ export const TravelBuddiesHub: React.FC<TravelBuddiesHubProps> = ({
   };
 
   return (
-    <article id="azraq-travel-buddies-hub" className="min-h-screen bg-slate-950 text-slate-100 pb-20">
+    <article id="azraq-travel-buddies-hub" className="min-h-screen bg-slate-950/70 backdrop-blur-xl text-slate-100 pb-20">
       <SEOHead
         title="Find Travel Buddies & Join Asian Tour Groups – Azraq Trips"
         description="Connect with verified solo travelers and small tour groups from Bangladesh exploring Thailand, Malaysia, Maldives, Kashmir, and Vietnam. Safe verified profiles."

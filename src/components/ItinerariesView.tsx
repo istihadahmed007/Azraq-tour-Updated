@@ -26,7 +26,7 @@ export const ItinerariesView: React.FC<ItinerariesViewProps> = ({
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="w-full bg-transparent min-h-screen pb-20">
       <SEOHead
         title="Curated Travel Itineraries for Bangladeshi Travelers – AzraqTrips"
         description="Explore handpicked day-by-day travel itineraries designed for Bangladeshi travelers. 5-Day Malaysia, 7-Day Thailand, 5-Day Bali, 7-Day Japan, 4-Day Dubai, with BDT budgets and halal food spots."
@@ -74,7 +74,7 @@ export const ItinerariesView: React.FC<ItinerariesViewProps> = ({
           {CURATED_ITINERARIES.map((itinerary) => (
             <article
               key={itinerary.slug}
-              className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl border border-slate-100 transition-all flex flex-col group cursor-pointer"
+              className="bg-white/75 backdrop-blur-xl rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(7,26,51,0.05)] hover:shadow-[0_12px_40px_rgba(13,110,253,0.14)] border border-white/60 hover:border-[#0D6EFD]/50 hover:bg-white/85 transition-all flex flex-col group cursor-pointer"
               onClick={() => onSelectItinerary(itinerary.slug)}
             >
               <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100">
@@ -120,7 +120,7 @@ export const ItinerariesView: React.FC<ItinerariesViewProps> = ({
                   </div>
                 </div>
 
-                <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#0D6EFD]">
+                <div className="mt-5 pt-4 border-t border-white/60 flex items-center justify-between text-xs font-bold text-[#0D6EFD]">
                   <span className="text-slate-500 font-medium">{itinerary.bestSeason}</span>
                   <span className="inline-flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                     <span>View Day-by-Day</span>

@@ -153,7 +153,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 pb-24 pt-20">
+    <div className="min-h-screen bg-slate-950/70 backdrop-blur-xl text-slate-100 pb-24 pt-20">
       <SEOHead
         title="User Dashboard & Travel Hub | Azraq Trips"
         description="Access your personalized Azraq Trips travel dashboard. Manage saved itineraries, track live flight & visa quotes, update travel preferences, and connect with Travel Buddies."

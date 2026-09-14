@@ -70,7 +70,7 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="w-full bg-transparent min-h-screen pb-20">
       <SEOHead
         title={guide.seoTitle}
         description={guide.metaDescription}
@@ -91,7 +91,7 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
       />
 
       {/* Article Header & Breadcrumbs */}
-      <header className="bg-white border-b border-slate-100 py-6 px-4 sm:px-6 lg:px-8">
+      <header className="bg-white/75 backdrop-blur-xl border-b border-white/60 py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           <Breadcrumbs
             items={[
@@ -145,7 +145,7 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
       {/* Main Article Content & Side Panels */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 gap-8">
         {/* Intro */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm sm:text-base">
+        <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm sm:text-base">
           <p className="text-base sm:text-lg font-medium text-slate-900 leading-relaxed">
             {guide.intro}
           </p>
@@ -352,7 +352,7 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
 
         {/* Related Itinerary & Services Footer */}
         {relatedItinerary && (
-          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-emerald-600">Recommended Itinerary</span>
               <h3 className="text-lg font-bold text-slate-900 mt-1">{relatedItinerary.title}</h3>

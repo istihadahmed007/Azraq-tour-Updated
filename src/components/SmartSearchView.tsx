@@ -221,7 +221,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
   }) || [];
 
   return (
-    <article className="min-h-screen bg-slate-50/60 pb-20 pt-6">
+    <article className="min-h-screen bg-transparent pb-20 pt-6">
       <SEOHead
         title="Smart Search – Find Tour Packages, Visas & Flight Deals | Azraq Trips"
         description="Ask questions in plain English or Bengali to instantly search Azraq Trips database for vacation packages, visa requirements, hotel inclusions, and flights."
@@ -230,7 +230,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         
         {/* Top Search Banner */}
-        <section aria-labelledby="smart-search-heading" className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-5">
+        <section aria-labelledby="smart-search-heading" className="bg-white/75 backdrop-blur-xl rounded-3xl p-6 sm:p-8 border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 text-[#0759B8] text-xs font-bold font-mono tracking-wide uppercase">
@@ -263,7 +263,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="e.g., 'Cheapest honeymoon package in Maldives' or 'What documents are required for Thailand visa?'"
-              className="w-full pl-12 pr-32 py-4 bg-slate-50 border-2 border-slate-200 focus:border-[#0759B8] rounded-2xl text-sm sm:text-base text-slate-900 placeholder:text-slate-400 font-medium transition-all focus:bg-white focus:outline-none shadow-xs"
+              className="w-full pl-12 pr-32 py-4 bg-white/80 border-2 border-white/80 focus:border-[#0759B8] rounded-2xl text-sm sm:text-base text-slate-900 placeholder:text-slate-400 font-medium transition-all focus:bg-white/95 focus:outline-none shadow-xs backdrop-blur-sm"
             />
             <div className="absolute right-2 flex items-center gap-1.5">
               {query && (
@@ -320,7 +320,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
 
         {/* Search History Chips (if any) */}
         {searchHistory.length > 0 && !searchData && !isLoading && (
-          <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-2xs space-y-2">
+          <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-4 border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.04)] space-y-2">
             <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-wider">
               <div className="flex items-center gap-1.5">
                 <History className="w-3.5 h-3.5 text-slate-400" />
@@ -352,7 +352,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
 
         {/* Loading Skeleton */}
         {isLoading && (
-          <div className="bg-white rounded-3xl p-8 border border-slate-200 text-center space-y-4 animate-pulse">
+          <div className="bg-white/75 backdrop-blur-xl rounded-3xl p-8 border border-white/60 text-center space-y-4 animate-pulse">
             <div className="w-12 h-12 rounded-2xl bg-sky-100 text-[#0759B8] flex items-center justify-center mx-auto">
               <Sparkles className="w-6 h-6 animate-spin" />
             </div>
@@ -395,7 +395,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
           <div className="space-y-6 animate-fadeIn">
             
             {/* Interpreted Intent & Short Answer Card */}
-            <div className="bg-gradient-to-br from-slate-900 via-[#0759B8] to-[#0A4EA3] text-white rounded-3xl p-6 sm:p-7 shadow-sm space-y-3">
+            <div className="bg-gradient-to-br from-[#071A33]/90 via-[#0759B8]/90 to-[#0A4EA3]/90 backdrop-blur-xl text-white rounded-3xl p-6 sm:p-7 shadow-[0_8px_32px_rgba(7,26,51,0.12)] space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/15 text-sky-200 border border-white/20 text-[11px] font-bold font-mono uppercase">
                   <Compass className="w-3 h-3" />
@@ -435,7 +435,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
                       activeFilter === f.id
                         ? 'bg-[#0759B8] text-white shadow-2xs'
-                        : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
+                        : 'bg-white/75 backdrop-blur-md text-slate-700 hover:bg-white border border-white/60'
                     }`}
                   >
                     {f.label}
@@ -457,7 +457,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
                   return (
                     <div
                       key={idx}
-                      className="bg-white rounded-2xl border border-slate-200/90 p-5 shadow-2xs hover:shadow-md hover:border-[#1389E8]/50 transition-all flex flex-col justify-between group"
+                      className="bg-white/75 backdrop-blur-xl rounded-2xl border border-white/60 p-5 shadow-[0_8px_32px_rgba(7,26,51,0.04)] hover:shadow-md hover:border-[#1389E8]/50 transition-all flex flex-col justify-between group"
                     >
                       <div className="space-y-2.5">
                         <div className="flex items-center justify-between gap-2">
@@ -510,7 +510,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
                 })}
               </div>
             ) : (
-              <div className="bg-white rounded-3xl p-8 border border-slate-200 text-center space-y-3">
+              <div className="bg-white/75 backdrop-blur-xl rounded-3xl p-8 border border-white/60 text-center space-y-3">
                 <HelpCircle className="w-10 h-10 text-slate-300 mx-auto" />
                 <h3 className="text-sm font-bold text-slate-900">
                   No matches found in this category
@@ -530,7 +530,7 @@ export const SmartSearchView: React.FC<SmartSearchViewProps> = ({
 
             {/* Suggested Actions & Refinements */}
             {searchData.suggested_actions && searchData.suggested_actions.length > 0 && (
-              <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-2xs space-y-3">
+              <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-5 border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.04)] space-y-3">
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase tracking-wider">
                   <Zap className="w-4 h-4 text-amber-500" />
                   <span>Suggested Next Actions</span>

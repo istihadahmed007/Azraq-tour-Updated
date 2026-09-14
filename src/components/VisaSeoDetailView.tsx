@@ -46,7 +46,7 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-20">
+    <div className="w-full bg-transparent min-h-screen pb-20">
       <SEOHead
         title={visa.seoTitle || `${visa.country} Visa Requirements for Bangladeshi Citizens – AzraqTrips`}
         description={visa.metaDescription || `Official ${visa.country} visa requirements for Bangladeshi passport holders. Check fees, processing time, bank balance, and required documents.`}
@@ -102,7 +102,7 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
       {/* Main Content Body */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 space-y-8">
         {/* Quick Highlights Bar */}
-        <div className="bg-white rounded-2xl p-6 shadow-xl border border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 grid grid-cols-2 sm:grid-cols-4 gap-4">
           <div>
             <p className="text-[11px] uppercase tracking-wider font-semibold text-slate-600">Visa Type</p>
             <p className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5">{visa.visaType}</p>
@@ -125,7 +125,7 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
         </div>
 
         {/* Application Submission Center */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 space-y-3">
+        <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 space-y-3">
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#0D6EFD]">
               <Building className="w-4 h-4" />
@@ -157,7 +157,7 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
         </div>
 
         {/* Required Documents Checklist */}
-        <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+        <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
           <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
             <FileText className="w-5 h-5 text-[#0D6EFD]" />
             <span>Required Documents Checklist (Bangladeshi Passport)</span>
@@ -166,7 +166,7 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
             {(visa.requiredDocuments || visa.generalRequirements || []).map((doc: any, idx: number) => {
               const name = typeof doc === 'string' ? doc : doc.name || '';
               return (
-                <div key={idx} className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
+                <div key={idx} className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-100 flex items-start gap-3">
                   <div className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center font-bold text-xs text-[#0D6EFD] shrink-0">
                     {idx + 1}
                   </div>
@@ -181,11 +181,11 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
 
         {/* Photo & Passport Specs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="bg-white/75 backdrop-blur-xl p-6 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
             <h3 className="text-sm font-bold text-slate-900 mb-1">📸 Photo Specification</h3>
             <p className="text-xs text-slate-600 leading-relaxed">{visa.photoSpec || 'Standard passport photo (35mm x 45mm, white background).'}</p>
           </div>
-          <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+          <div className="bg-white/75 backdrop-blur-xl p-6 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
             <h3 className="text-sm font-bold text-slate-900 mb-1">🛂 Passport Validity</h3>
             <p className="text-xs text-slate-600 leading-relaxed">{visa.passportValidity || 'Minimum 6 months validity from travel date.'}</p>
           </div>
@@ -215,7 +215,7 @@ export const VisaSeoDetailView: React.FC<VisaSeoDetailViewProps> = ({
 
         {/* FAQs */}
         {visa.faqs && visa.faqs.length > 0 && (
-          <section className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100">
+          <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
             <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
               <HelpCircle className="w-5 h-5 text-amber-500" />
               <span>Frequently Asked Questions ({visa.country} Visa)</span>

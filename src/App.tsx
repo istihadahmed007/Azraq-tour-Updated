@@ -569,9 +569,7 @@ function AppContent() {
 
   return (
     <ClientLayout
-      className={`min-h-screen text-slate-900 font-sans selection:bg-[#0D6EFD] selection:text-white ${
-        currentView === 'discover' ? 'bg-transparent' : 'bg-[#F8FAFC]'
-      }`}
+      className="min-h-screen text-slate-900 font-sans selection:bg-[#0D6EFD] selection:text-white bg-transparent"
       mainClassName="w-full min-h-screen flex flex-col transition-all duration-300 pb-16 md:pb-0 relative"
       navbar={(navRef) => (
         <Navigation

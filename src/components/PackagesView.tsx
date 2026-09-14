@@ -110,7 +110,7 @@ export const PackagesView: React.FC = () => {
       </section>
 
       {/* Filter and Search Control Bar */}
-      <section aria-label="Search and Filter Tour Packages" className="bg-white p-5 rounded-2xl border border-[#E1EFF8] shadow-sm space-y-4">
+      <section aria-label="Search and Filter Tour Packages" className="bg-white/70 backdrop-blur-xl p-5 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] space-y-4">
         {/* Search Input */}
         <div className="relative w-full">
           <label htmlFor="package-search-input" className="sr-only">
@@ -124,7 +124,7 @@ export const PackagesView: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by package name, destination, country, or hotel..."
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#F4FAFD] border border-[#CDE9FB] text-[#12304A] placeholder-slate-400 text-sm focus:outline-none focus:border-[#1389E8] focus:bg-white transition-colors shadow-inner focus-visible:ring-2 focus-visible:ring-[#1389E8]"
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/60 border border-white/80 text-[#12304A] placeholder-slate-400 text-sm focus:outline-none focus:border-[#1389E8] focus:bg-white/90 transition-colors shadow-xs focus-visible:ring-2 focus-visible:ring-[#1389E8]"
           />
           {searchQuery && (
             <button
@@ -139,7 +139,7 @@ export const PackagesView: React.FC = () => {
         </div>
 
         {/* Selectors Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-3 border-t border-slate-100">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-3 border-t border-white/60">
           {/* Country Filter */}
           <div>
             <label htmlFor="package-country-select" className="block text-xs font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
@@ -154,7 +154,7 @@ export const PackagesView: React.FC = () => {
                 setSelectedCountry(e.target.value);
                 setSelectedDestinationId('All');
               }}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-sm font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/60 border border-white/70 text-[#12304A] text-sm font-semibold focus:outline-none focus:border-[#1389E8] focus:bg-white/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
             >
               <option value="All">All Countries ({allCountries.length})</option>
               {allCountries.map((country) => (
@@ -352,7 +352,7 @@ export const PackagesView: React.FC = () => {
                   setSelectedForCompare(filteredPackages.slice(0, 3).map((p) => p.id));
                   setIsCompareModalOpen(true);
                 }}
-                className="px-3.5 py-2 rounded-xl bg-white hover:bg-sky-50 text-[#0759B8] border border-[#CDE9FB] text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="px-3.5 py-2 rounded-xl bg-white/80 backdrop-blur-md hover:bg-white text-[#0759B8] border border-white/60 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
               >
                 <Scale className="w-4 h-4 text-amber-500" />
                 <span>Quick Compare Top 3</span>
@@ -396,12 +396,12 @@ export const PackagesView: React.FC = () => {
             })}
           </div>
         ) : (
-          <div className="bg-slate-900/60 rounded-3xl border border-slate-800 p-12 text-center space-y-4 max-w-xl mx-auto">
-            <div className="w-16 h-16 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-3xl mx-auto">
+          <div className="bg-white/75 backdrop-blur-xl rounded-3xl border border-white/60 p-12 text-center space-y-4 max-w-xl mx-auto shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
+            <div className="w-16 h-16 rounded-full bg-blue-50 text-[#0759B8] border border-blue-100 flex items-center justify-center text-3xl mx-auto shadow-inner">
               🌴
             </div>
-            <h3 className="text-lg font-bold text-white">No Tour Packages Found</h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-900">No Tour Packages Found</h3>
+            <p className="text-xs text-slate-600 leading-relaxed">
               No tour packages matched your selected search criteria or price filters. Try resetting your search filters or browse all destinations.
             </p>
             <button
@@ -412,7 +412,7 @@ export const PackagesView: React.FC = () => {
                 setMaxPriceFilter(100000);
                 setSearchQuery('');
               }}
-              className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-xs transition-all shadow-md cursor-pointer"
+              className="px-5 py-2.5 rounded-xl bg-[#0D6EFD] hover:bg-blue-600 text-white font-bold text-xs transition-all shadow-md cursor-pointer"
             >
               Show All Packages
             </button>

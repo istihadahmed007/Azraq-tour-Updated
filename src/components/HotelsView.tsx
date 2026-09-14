@@ -453,7 +453,7 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
   ];
 
   return (
-    <div className="w-full bg-[#F8FAFC] min-h-screen pb-24 text-slate-900">
+    <div className="w-full bg-transparent min-h-screen pb-24 text-slate-900">
       <SEOHead
         title="Hotels & Resorts for Bangladeshi Travelers – AzraqTrips"
         description="Book verified 4-star and 5-star hotels in Bangkok, Kuala Lumpur, Singapore, Bali, Dubai, and Cox's Bazar. Transparent BDT pricing, halal dining options, and instant room hold."
@@ -496,7 +496,7 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
           </div>
 
           {/* Unified Hotel Search Bar */}
-          <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-2xl border border-white/30 text-slate-900 space-y-4">
+          <div className="bg-white/85 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 shadow-[0_16px_50px_rgba(0,47,108,0.15)] border border-white/60 text-slate-900 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Destination Selector */}
               <div className="space-y-1.5">
@@ -661,13 +661,13 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
       {/* Main Content & Listings */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
         {/* Controls Bar: Sort and View Mode */}
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
             <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Sort by:</span>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-800 focus:outline-none"
+              className="px-3 py-1.5 rounded-xl bg-white/60 border border-white/70 text-xs font-bold text-slate-800 focus:outline-none focus:bg-white/90"
             >
               <option value="recommended">Recommended by Azraq</option>
               <option value="priceAsc">Price: Low to High (৳)</option>
@@ -684,7 +684,7 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
               className={`p-2 rounded-xl border transition-all cursor-pointer ${
                 viewMode === 'grid'
                   ? 'bg-[#0759B8] text-white border-[#0759B8]'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  : 'bg-white/60 text-slate-600 border-white/70 hover:bg-white/90'
               }`}
               title="Grid View"
             >
@@ -696,7 +696,7 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
               className={`p-2 rounded-xl border transition-all cursor-pointer ${
                 viewMode === 'list'
                   ? 'bg-[#0759B8] text-white border-[#0759B8]'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  : 'bg-white/60 text-slate-600 border-white/70 hover:bg-white/90'
               }`}
               title="List View"
             >
@@ -707,8 +707,8 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
 
         {/* Empty State */}
         {filteredHotels.length === 0 ? (
-          <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 shadow-sm max-w-xl mx-auto space-y-4">
-            <div className="w-16 h-16 rounded-3xl bg-blue-50 text-[#0759B8] flex items-center justify-center mx-auto">
+          <div className="bg-white/75 backdrop-blur-xl rounded-3xl p-12 text-center border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] max-w-xl mx-auto space-y-4">
+            <div className="w-16 h-16 rounded-3xl bg-blue-50 text-[#0759B8] flex items-center justify-center mx-auto border border-blue-100 shadow-inner">
               <Building2 className="w-8 h-8" />
             </div>
             <h3 className="text-lg font-bold text-slate-900 font-poppins">No hotels match your filters</h3>
@@ -726,7 +726,7 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
                 setBreakfastOnly(false);
                 setMaxPrice(75000);
               }}
-              className="px-6 py-2.5 rounded-xl bg-[#0759B8] text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+              className="px-6 py-2.5 rounded-xl bg-[#0759B8] text-white text-xs font-bold hover:bg-blue-700 transition-colors cursor-pointer shadow-md"
             >
               Reset Filters
             </button>
@@ -743,7 +743,7 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
             {filteredHotels.map((hotel) => (
               <div
                 key={hotel.id}
-                className={`bg-white rounded-3xl border border-slate-200/90 shadow-sm hover:shadow-xl hover:border-[#0759B8]/40 transition-all duration-300 overflow-hidden flex flex-col justify-between group ${
+                className={`bg-white/75 backdrop-blur-xl rounded-3xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] hover:shadow-[0_12px_40px_rgba(7,89,184,0.14)] hover:border-[#0759B8]/40 hover:bg-white/85 transition-all duration-300 overflow-hidden flex flex-col justify-between group ${
                   viewMode === 'list' ? 'md:flex-row' : ''
                 }`}
               >
