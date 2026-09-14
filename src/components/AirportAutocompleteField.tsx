@@ -23,6 +23,7 @@ interface AirportAutocompleteFieldProps {
   id?: string;
   className?: string;
   variant?: 'default' | 'hero';
+  icon?: React.ReactNode;
 }
 
 export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> = ({
@@ -34,6 +35,7 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
   id: customId,
   className = '',
   variant = 'default',
+  icon,
 }) => {
   const generatedId = useId();
   const inputId = customId || `airport-autocomplete-${generatedId}`;
@@ -286,19 +288,19 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
         aria-controls={listboxId}
         className={`w-full ${
           variant === 'hero'
-            ? 'min-h-[72px] p-3 sm:p-3.5 bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-md rounded-2xl border border-white/60 hover:border-white shadow-sm focus:ring-2 focus:ring-[#071A33] focus:outline-none'
+            ? 'h-[76px] min-h-[76px] p-3 sm:px-3.5 sm:py-2.5 bg-white/80 hover:bg-white/95 focus-within:bg-white backdrop-blur-md rounded-2xl border border-white/60 hover:border-white shadow-sm focus:ring-2 focus:ring-[#071A33] focus:outline-none'
             : 'h-[52px] px-3 py-2 bg-white rounded-lg border border-slate-300 hover:border-[#071A33] focus:ring-2 focus:ring-[#071A33] focus:outline-none shadow-xs'
         } flex items-center justify-between cursor-pointer transition-all text-left group`}
       >
         <div className="flex items-center gap-3 min-w-0 pr-2">
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+            className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
               variant === 'hero'
                 ? 'bg-[#071A33]/10 text-[#17BEBB] backdrop-blur-xs'
                 : 'bg-slate-100 text-slate-500'
             }`}
           >
-            <Plane className="w-4 h-4" />
+            {icon ? icon : <Plane className="w-4 h-4" />}
           </div>
           <div className="min-w-0">
             <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono">

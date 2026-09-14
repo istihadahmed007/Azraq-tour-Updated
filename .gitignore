@@ -19,4 +19,5 @@ coverage/
 .user_read_feeds.json
 *.local.json
 .*_db.json
+*.code-workspace
 
