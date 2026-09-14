@@ -1,5 +1,5 @@
 <!--
-  Azraq Trips White Label Page — Clean Brand Edition (Matching Main Domain)
+  Azraq Trips White Label Page — Glassy Transparent Interface Edition with Official Logo
   Paste this complete file into Travelpayouts → White Label → WL Web → Custom HTML code.
   Keep the provider-script and cookie-policy placeholders unchanged.
 -->
@@ -11,11 +11,11 @@
   <meta name="description" content="Search and compare flight options from Bangladesh with Azraq Trips." />
   <title>Azraq Trips | Search and compare flights[:route_info:]</title>
 
-  <!-- Preconnect & Fonts: Exact Main Domain Typography (Manrope) -->
+  <!-- Preconnect & Fonts: Exact Main Domain Typography (Manrope & Cinzel) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Manrope:wght@300;400;500;600;700;800&family=Montserrat:wght@700;800&display=swap"
     rel="stylesheet"
   />
 
@@ -23,15 +23,17 @@
     :root {
       --navy: #071A33;
       --navy-light: #0B2545;
+      --royal-blue: #0047BA;
+      --brand-teal: #17BEBB;
+      --brand-teal-dark: #0D9488;
       --ocean: #086788;
-      --teal: #17BEBB;
-      --teal-dark: #0D9488;
-      --bg-light: #F8FAFC;
-      --card-white: #FFFFFF;
-      --border-subtle: #E2E8F0;
+      --bg-page: #F1F5F9;
       --text-main: #071A33;
       --text-body: #334155;
       --text-muted: #64748B;
+      --glass-surface: rgba(255, 255, 255, 0.82);
+      --glass-surface-high: rgba(255, 255, 255, 0.92);
+      --glass-border: rgba(255, 255, 255, 0.75);
       --font-main: "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -43,14 +45,15 @@
       scroll-behavior: smooth;
     }
 
-    /* Solid Clean Background — Matching Main Domain (No animations, No transparency blur) */
+    /* Clean Static Background with Soft Sky Hues — No Animation */
     body {
       margin: 0;
-      background: var(--bg-light);
+      background: linear-gradient(180deg, #EDF2F7 0%, #F8FAFC 40%, #E8EFF5 100%);
       color: var(--text-main);
       font-family: var(--font-main);
       -webkit-font-smoothing: antialiased;
       line-height: 1.5;
+      min-height: 100vh;
     }
 
     a {
@@ -63,78 +66,125 @@
       margin: 0 auto;
     }
 
-    /* Solid Clean Top Navigation Bar */
+    /* =========================================================================
+       GLASSY TOPBAR WITH OFFICIAL LOGO (Matching Main Domain Navigation)
+       ========================================================================= */
     .az-topbar {
-      background: var(--navy);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.65);
       position: sticky;
       top: 0;
       z-index: 100;
-      box-shadow: 0 2px 10px rgba(7, 26, 51, 0.15);
+      box-shadow: 0 4px 20px rgba(7, 26, 51, 0.04);
+      transition: background 0.2s ease;
+    }
+
+    .az-topbar:hover {
+      background: rgba(255, 255, 255, 0.88);
     }
 
     .az-nav {
       display: flex;
       align-items: center;
-      min-height: 68px;
+      min-height: 72px;
       gap: 1.5rem;
     }
 
+    /* Official Azraq Logo Branding */
     .az-brand {
       display: inline-flex;
       align-items: center;
-      gap: 0.65rem;
-      font-family: var(--font-main);
-      color: #ffffff;
-      font-size: 1.15rem;
-      font-weight: 800;
-      letter-spacing: 0.02em;
-      text-transform: uppercase;
+      gap: 0.8rem;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
     }
 
-    .az-brand-mark {
-      width: 32px;
-      height: 32px;
+    .az-brand-emblem {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #FFFFFF;
       display: grid;
       place-items: center;
-      border: 1.5px solid var(--teal);
-      border-radius: 9px;
-      color: var(--teal);
-      background: rgba(23, 190, 187, 0.15);
-      font-size: 0.85rem;
+      border: 1.5px solid rgba(0, 71, 186, 0.25);
+      box-shadow: 0 2px 8px rgba(0, 71, 186, 0.12);
+      flex-shrink: 0;
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+    }
+
+    .az-brand:hover .az-brand-emblem {
+      transform: scale(1.06);
+      box-shadow: 0 6px 16px rgba(0, 71, 186, 0.2);
+    }
+
+    .az-brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.05;
+    }
+
+    .az-brand-title {
+      font-family: var(--font-main);
+      font-size: 1.15rem;
       font-weight: 800;
+      letter-spacing: -0.015em;
+      color: #073B4C;
+      text-transform: uppercase;
+      transition: color 0.18s ease;
+    }
+
+    .az-brand:hover .az-brand-title {
+      color: var(--royal-blue);
+    }
+
+    .az-brand-sub {
+      font-family: var(--font-main);
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: var(--royal-blue);
+      text-transform: uppercase;
+      margin-top: 2px;
     }
 
     .az-nav-links {
       display: flex;
       align-items: center;
-      gap: 1.5rem;
-      margin-left: 1rem;
+      gap: 0.5rem;
+      margin-left: 1.25rem;
     }
 
     .az-nav-links a {
-      color: rgba(255, 255, 255, 0.82);
-      font-size: 0.82rem;
+      color: #334155;
+      font-size: 0.85rem;
       font-weight: 700;
-      transition: color 0.15s ease;
+      padding: 0.45rem 0.85rem;
+      border-radius: 12px;
+      transition: all 0.18s ease;
     }
 
-    .az-nav-links a:hover,
-    .az-nav-links a.active {
-      color: #ffffff;
+    .az-nav-links a:hover {
+      color: var(--royal-blue);
+      background: rgba(0, 71, 186, 0.06);
     }
 
     .az-nav-links a.active {
-      border-bottom: 2px solid var(--teal);
-      padding-bottom: 2px;
+      color: var(--royal-blue);
+      background: rgba(0, 71, 186, 0.1);
+      font-weight: 800;
     }
 
     .az-main-link {
       margin-left: auto;
-      padding: 0.55rem 1.1rem;
-      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      padding: 0.55rem 1.2rem;
+      border: 1.5px solid rgba(0, 71, 186, 0.3);
       border-radius: 99px;
-      color: #ffffff;
+      background: rgba(0, 71, 186, 0.05);
+      color: var(--royal-blue);
       font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.05em;
@@ -143,16 +193,20 @@
     }
 
     .az-main-link:hover {
-      border-color: var(--teal);
-      background: var(--teal);
-      color: var(--navy);
+      border-color: var(--royal-blue);
+      background: var(--royal-blue);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 71, 186, 0.25);
+      transform: translateY(-1px);
     }
 
-    /* Hero Section — Photographic Blue Sky (Matching Main Domain HomeHero) */
+    /* =========================================================================
+       HERO SECTION — Photographic Aviation Sky with Depth
+       ========================================================================= */
     .az-search-hero {
       position: relative;
-      padding: 3.5rem 0 4.5rem;
-      background: linear-gradient(180deg, rgba(7, 26, 51, 0.75) 0%, rgba(7, 26, 51, 0.5) 50%, rgba(7, 26, 51, 0.85) 100%),
+      padding: 3.5rem 0 4.75rem;
+      background: linear-gradient(180deg, rgba(7, 26, 51, 0.6) 0%, rgba(7, 26, 51, 0.45) 50%, rgba(7, 26, 51, 0.75) 100%),
                   url("https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2560&q=85") center/cover no-repeat;
       color: #ffffff;
     }
@@ -162,20 +216,21 @@
       align-items: flex-end;
       justify-content: space-between;
       gap: 2rem;
-      margin-bottom: 1.75rem;
+      margin-bottom: 2rem;
     }
 
     .az-kicker {
       margin: 0 0 0.5rem;
-      color: var(--teal);
+      color: #5EEAD4;
       font-size: 0.75rem;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
     .az-search-intro h1 {
-      max-width: 700px;
+      max-width: 720px;
       margin: 0;
       font-family: var(--font-main);
       font-size: clamp(2.2rem, 5vw, 3.4rem);
@@ -183,24 +238,29 @@
       letter-spacing: -0.035em;
       line-height: 1.1;
       color: #ffffff;
-      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+      text-shadow: 0 3px 20px rgba(0, 0, 0, 0.4);
     }
 
     .az-search-intro p {
       max-width: 320px;
       margin: 0;
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba(255, 255, 255, 0.92);
       font-size: 0.85rem;
       line-height: 1.6;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    /* Solid Clean White Search Card (Matching Main Domain AzraqTripFinder) */
+    /* =========================================================================
+       GLASSY TRANSPARENT SEARCH CARD
+       ========================================================================= */
     .az-search-card {
-      padding: 1.75rem;
-      border-radius: 20px;
-      border: 1px solid var(--border-subtle);
-      background: var(--card-white);
-      box-shadow: 0 20px 45px -10px rgba(7, 26, 51, 0.18), 0 4px 16px rgba(7, 26, 51, 0.08);
+      padding: 1.85rem;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 24px 60px -12px rgba(7, 26, 51, 0.25), 0 8px 24px rgba(7, 26, 51, 0.08);
       color: var(--text-main);
     }
 
@@ -211,21 +271,23 @@
       justify-content: space-between;
       gap: 0.75rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border-subtle);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     }
 
     .az-form-heading strong {
-      font-size: 1rem;
+      font-size: 1.05rem;
       font-weight: 800;
       color: var(--navy);
+      letter-spacing: -0.02em;
     }
 
     .az-form-heading span {
       padding: 0.35rem 0.75rem;
       border-radius: 99px;
-      background: #FEF3C7;
+      background: rgba(254, 243, 199, 0.85);
+      backdrop-filter: blur(8px);
       color: #92400E;
-      border: 1px solid #FDE68A;
+      border: 1px solid rgba(253, 230, 138, 0.9);
       font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: 0.05em;
@@ -234,7 +296,7 @@
 
     #tpwl-search {
       min-height: 105px;
-      padding-top: 1.1rem;
+      padding-top: 1.2rem;
     }
 
     #tpwl-search > * {
@@ -250,10 +312,10 @@
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem 1.5rem;
-      padding-top: 1rem;
+      padding-top: 1.1rem;
       color: var(--text-muted);
       font-size: 0.75rem;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .az-form-footnote span {
@@ -266,14 +328,16 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--teal-dark);
+      background: var(--brand-teal-dark);
       content: "";
     }
 
-    /* Content Area: Solid Clean Light Background */
+    /* =========================================================================
+       CONTENT SECTION WITH GLASSY INTERFACES
+       ========================================================================= */
     .az-content {
       padding: 3.5rem 0 4.5rem;
-      background: var(--bg-light);
+      position: relative;
     }
 
     .az-section-head {
@@ -311,12 +375,14 @@
       text-align: right;
     }
 
-    /* Solid White Results Container */
+    /* Glassy Results Container */
     .az-results {
-      border: 1px solid var(--border-subtle);
-      border-radius: 20px;
-      background: var(--card-white);
-      box-shadow: 0 4px 20px rgba(7, 26, 51, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 36px rgba(7, 26, 51, 0.06);
       overflow: hidden;
     }
 
@@ -325,9 +391,10 @@
       flex-wrap: wrap;
       justify-content: space-between;
       gap: 0.6rem 1rem;
-      padding: 1rem 1.4rem;
-      border-bottom: 1px solid var(--border-subtle);
-      background: #F1F5F9;
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      background: rgba(241, 245, 249, 0.7);
+      backdrop-filter: blur(10px);
       color: var(--text-muted);
       font-size: 0.75rem;
     }
@@ -338,20 +405,20 @@
     }
 
     .az-provider-note {
-      color: var(--teal-dark);
+      color: var(--brand-teal-dark);
       font-weight: 800;
     }
 
     #tpwl-tickets {
       min-height: 90px;
-      padding: 1.25rem;
+      padding: 1.35rem;
     }
 
     #tpwl-tickets > * {
       width: 100%;
     }
 
-    /* Popular Routes Grid: Solid White Cards */
+    /* Popular Routes Grid: Glassy Cards */
     .az-routes {
       margin-top: 3.5rem;
     }
@@ -365,27 +432,30 @@
     .az-route {
       position: relative;
       display: flex;
-      min-height: 115px;
+      min-height: 120px;
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
       padding: 1.35rem;
-      border: 1px solid var(--border-subtle);
+      border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 18px;
-      background: var(--card-white);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       color: var(--text-main);
-      box-shadow: 0 2px 8px rgba(7, 26, 51, 0.04);
+      box-shadow: 0 4px 16px rgba(7, 26, 51, 0.04);
       transition: all 0.22s ease;
     }
 
     .az-route:hover {
       transform: translateY(-3px);
-      border-color: var(--ocean);
-      box-shadow: 0 12px 28px rgba(7, 26, 51, 0.08);
+      background: rgba(255, 255, 255, 0.92);
+      border-color: rgba(0, 71, 186, 0.35);
+      box-shadow: 0 14px 30px rgba(7, 26, 51, 0.09);
     }
 
     .az-route small {
-      color: var(--ocean);
+      color: var(--royal-blue);
       font-size: 0.68rem;
       font-weight: 800;
       letter-spacing: 0.1em;
@@ -401,7 +471,7 @@
     }
 
     .az-route span {
-      color: var(--ocean);
+      color: var(--royal-blue);
       font-size: 0.75rem;
       font-weight: 800;
       display: inline-flex;
@@ -418,29 +488,30 @@
       transform: translateX(3px);
     }
 
-    /* 4 Trust Pillars Grid: Solid White Cards */
+    /* 4 Trust Pillars Grid: Glassy Cards */
     .az-why {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 1.25rem;
       margin-top: 3.5rem;
-      background: transparent;
-      border: none;
     }
 
     .az-why article {
       min-height: 150px;
       padding: 1.35rem;
       border-radius: 18px;
-      border: 1px solid var(--border-subtle);
-      background: var(--card-white);
-      box-shadow: 0 2px 8px rgba(7, 26, 51, 0.04);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 4px 16px rgba(7, 26, 51, 0.04);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
     }
 
     .az-why article:hover {
       transform: translateY(-2px);
-      box-shadow: 0 10px 24px rgba(7, 26, 51, 0.08);
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 12px 28px rgba(7, 26, 51, 0.08);
     }
 
     .az-why b {
@@ -468,7 +539,7 @@
       line-height: 1.6;
     }
 
-    /* Secondary Cards: Solid White */
+    /* Secondary Cards: Glassy */
     .az-secondary {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -478,10 +549,12 @@
 
     .az-secondary article {
       padding: 1.75rem;
-      border: 1px solid var(--border-subtle);
+      border: 1px solid rgba(255, 255, 255, 0.85);
       border-radius: 20px;
-      background: var(--card-white);
-      box-shadow: 0 4px 16px rgba(7, 26, 51, 0.04);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 6px 20px rgba(7, 26, 51, 0.04);
     }
 
     .az-secondary h3 {
@@ -505,7 +578,7 @@
       align-items: center;
       gap: 0.35rem;
       margin-top: 1rem;
-      color: var(--ocean);
+      color: var(--royal-blue);
       font-size: 0.76rem;
       font-weight: 800;
       transition: color 0.18s ease;
@@ -516,10 +589,10 @@
     }
 
     .az-secondary a:hover {
-      color: var(--teal);
+      color: var(--ocean);
     }
 
-    /* Direct WhatsApp Desk: Solid Navy (Matching Main Domain Office Card) */
+    /* Direct WhatsApp Desk: Glassy Navy */
     .az-desk {
       display: flex;
       align-items: center;
@@ -527,15 +600,18 @@
       gap: 1.5rem;
       margin-top: 3.5rem;
       padding: 2rem 2.25rem;
-      border-radius: 20px;
-      background: var(--navy);
+      border-radius: 22px;
+      background: rgba(7, 26, 51, 0.94);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       color: #ffffff;
-      box-shadow: 0 16px 36px rgba(7, 26, 51, 0.2);
+      box-shadow: 0 20px 45px rgba(7, 26, 51, 0.25);
     }
 
     .az-desk p {
       margin: 0;
-      color: var(--teal);
+      color: var(--brand-teal);
       font-size: 0.75rem;
       font-weight: 800;
       letter-spacing: 0.08em;
@@ -571,9 +647,9 @@
       transform: translateY(-2px);
     }
 
-    /* Solid Dark Footer */
+    /* Footer with Official Logo */
     .az-footer {
-      padding: 2.5rem 0;
+      padding: 2.75rem 0;
       background: #040E1C;
       border-top: 1px solid rgba(255, 255, 255, 0.08);
       color: #94A3B8;
@@ -583,7 +659,24 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1rem;
+      gap: 1.5rem;
+    }
+
+    .az-footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .az-footer-emblem {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #FFFFFF;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
     }
 
     .az-footer p {
@@ -592,7 +685,7 @@
     }
 
     .az-footer a {
-      color: var(--teal);
+      color: var(--brand-teal);
       font-size: 0.78rem;
       font-weight: 700;
       transition: color 0.18s ease;
@@ -613,10 +706,15 @@
       }
 
       .az-nav {
-        min-height: 60px;
+        min-height: 64px;
       }
 
-      .az-brand {
+      .az-brand-emblem {
+        width: 38px;
+        height: 38px;
+      }
+
+      .az-brand-title {
         font-size: 1.05rem;
       }
 
@@ -667,7 +765,7 @@
       .az-footer-inner {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.75rem;
+        gap: 1rem;
       }
     }
   </style>
@@ -685,11 +783,74 @@
 </head>
 
 <body>
-  <!-- Clean Header matching Main Domain -->
+  <!-- Glassy Header with Official Azraq Logo (Matching Main Domain) -->
   <header class="az-topbar">
     <nav class="az-shell az-nav" aria-label="Azraq Navigation">
-      <a class="az-brand" href="https://www.azraqtrips.com/">
-        <span class="az-brand-mark">A</span>Azraq Trips
+      <a class="az-brand" href="https://www.azraqtrips.com/" aria-label="Azraq Trips Home">
+        <div class="az-brand-emblem">
+          <!-- Official Azraq Tours & Travels Vector Logo Emblem -->
+          <svg
+            viewBox="0 0 500 500"
+            width="38"
+            height="38"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-label="Azraq Tours &amp; Travels Logo"
+          >
+            <circle cx="250" cy="250" r="240" fill="#FFFFFF" />
+            <circle cx="250" cy="250" r="236" fill="none" stroke="#0047BA" stroke-width="15" />
+            <g fill="#0047BA">
+              <path
+                d="M 250,68 
+                   L 266,74 
+                   L 362,268 
+                   L 300,268 
+                   L 272,212 
+                   C 285,188 318,162 355,152 
+                   C 275,178 220,212 178,268 
+                   L 116,268 
+                   L 234,68 
+                   Z"
+              />
+              <g transform="translate(370, 142) rotate(32) scale(0.95)">
+                <path d="M 0,-24 C 2,-24 4,-18 4,-4 L 4,14 C 4,18 2,22 0,22 C -2,22 -4,18 -4,14 L -4,-4 C -4,-18 -2,-24 0,-24 Z" />
+                <path d="M 0,-4 L 28,10 L 28,14 L 0,6 L -28,14 L -28,10 Z" />
+                <path d="M 0,16 L 12,22 L 12,25 L 0,21 L -12,25 L -12,22 Z" />
+              </g>
+              <g
+                transform="translate(250, 358)"
+                text-anchor="middle"
+                font-family="'Cinzel', 'Trajan Pro', 'Baskerville', 'Times New Roman', 'Playfair Display', serif"
+                font-weight="900"
+                font-size="76"
+                letter-spacing="12"
+              >
+                <text x="6" y="0">AZRAQ</text>
+              </g>
+              <g
+                transform="translate(250, 400)"
+                text-anchor="middle"
+                font-family="'Montserrat', 'Inter', 'Helvetica Neue', 'Arial', sans-serif"
+                font-weight="800"
+                font-size="25"
+                letter-spacing="6"
+              >
+                <text x="3" y="0">TOURS &amp; TRAVELS</text>
+              </g>
+              <line x1="140" y1="432" x2="225" y2="432" stroke="#0047BA" stroke-width="2.5" stroke-linecap="round" />
+              <g transform="translate(250, 432) scale(0.65)">
+                <path d="M 0,-14 C 1.5,-14 2.5,-10 2.5,-2 L 2.5,8 C 2.5,11 1.5,13 0,13 C -1.5,13 -2.5,11 -2.5,8 L -2.5,-2 C -2.5,-10 -1.5,-14 0,-14 Z" />
+                <path d="M 0,-2 L 18,6 L 18,9 L 0,4 L -18,9 L -18,6 Z" />
+                <path d="M 0,9 L 8,13 L 8,15 L 0,12 L -8,15 L -8,13 Z" />
+              </g>
+              <line x1="275" y1="432" x2="360" y2="432" stroke="#0047BA" stroke-width="2.5" stroke-linecap="round" />
+            </g>
+          </svg>
+        </div>
+        <div class="az-brand-text">
+          <span class="az-brand-title">AZRAQ TRIPS</span>
+          <span class="az-brand-sub">Tours &amp; Travels</span>
+        </div>
       </a>
       <div class="az-nav-links">
         <a href="#tpwl-search" class="active">Flights</a>
@@ -703,7 +864,7 @@
   </header>
 
   <main>
-    <!-- Aviation Hero Section (Matching Main Domain HomeHero) -->
+    <!-- Aviation Hero Section -->
     <section class="az-search-hero">
       <div class="az-shell">
         <div class="az-search-intro">
@@ -714,6 +875,7 @@
           <p>Set your route, dates, travellers, and cabin class in the live search form below.</p>
         </div>
 
+        <!-- Glassy Frosted Search Card -->
         <section class="az-search-card" aria-label="Live flight search">
           <div class="az-form-heading">
             <strong>Find flights that fit your journey</strong>
@@ -729,7 +891,7 @@
       </div>
     </section>
 
-    <!-- Flight Results & Directory: Clean Solid Light Background -->
+    <!-- Flight Results & Directory: Glassy Surfaces -->
     <section class="az-content">
       <div class="az-shell">
         <!-- Live Results Target -->
@@ -753,7 +915,7 @@
           </div>
         </section>
 
-        <!-- Popular Routes from Dhaka -->
+        <!-- Popular Routes from Dhaka (Glassy Cards) -->
         <section class="az-routes" aria-labelledby="routes-title">
           <div class="az-section-head">
             <div>
@@ -796,7 +958,7 @@
           </div>
         </section>
 
-        <!-- 4 Trust Pillars -->
+        <!-- 4 Trust Pillars (Glassy Cards) -->
         <section class="az-why" aria-label="Why compare with Azraq">
           <article>
             <b>Compare</b>
@@ -820,7 +982,7 @@
           </article>
         </section>
 
-        <!-- Secondary Services -->
+        <!-- Secondary Services (Glassy Cards) -->
         <section class="az-secondary" aria-label="Visa and package planning">
           <article>
             <p class="az-section-label">Visa assistance</p>
@@ -839,7 +1001,7 @@
           </article>
         </section>
 
-        <!-- Direct WhatsApp Concierge Desk -->
+        <!-- Direct WhatsApp Concierge Desk (Glassy Navy) -->
         <section class="az-desk" aria-label="Azraq Travel Desk">
           <div>
             <p>Azraq Travel Desk</p>
@@ -857,10 +1019,25 @@
     </section>
   </main>
 
-  <!-- Solid Clean Footer -->
+  <!-- Footer with Official Logo -->
   <footer class="az-footer">
     <div class="az-shell az-footer-inner">
-      <p>Azraq Trips · Flight comparison, holiday planning, and visa documentation guidance from Dhaka.</p>
+      <div class="az-footer-brand">
+        <div class="az-footer-emblem">
+          <svg viewBox="0 0 500 500" width="26" height="26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="250" cy="250" r="240" fill="#FFFFFF" />
+            <circle cx="250" cy="250" r="236" fill="none" stroke="#0047BA" stroke-width="15" />
+            <g fill="#0047BA">
+              <path d="M 250,68 L 266,74 L 362,268 L 300,268 L 272,212 C 285,188 318,162 355,152 C 275,178 220,212 178,268 L 116,268 L 234,68 Z" />
+              <g transform="translate(370, 142) rotate(32) scale(0.95)">
+                <path d="M 0,-24 C 2,-24 4,-18 4,-4 L 4,14 C 4,18 2,22 0,22 C -2,22 -4,18 -4,14 L -4,-4 C -4,-18 -2,-24 0,-24 Z" />
+                <path d="M 0,-4 L 28,10 L 28,14 L 0,6 L -28,14 L -28,10 Z" />
+              </g>
+            </g>
+          </svg>
+        </div>
+        <p>Azraq Trips · Flight comparison, holiday planning, and visa documentation guidance from Dhaka.</p>
+      </div>
       <a href="mailto:info@azraqtrips.com">info@azraqtrips.com</a>
     </div>
   </footer>
