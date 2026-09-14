@@ -1,5 +1,5 @@
 <!--
-  Azraq Trips White Label Page — Product-First Flight Comparison Edition
+  Azraq Trips White Label Page — Clean Brand Edition (Matching Main Domain)
   Paste this complete file into Travelpayouts → White Label → WL Web → Custom HTML code.
   Keep the provider-script and cookie-policy placeholders unchanged.
 -->
@@ -11,7 +11,7 @@
   <meta name="description" content="Search and compare flight options from Bangladesh with Azraq Trips." />
   <title>Azraq Trips | Search and compare flights[:route_info:]</title>
 
-  <!-- Preconnect & Fonts: Matching Azraq Trips Main Domain (Manrope) -->
+  <!-- Preconnect & Fonts: Exact Main Domain Typography (Manrope) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -19,27 +19,19 @@
     rel="stylesheet"
   />
 
-  <!-- Consolidated Stylesheet: Glassy Transparent System -->
   <style>
     :root {
       --navy: #071A33;
-      --navy-2: #073B4C;
-      --blue: #086788;
+      --navy-light: #0B2545;
+      --ocean: #086788;
       --teal: #17BEBB;
-      --gold: #E3AE38;
-      --gold-soft: #FFF5DC;
-      --aqua: #17BEBB;
-      --ink: #071A33;
-      --ink-light: #0F172A;
-      --muted: #475569;
-      --muted-light: #94A3B8;
-      --line: rgba(255, 255, 255, 0.65);
-      --glass-card: rgba(255, 255, 255, 0.82);
-      --glass-card-hover: rgba(255, 255, 255, 0.94);
-      --glass-border: rgba(255, 255, 255, 0.7);
-      --glass-shadow: 0 16px 40px rgba(7, 26, 51, 0.08);
-      --main-accent: #071A33;
-      --main-accent-contrast-color: #ffffff;
+      --teal-dark: #0D9488;
+      --bg-light: #F8FAFC;
+      --card-white: #FFFFFF;
+      --border-subtle: #E2E8F0;
+      --text-main: #071A33;
+      --text-body: #334155;
+      --text-muted: #64748B;
       --font-main: "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
@@ -51,34 +43,14 @@
       scroll-behavior: smooth;
     }
 
-    /* Ambient Animated Sky Background — Matching Main Domain */
+    /* Solid Clean Background — Matching Main Domain (No animations, No transparency blur) */
     body {
       margin: 0;
-      color: var(--ink);
+      background: var(--bg-light);
+      color: var(--text-main);
       font-family: var(--font-main);
       -webkit-font-smoothing: antialiased;
-      min-height: 100vh;
-      background-color: #071A33;
-      background-image: 
-        radial-gradient(circle at 15% 15%, rgba(23, 190, 187, 0.28) 0%, transparent 40%),
-        radial-gradient(circle at 85% 25%, rgba(8, 103, 136, 0.32) 0%, transparent 45%),
-        radial-gradient(circle at 50% 80%, rgba(13, 148, 136, 0.22) 0%, transparent 50%),
-        linear-gradient(135deg, #071A33 0%, #073B4C 35%, #086788 70%, #031326 100%);
-      background-size: 200% 200%;
-      background-attachment: fixed;
-      animation: skyMeshAmbient 24s ease-in-out infinite alternate;
-    }
-
-    @keyframes skyMeshAmbient {
-      0% {
-        background-position: 0% 0%;
-      }
-      50% {
-        background-position: 100% 100%;
-      }
-      100% {
-        background-position: 0% 50%;
-      }
+      line-height: 1.5;
     }
 
     a {
@@ -87,35 +59,31 @@
     }
 
     .az-shell {
-      width: min(100% - 2.4rem, 1180px);
+      width: min(100% - 2.5rem, 1200px);
       margin: 0 auto;
     }
 
-    /* Top Navigation: Frosted Dark Glass */
+    /* Solid Clean Top Navigation Bar */
     .az-topbar {
+      background: var(--navy);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       position: sticky;
       top: 0;
       z-index: 100;
-      background: rgba(7, 26, 51, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 4px 24px rgba(7, 26, 51, 0.2);
-      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(7, 26, 51, 0.15);
     }
 
     .az-nav {
       display: flex;
       align-items: center;
       min-height: 68px;
-      gap: 1.2rem;
+      gap: 1.5rem;
     }
 
     .az-brand {
       display: inline-flex;
       align-items: center;
-      gap: 0.6rem;
-      flex: none;
+      gap: 0.65rem;
       font-family: var(--font-main);
       color: #ffffff;
       font-size: 1.15rem;
@@ -130,66 +98,62 @@
       display: grid;
       place-items: center;
       border: 1.5px solid var(--teal);
-      border-radius: 10px;
+      border-radius: 9px;
       color: var(--teal);
       background: rgba(23, 190, 187, 0.15);
       font-size: 0.85rem;
       font-weight: 800;
-      box-shadow: 0 0 15px rgba(23, 190, 187, 0.25);
     }
 
     .az-nav-links {
       display: flex;
       align-items: center;
-      gap: 1.25rem;
-      margin-left: 1.5rem;
+      gap: 1.5rem;
+      margin-left: 1rem;
     }
 
     .az-nav-links a {
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 0.82rem;
       font-weight: 700;
-      letter-spacing: 0.01em;
-      transition: color 0.18s ease;
+      transition: color 0.15s ease;
     }
 
-    .az-nav-links a:first-child {
+    .az-nav-links a:hover,
+    .az-nav-links a.active {
       color: #ffffff;
+    }
+
+    .az-nav-links a.active {
       border-bottom: 2px solid var(--teal);
       padding-bottom: 2px;
     }
 
-    .az-nav-links a:hover {
-      color: var(--teal);
-    }
-
     .az-main-link {
       margin-left: auto;
-      padding: 0.6rem 1rem;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      padding: 0.55rem 1.1rem;
+      border: 1.5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 99px;
       color: #ffffff;
       font-size: 0.72rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
       transition: all 0.2s ease;
     }
 
     .az-main-link:hover {
       border-color: var(--teal);
-      background: rgba(23, 190, 187, 0.2);
-      color: #ffffff;
-      box-shadow: 0 0 16px rgba(23, 190, 187, 0.3);
+      background: var(--teal);
+      color: var(--navy);
     }
 
-    /* Hero Search Area */
+    /* Hero Section — Photographic Blue Sky (Matching Main Domain HomeHero) */
     .az-search-hero {
-      padding: 2.75rem 0 3.25rem;
-      background: transparent;
+      position: relative;
+      padding: 3.5rem 0 4.5rem;
+      background: linear-gradient(180deg, rgba(7, 26, 51, 0.75) 0%, rgba(7, 26, 51, 0.5) 50%, rgba(7, 26, 51, 0.85) 100%),
+                  url("https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2560&q=85") center/cover no-repeat;
       color: #ffffff;
     }
 
@@ -198,49 +162,46 @@
       align-items: flex-end;
       justify-content: space-between;
       gap: 2rem;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1.75rem;
     }
 
     .az-kicker {
       margin: 0 0 0.5rem;
       color: var(--teal);
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      text-shadow: 0 0 12px rgba(23, 190, 187, 0.4);
     }
 
     .az-search-intro h1 {
-      max-width: 720px;
+      max-width: 700px;
       margin: 0;
       font-family: var(--font-main);
-      font-size: clamp(2.1rem, 5vw, 3.5rem);
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
       font-weight: 800;
-      letter-spacing: -0.04em;
-      line-height: 1.08;
+      letter-spacing: -0.035em;
+      line-height: 1.1;
       color: #ffffff;
-      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
     }
 
     .az-search-intro p {
       max-width: 320px;
       margin: 0;
-      color: rgba(255, 255, 255, 0.85);
-      font-size: 0.82rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.85rem;
       line-height: 1.6;
     }
 
-    /* Live Search Card: Frosted Glass */
+    /* Solid Clean White Search Card (Matching Main Domain AzraqTripFinder) */
     .az-search-card {
-      padding: 1.5rem;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.75);
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      box-shadow: 0 24px 60px rgba(7, 26, 51, 0.2), 0 0 32px rgba(23, 190, 187, 0.1);
-      color: var(--ink);
+      padding: 1.75rem;
+      border-radius: 20px;
+      border: 1px solid var(--border-subtle);
+      background: var(--card-white);
+      box-shadow: 0 20px 45px -10px rgba(7, 26, 51, 0.18), 0 4px 16px rgba(7, 26, 51, 0.08);
+      color: var(--text-main);
     }
 
     .az-form-heading {
@@ -250,21 +211,21 @@
       justify-content: space-between;
       gap: 0.75rem;
       padding-bottom: 1rem;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      border-bottom: 1px solid var(--border-subtle);
     }
 
     .az-form-heading strong {
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 800;
-      color: #071A33;
+      color: var(--navy);
     }
 
     .az-form-heading span {
-      padding: 0.4rem 0.75rem;
+      padding: 0.35rem 0.75rem;
       border-radius: 99px;
-      background: rgba(245, 158, 11, 0.15);
-      color: #b45309;
-      border: 1px solid rgba(245, 158, 11, 0.3);
+      background: #FEF3C7;
+      color: #92400E;
+      border: 1px solid #FDE68A;
       font-size: 0.65rem;
       font-weight: 800;
       letter-spacing: 0.05em;
@@ -273,14 +234,14 @@
 
     #tpwl-search {
       min-height: 105px;
-      padding-top: 1rem;
+      padding-top: 1.1rem;
     }
 
     #tpwl-search > * {
       width: 100%;
     }
 
-    /* Universal Travelpayouts Typography Inheritance */
+    /* Typography Inheritance for Injected Search Engine */
     #tpwl-search, #tpwl-tickets, #tpwl-search *, #tpwl-tickets * {
       font-family: var(--font-main) !important;
     }
@@ -288,12 +249,11 @@
     .az-form-footnote {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem 1.25rem;
-      padding-top: 0.9rem;
-      color: var(--muted);
-      font-size: 0.72rem;
+      gap: 0.5rem 1.5rem;
+      padding-top: 1rem;
+      color: var(--text-muted);
+      font-size: 0.75rem;
       font-weight: 500;
-      line-height: 1.5;
     }
 
     .az-form-footnote span {
@@ -306,61 +266,57 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: var(--teal);
+      background: var(--teal-dark);
       content: "";
-      box-shadow: 0 0 6px rgba(23, 190, 187, 0.5);
     }
 
-    /* Content & Results Section */
+    /* Content Area: Solid Clean Light Background */
     .az-content {
-      padding: 2.75rem 0 3.5rem;
+      padding: 3.5rem 0 4.5rem;
+      background: var(--bg-light);
     }
 
     .az-section-head {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      gap: 1.25rem;
+      gap: 1.5rem;
       margin-bottom: 1.25rem;
     }
 
     .az-section-label {
       margin: 0 0 0.35rem;
-      color: var(--teal);
-      font-size: 0.7rem;
+      color: var(--ocean);
+      font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      text-shadow: 0 0 10px rgba(23, 190, 187, 0.3);
     }
 
     .az-section-head h2 {
       margin: 0;
       font-family: var(--font-main);
-      font-size: 1.65rem;
+      font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.035em;
-      color: #ffffff;
-      text-shadow: 0 2px 12px rgba(7, 26, 51, 0.3);
+      color: var(--navy);
     }
 
     .az-section-head p {
-      max-width: 420px;
+      max-width: 440px;
       margin: 0;
-      color: #cbd5e1;
-      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-size: 0.82rem;
       line-height: 1.6;
       text-align: right;
     }
 
-    /* Results Card: Frosted Glass */
+    /* Solid White Results Container */
     .az-results {
-      border: 1px solid rgba(255, 255, 255, 0.75);
-      border-radius: 24px;
-      background: rgba(255, 255, 255, 0.88);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      box-shadow: 0 20px 50px rgba(7, 26, 51, 0.16);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      background: var(--card-white);
+      box-shadow: 0 4px 20px rgba(7, 26, 51, 0.04);
       overflow: hidden;
     }
 
@@ -369,23 +325,20 @@
       flex-wrap: wrap;
       justify-content: space-between;
       gap: 0.6rem 1rem;
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
-      background: rgba(255, 255, 255, 0.65);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      color: var(--muted);
-      font-size: 0.74rem;
-      line-height: 1.5;
+      padding: 1rem 1.4rem;
+      border-bottom: 1px solid var(--border-subtle);
+      background: #F1F5F9;
+      color: var(--text-muted);
+      font-size: 0.75rem;
     }
 
     .az-results-top strong {
-      color: var(--ink);
+      color: var(--navy);
       font-weight: 800;
     }
 
     .az-provider-note {
-      color: #0d9488;
+      color: var(--teal-dark);
       font-weight: 800;
     }
 
@@ -398,18 +351,17 @@
       width: 100%;
     }
 
-    /* Popular Routes */
+    /* Popular Routes Grid: Solid White Cards */
     .az-routes {
-      margin-top: 2.75rem;
+      margin-top: 3.5rem;
     }
 
     .az-route-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
+      gap: 1.25rem;
     }
 
-    /* Frosted Glass Route Cards */
     .az-route {
       position: relative;
       display: flex;
@@ -417,70 +369,44 @@
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
-      padding: 1.2rem;
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      color: var(--ink);
-      box-shadow: 0 10px 30px rgba(7, 26, 51, 0.06);
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .az-route::after {
-      position: absolute;
-      right: -20px;
-      top: -42px;
-      width: 105px;
-      height: 105px;
-      border: 18px solid rgba(23, 190, 187, 0.1);
-      border-radius: 50%;
-      content: "";
-      transition: transform 0.3s ease;
+      padding: 1.35rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      background: var(--card-white);
+      color: var(--text-main);
+      box-shadow: 0 2px 8px rgba(7, 26, 51, 0.04);
+      transition: all 0.22s ease;
     }
 
     .az-route:hover {
-      transform: translateY(-4px);
-      border-color: rgba(23, 190, 187, 0.6);
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 18px 40px rgba(7, 26, 51, 0.14), 0 0 24px rgba(23, 190, 187, 0.1);
-    }
-
-    .az-route:hover::after {
-      transform: scale(1.15);
-    }
-
-    .az-route small,
-    .az-route b,
-    .az-route span {
-      position: relative;
-      z-index: 1;
+      transform: translateY(-3px);
+      border-color: var(--ocean);
+      box-shadow: 0 12px 28px rgba(7, 26, 51, 0.08);
     }
 
     .az-route small {
-      color: var(--blue);
-      font-size: 0.66rem;
+      color: var(--ocean);
+      font-size: 0.68rem;
       font-weight: 800;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
     }
 
     .az-route b {
       font-family: var(--font-main);
-      font-size: 1.18rem;
+      font-size: 1.25rem;
       font-weight: 800;
       letter-spacing: -0.03em;
-      color: #071A33;
+      color: var(--navy);
     }
 
     .az-route span {
-      color: var(--blue);
-      font-size: 0.72rem;
+      color: var(--ocean);
+      font-size: 0.75rem;
       font-weight: 800;
       display: inline-flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.3rem;
     }
 
     .az-route span::after {
@@ -492,79 +418,70 @@
       transform: translateX(3px);
     }
 
-    /* Why Compare Grid: 4 Frosted Glass Pillars */
+    /* 4 Trust Pillars Grid: Solid White Cards */
     .az-why {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
-      margin-top: 2.75rem;
-      border: none;
+      gap: 1.25rem;
+      margin-top: 3.5rem;
       background: transparent;
+      border: none;
     }
 
     .az-why article {
-      min-height: 144px;
-      padding: 1.25rem;
-      border-radius: 20px;
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 10px 30px rgba(7, 26, 51, 0.06);
+      min-height: 150px;
+      padding: 1.35rem;
+      border-radius: 18px;
+      border: 1px solid var(--border-subtle);
+      background: var(--card-white);
+      box-shadow: 0 2px 8px rgba(7, 26, 51, 0.04);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .az-why article:hover {
       transform: translateY(-2px);
-      box-shadow: 0 14px 34px rgba(7, 26, 51, 0.1);
+      box-shadow: 0 10px 24px rgba(7, 26, 51, 0.08);
     }
 
     .az-why b {
       display: block;
       color: #d97706;
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
     .az-why h3 {
-      margin: 0.8rem 0 0.4rem;
+      margin: 0.75rem 0 0.4rem;
       font-family: var(--font-main);
-      font-size: 0.98rem;
+      font-size: 1.05rem;
       font-weight: 800;
       letter-spacing: -0.025em;
-      color: #071A33;
+      color: var(--navy);
     }
 
     .az-why p {
       margin: 0;
-      color: var(--muted);
-      font-size: 0.74rem;
+      color: var(--text-muted);
+      font-size: 0.76rem;
       line-height: 1.6;
     }
 
-    /* Secondary Cards: Frosted Glass */
+    /* Secondary Cards: Solid White */
     .az-secondary {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.25rem;
-      margin-top: 2.75rem;
+      gap: 1.5rem;
+      margin-top: 3.5rem;
     }
 
     .az-secondary article {
-      padding: 1.6rem;
-      border: 1px solid rgba(255, 255, 255, 0.7);
-      border-radius: 22px;
-      background: rgba(255, 255, 255, 0.82);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 12px 34px rgba(7, 26, 51, 0.07);
-      transition: transform 0.2s ease;
-    }
-
-    .az-secondary article:hover {
-      transform: translateY(-2px);
+      padding: 1.75rem;
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      background: var(--card-white);
+      box-shadow: 0 4px 16px rgba(7, 26, 51, 0.04);
     }
 
     .az-secondary h3 {
@@ -573,13 +490,13 @@
       font-size: 1.35rem;
       font-weight: 800;
       letter-spacing: -0.035em;
-      color: #071A33;
+      color: var(--navy);
     }
 
     .az-secondary p {
       margin: 0;
-      color: var(--muted);
-      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-size: 0.82rem;
       line-height: 1.65;
     }
 
@@ -588,55 +505,47 @@
       align-items: center;
       gap: 0.35rem;
       margin-top: 1rem;
-      color: var(--blue);
-      font-size: 0.74rem;
+      color: var(--ocean);
+      font-size: 0.76rem;
       font-weight: 800;
       transition: color 0.18s ease;
     }
 
     .az-secondary a::after {
       content: " →";
-      transition: transform 0.2s ease;
     }
 
     .az-secondary a:hover {
       color: var(--teal);
     }
 
-    .az-secondary a:hover::after {
-      transform: translateX(3px);
-    }
-
-    /* Direct WhatsApp Concierge Desk: Frosted Dark Glass */
+    /* Direct WhatsApp Desk: Solid Navy (Matching Main Domain Office Card) */
     .az-desk {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1.5rem;
-      margin-top: 2.75rem;
-      padding: 1.85rem 2rem;
-      border-radius: 24px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      background: rgba(7, 26, 51, 0.88);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      margin-top: 3.5rem;
+      padding: 2rem 2.25rem;
+      border-radius: 20px;
+      background: var(--navy);
       color: #ffffff;
-      box-shadow: 0 24px 50px rgba(7, 26, 51, 0.28);
+      box-shadow: 0 16px 36px rgba(7, 26, 51, 0.2);
     }
 
     .az-desk p {
       margin: 0;
       color: var(--teal);
-      font-size: 0.76rem;
+      font-size: 0.75rem;
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
     }
 
     .az-desk h2 {
-      margin: 0.3rem 0 0;
+      margin: 0.35rem 0 0;
       font-family: var(--font-main);
-      font-size: 1.5rem;
+      font-size: 1.6rem;
       font-weight: 800;
       letter-spacing: -0.035em;
       color: #ffffff;
@@ -646,32 +555,28 @@
       display: inline-flex;
       flex: none;
       align-items: center;
-      gap: 0.4rem;
-      padding: 0.8rem 1.25rem;
-      border-radius: 14px;
+      padding: 0.85rem 1.4rem;
+      border-radius: 12px;
       background: #059669;
       color: #ffffff;
-      font-size: 0.74rem;
+      font-size: 0.78rem;
       font-weight: 800;
       letter-spacing: 0.02em;
-      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3);
       transition: all 0.2s ease;
     }
 
     .az-desk a:hover {
       background: #10b981;
       transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
     }
 
-    /* Footer: Frosted Dark Glass */
+    /* Solid Dark Footer */
     .az-footer {
-      padding: 2.2rem 0;
-      background: rgba(7, 26, 51, 0.92);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
+      padding: 2.5rem 0;
+      background: #040E1C;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      color: #94A3B8;
     }
 
     .az-footer-inner {
@@ -683,13 +588,12 @@
 
     .az-footer p {
       margin: 0;
-      font-size: 0.74rem;
-      font-weight: 500;
+      font-size: 0.75rem;
     }
 
     .az-footer a {
       color: var(--teal);
-      font-size: 0.76rem;
+      font-size: 0.78rem;
       font-weight: 700;
       transition: color 0.18s ease;
     }
@@ -703,9 +607,9 @@
     }
 
     /* Mobile Responsiveness */
-    @media (max-width: 760px) {
+    @media (max-width: 768px) {
       .az-shell {
-        width: min(100% - 1.5rem, 1180px);
+        width: min(100% - 1.5rem, 1200px);
       }
 
       .az-nav {
@@ -713,21 +617,15 @@
       }
 
       .az-brand {
-        font-size: 1.02rem;
+        font-size: 1.05rem;
       }
 
       .az-nav-links {
         display: none;
       }
 
-      .az-main-link {
-        margin-left: auto;
-        font-size: 0.65rem;
-        padding: 0.5rem 0.8rem;
-      }
-
       .az-search-hero {
-        padding: 2rem 0 2.4rem;
+        padding: 2.2rem 0 3rem;
       }
 
       .az-search-intro {
@@ -735,33 +633,11 @@
       }
 
       .az-search-intro p {
-        margin-top: 0.85rem;
+        margin-top: 0.75rem;
       }
 
       .az-search-card {
-        padding: 1rem;
-        border-radius: 20px;
-      }
-
-      .az-form-heading strong {
-        font-size: 0.82rem;
-      }
-
-      .az-form-footnote {
-        font-size: 0.68rem;
-      }
-
-      .az-content {
-        padding-top: 2rem;
-      }
-
-      .az-section-head {
-        display: block;
-      }
-
-      .az-section-head p {
-        margin-top: 0.5rem;
-        text-align: left;
+        padding: 1.25rem;
       }
 
       .az-route-grid {
@@ -769,21 +645,9 @@
         gap: 0.75rem;
       }
 
-      .az-route {
-        min-height: 100px;
-        padding: 1rem;
-        border-radius: 16px;
-      }
-
       .az-why {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-      }
-
-      .az-why article {
-        min-height: 130px;
-        padding: 1rem;
-        border-radius: 16px;
+        gap: 0.75rem;
       }
 
       .az-secondary {
@@ -793,18 +657,17 @@
 
       .az-desk {
         display: block;
-        padding: 1.4rem;
-        border-radius: 20px;
+        padding: 1.5rem;
       }
 
       .az-desk a {
-        margin-top: 1.15rem;
+        margin-top: 1.25rem;
       }
 
       .az-footer-inner {
-        align-items: flex-start;
         flex-direction: column;
-        gap: 0.6rem;
+        align-items: flex-start;
+        gap: 0.75rem;
       }
     }
   </style>
@@ -822,14 +685,14 @@
 </head>
 
 <body>
-  <!-- Header: Frosted Dark Glass Navbar -->
+  <!-- Clean Header matching Main Domain -->
   <header class="az-topbar">
     <nav class="az-shell az-nav" aria-label="Azraq Navigation">
       <a class="az-brand" href="https://www.azraqtrips.com/">
         <span class="az-brand-mark">A</span>Azraq Trips
       </a>
       <div class="az-nav-links">
-        <a href="#tpwl-search">Flights</a>
+        <a href="#tpwl-search" class="active">Flights</a>
         <a href="https://www.azraqtrips.com/hotels">Hotels</a>
         <a href="https://www.azraqtrips.com/packages">Packages</a>
         <a href="https://www.azraqtrips.com/visa">Visa</a>
@@ -840,7 +703,7 @@
   </header>
 
   <main>
-    <!-- Flight Search Hero -->
+    <!-- Aviation Hero Section (Matching Main Domain HomeHero) -->
     <section class="az-search-hero">
       <div class="az-shell">
         <div class="az-search-intro">
@@ -866,7 +729,7 @@
       </div>
     </section>
 
-    <!-- Flight Results & Directory -->
+    <!-- Flight Results & Directory: Clean Solid Light Background -->
     <section class="az-content">
       <div class="az-shell">
         <!-- Live Results Target -->
@@ -933,7 +796,7 @@
           </div>
         </section>
 
-        <!-- Trust & Value Proposition -->
+        <!-- 4 Trust Pillars -->
         <section class="az-why" aria-label="Why compare with Azraq">
           <article>
             <b>Compare</b>
@@ -994,7 +857,7 @@
     </section>
   </main>
 
-  <!-- Footer: Frosted Dark Glass -->
+  <!-- Solid Clean Footer -->
   <footer class="az-footer">
     <div class="az-shell az-footer-inner">
       <p>Azraq Trips · Flight comparison, holiday planning, and visa documentation guidance from Dhaka.</p>
