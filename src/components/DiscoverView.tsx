@@ -77,7 +77,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
   };
 
   return (
-    <article className="w-full min-h-screen bg-[#F8FAFC] flex flex-col pb-16">
+    <article className="w-full min-h-screen bg-transparent flex flex-col pb-16 relative">
       <SEOHead
         title="Azraq Trips – Bangladesh’s Smart Travel Platform | Holiday Packages, Flights & Visas"
         description="Book cheap flights, all-inclusive verified Asian holiday packages, fast visa assistance, and customized AI trip itineraries with Azraq Trips Dhaka."
@@ -86,7 +86,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       />
 
       {/* 01 & 02: Cinematic Hero & Quick Travel Action Area */}
-      <div className="w-full bg-white pb-6 sm:pb-8">
+      <div className="w-full pb-4 sm:pb-6">
         <HomeHero
           onSearchFlights={(params) => {
             if (onSearchFlights) {
@@ -103,13 +103,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         />
       </div>
 
-      {/* Trust Strip */}
-      <div className="w-full bg-white py-4 border-y border-slate-200/60">
+      {/* Trust Strip - Glassy Floating Bar */}
+      <div className="w-full py-3.5 border-y border-white/40 bg-white/25 backdrop-blur-md">
         <TrustStrip />
       </div>
 
-      {/* 03: Featured Destinations (Asymmetric Editorial Layout) */}
-      <div className="w-full bg-[#FAF8F5] py-14 sm:py-20 border-b border-slate-200/60">
+      {/* 03: Featured Destinations (Asymmetric Glassy Editorial Layout) */}
+      <div className="w-full py-14 sm:py-20 border-b border-white/40 bg-white/30 backdrop-blur-xl">
         <DestinationSection
           destinations={destinations}
           onSelectDestination={onSelectDestination}
@@ -119,8 +119,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         />
       </div>
 
-      {/* 04: Travel Services (5 Core Pillars) */}
-      <div className="w-full bg-white py-14 sm:py-20">
+      {/* 04: Travel Services (5 Core Pillars - Frosted Translucent) */}
+      <div className="w-full py-14 sm:py-20 bg-white/20 backdrop-blur-md">
         <ServiceGrid
           onNavigateToView={onNavigateToView}
           onOpenLocationFinder={onOpenLocationFinder}
@@ -129,7 +129,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
 
       {/* 05: Signature Holiday Packages */}
       {packages && packages.length > 0 && (
-        <div className="w-full bg-[#FAF8F5] py-14 sm:py-20 border-y border-slate-200/60">
+        <div className="w-full py-14 sm:py-20 border-y border-white/40 bg-white/30 backdrop-blur-xl">
           <FeaturedPackagesSection
             packages={packages}
             onViewDetails={(pkg) => setActivePackageModal(pkg)}
@@ -143,7 +143,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       )}
 
       {/* 06: AI Trip Planner Banner */}
-      <div className="w-full bg-white py-12 sm:py-16">
+      <div className="w-full py-12 sm:py-16">
         <VoicePlannerBanner
           onOpenVoiceModal={handleOpenVoicePlanner}
           onNavigateToPlanner={() => onNavigateToView && onNavigateToView('planner')}
@@ -151,7 +151,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       </div>
 
       {/* 07: Visa Assistance Desk */}
-      <div className="w-full bg-[#FAF8F5] py-14 sm:py-20 border-y border-slate-200/60">
+      <div className="w-full py-14 sm:py-20 border-y border-white/40 bg-white/25 backdrop-blur-md">
         <VisaAssistanceSection
           onOpenVisaModal={onOpenVisaModal}
           onNavigateToVisa={() => onNavigateToView && onNavigateToView('visa')}
@@ -159,7 +159,7 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       </div>
 
       {/* 08: Flight Discovery Workflow */}
-      <div className="w-full bg-white py-14 sm:py-20">
+      <div className="w-full py-14 sm:py-20 bg-white/30 backdrop-blur-xl">
         <FlightWorkflowSection
           onNavigateToFlights={() => {
             window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
@@ -172,8 +172,8 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         <WhyAzraqSection />
       </div>
 
-      {/* 10: Travel Stories & Editorial Content (Real Guides from Dhaka) */}
-      <div className="w-full bg-white py-14 sm:py-20">
+      {/* 10: Travel Stories & Editorial Content */}
+      <div className="w-full py-14 sm:py-20 bg-white/25 backdrop-blur-md">
         <EditorialStoriesSection
           onSelectGuide={(slug) => {
             if (onNavigateToView) onNavigateToView('guide-detail', { slug });
@@ -185,14 +185,14 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
       </div>
 
       {/* 11: Concierge & Travel Buddies Support */}
-      <div className="w-full bg-white py-14 sm:py-20">
+      <div className="w-full py-14 sm:py-20 bg-white/30 backdrop-blur-xl border-y border-white/40">
         <TravelBuddiesPreview
           onNavigateToBuddies={() => onNavigateToView && onNavigateToView('buddies')}
         />
       </div>
 
       {/* 12: Final High-Impact Luxury Travel CTA */}
-      <div className="w-full bg-white py-14 sm:py-20">
+      <div className="w-full py-14 sm:py-20">
         <FinalTravelCta
           onPlanTrip={() => {
             if (onNavigateToView) onNavigateToView('planner');

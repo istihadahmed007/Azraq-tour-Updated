@@ -24,17 +24,17 @@ export const HomeHero: React.FC<HomeHeroProps> = ({
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <section className="relative w-full text-white pt-10 sm:pt-16 pb-16 sm:pb-24 overflow-hidden bg-[#071A33]">
-      {/* Cinematic Commercial Aircraft Background */}
+    <section className="relative w-full text-white pt-10 sm:pt-16 pb-16 sm:pb-24 overflow-hidden bg-transparent">
+      {/* Cinematic Commercial Aircraft Background - Blended Glass Layer */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <img
           src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=2560&q=85"
           alt="Commercial aircraft soaring through clear blue sky and clouds"
           referrerPolicy="no-referrer"
-          className="w-full h-full object-cover object-center scale-105 transition-transform duration-1000 ease-out"
+          className="w-full h-full object-cover object-center scale-105 transition-transform duration-1000 ease-out opacity-80"
         />
         {/* Subtle cinematic gradient vignette for crisp typography contrast */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#071A33]/65 via-[#071A33]/30 to-[#071A33]/75" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#071A33]/60 via-[#071A33]/25 to-transparent" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">

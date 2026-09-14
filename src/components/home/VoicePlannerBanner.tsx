@@ -18,7 +18,7 @@ export const VoicePlannerBanner: React.FC<VoicePlannerBannerProps> = ({
 
   return (
     <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#073B4C] via-[#086788] to-[#073B4C] text-white p-6 sm:p-8 shadow-xl border border-[#17BEBB]/20">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#073B4C]/85 via-[#086788]/75 to-[#073B4C]/85 backdrop-blur-2xl text-white p-6 sm:p-8 shadow-2xl border border-white/20">
         <div className="absolute right-0 top-0 -mt-10 -mr-10 w-72 h-72 bg-[#17BEBB]/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
@@ -43,7 +43,7 @@ export const VoicePlannerBanner: React.FC<VoicePlannerBannerProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => onOpenVoiceModal(sample)}
-                  className="min-h-[32px] px-3 py-1 rounded-full bg-white/10 hover:bg-white/20 text-[#EAF7F8] border border-white/15 text-xs font-medium transition-colors cursor-pointer"
+                  className="min-h-[32px] px-3 py-1 rounded-full bg-white/15 hover:bg-white/25 text-[#EAF7F8] backdrop-blur-md border border-white/25 text-xs font-medium transition-colors cursor-pointer"
                 >
                   "{sample}"
                 </button>

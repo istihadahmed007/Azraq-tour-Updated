@@ -67,7 +67,7 @@ export const TravelBuddiesPreview: React.FC<TravelBuddiesPreviewProps> = ({
           <button
             onClick={onNavigateToBuddies}
             type="button"
-            className="min-h-[44px] px-4 py-2 rounded-xl bg-[#EAF7F8] text-[#073B4C] hover:bg-[#17BEBB]/20 hover:text-[#073B4C] font-bold text-xs sm:text-sm transition-colors cursor-pointer flex items-center gap-2 self-start sm:self-auto border border-[#17BEBB]/30"
+            className="min-h-[44px] px-4 py-2 rounded-xl bg-white/60 hover:bg-white/90 text-[#073B4C] backdrop-blur-md font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 self-start sm:self-auto border border-white/70 shadow-xs"
           >
             <span>Explore Travel Buddies Hub</span>
             <ArrowRight className="w-4 h-4 text-[#FF6B5A]" />
@@ -80,7 +80,7 @@ export const TravelBuddiesPreview: React.FC<TravelBuddiesPreviewProps> = ({
           {[1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              className="min-w-[260px] xs:min-w-[280px] sm:min-w-0 w-[78vw] max-w-[320px] sm:w-full snap-start shrink-0 sm:shrink p-5 rounded-2xl bg-white border border-slate-200/80 animate-pulse h-48"
+              className="min-w-[260px] xs:min-w-[280px] sm:min-w-0 w-[78vw] max-w-[320px] sm:w-full snap-start shrink-0 sm:shrink p-5 rounded-2xl bg-white/40 border border-white/50 backdrop-blur-md animate-pulse h-48"
             />
           ))}
         </div>
@@ -97,7 +97,7 @@ export const TravelBuddiesPreview: React.FC<TravelBuddiesPreviewProps> = ({
                 ease: 'easeOut',
               }}
               whileHover={shouldReduceMotion ? undefined : { y: -3 }}
-              className="min-w-[260px] xs:min-w-[280px] sm:min-w-0 w-[78vw] max-w-[320px] sm:w-full snap-start shrink-0 sm:shrink p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow flex flex-col justify-between gap-4 relative"
+              className="min-w-[260px] xs:min-w-[280px] sm:min-w-0 w-[78vw] max-w-[320px] sm:w-full snap-start shrink-0 sm:shrink p-5 rounded-2xl bg-white/65 hover:bg-white/85 backdrop-blur-xl border border-white/65 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all flex flex-col justify-between gap-4 relative"
             >
               <div className="flex items-center gap-3">
                 <img
@@ -112,13 +112,13 @@ export const TravelBuddiesPreview: React.FC<TravelBuddiesPreviewProps> = ({
                   <h3 className="text-sm font-bold text-[#073B4C] truncate font-inter">
                     {buddy.displayName}
                   </h3>
-                  <span className="text-[10px] text-[#086788] font-semibold bg-[#EAF7F8] px-2 py-0.5 rounded-full inline-block mt-0.5">
+                  <span className="text-[10px] text-[#086788] font-semibold bg-[#17BEBB]/15 px-2 py-0.5 rounded-full inline-block mt-0.5">
                     Verified Traveler
                   </span>
                 </div>
               </div>
 
-              <div className="space-y-2 text-xs text-slate-600 border-t border-slate-100 pt-3">
+              <div className="space-y-2 text-xs text-slate-600 border-t border-white/50 pt-3">
                 <div className="flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-[#17BEBB] shrink-0" />
                   <span className="truncate font-medium font-inter">
@@ -126,13 +126,13 @@ export const TravelBuddiesPreview: React.FC<TravelBuddiesPreviewProps> = ({
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-[#086788] shrink-0" />
+                  <Calendar className="w-3.5 h-3.5 text-[#17BEBB] shrink-0" />
                   <span className="font-medium text-slate-700 font-inter">
                     {formatDates(buddy.travelStart, buddy.travelEnd)}
                   </span>
                 </div>
                 {buddy.bio && (
-                  <p className="text-[11px] text-slate-500 italic mt-1 line-clamp-2 font-inter">
+                  <p className="text-[11px] text-slate-600 italic mt-1 line-clamp-2 font-inter">
                     "{buddy.bio}"
                   </p>
                 )}

@@ -31,7 +31,7 @@ export const FeaturedPackagesSection: React.FC<FeaturedPackagesSectionProps> = (
           <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] tracking-[-0.025em]">
             Featured Tour Packages
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-inter">
+          <p className="text-xs sm:text-sm text-slate-600 font-inter">
             Complete Asian itineraries with verified hotels, private transfers, and visa checklists.
           </p>
         </div>
@@ -40,7 +40,7 @@ export const FeaturedPackagesSection: React.FC<FeaturedPackagesSectionProps> = (
           <button
             onClick={onNavigateToPackages}
             type="button"
-            className="min-h-[44px] px-4 py-2 rounded-xl bg-[#EAF7F8] text-[#073B4C] hover:bg-[#17BEBB]/20 hover:text-[#073B4C] font-bold text-xs sm:text-sm transition-colors cursor-pointer flex items-center gap-2 self-start sm:self-auto border border-[#17BEBB]/30"
+            className="min-h-[44px] px-4 py-2 rounded-xl bg-white/60 hover:bg-white/90 text-[#073B4C] backdrop-blur-md font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 self-start sm:self-auto border border-white/70 shadow-xs"
           >
             <span>View All Packages ({packages.length})</span>
             <ArrowRight className="w-4 h-4 text-[#FF6B5A]" />

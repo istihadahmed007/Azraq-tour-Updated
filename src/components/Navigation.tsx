@@ -279,8 +279,8 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         <header
           ref={ref}
           id="main-navigation-header"
-          className={`sticky top-0 left-0 right-0 w-full z-50 transition-all duration-200 bg-white/95 backdrop-blur-md text-[#073B4C] border-b overflow-x-clip ${
-            isScrolled ? 'border-slate-200 shadow-sm' : 'border-slate-200/80 shadow-xs'
+          className={`sticky top-0 left-0 right-0 w-full z-50 transition-all duration-300 bg-white/70 hover:bg-white/85 backdrop-blur-xl text-[#073B4C] border-b overflow-x-clip ${
+            isScrolled ? 'border-white/50 shadow-md bg-white/85' : 'border-white/40 shadow-xs'
           }`}
         >
           <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 2xl:px-8">
@@ -658,7 +658,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
 
           {/* SECONDARY MOBILE / TABLET DRAWER */}
           {mobileMenuOpen && (
-            <div className="xl:hidden border-t border-slate-200 bg-white px-4 pt-4 pb-6 space-y-4 shadow-xl animate-fadeIn text-slate-800">
+            <div className="xl:hidden border-t border-white/50 bg-white/90 backdrop-blur-2xl px-4 pt-4 pb-6 space-y-4 shadow-2xl animate-fadeIn text-slate-800">
               <div className="flex flex-col gap-1.5">
                 {desktopNavItems.map((item) => (
                   <button
@@ -676,8 +676,8 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                     }}
                     className={`flex items-center justify-between p-3 rounded-xl text-sm font-medium transition-all cursor-pointer text-left min-h-[44px] ${
                       item.isActive
-                        ? 'bg-[#FAF8F5] text-[#071A33] font-bold'
-                        : 'text-slate-700 hover:bg-slate-50'
+                        ? 'bg-white/80 text-[#071A33] font-bold border border-white/60 shadow-xs'
+                        : 'text-slate-700 hover:bg-white/50'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -705,7 +705,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
               </button>
 
               {/* Contact Desk */}
-              <div className="flex items-center justify-between text-xs text-slate-500 px-3.5 py-2.5 bg-[#FAF8F5] rounded-xl border border-slate-200/80">
+              <div className="flex items-center justify-between text-xs text-slate-600 px-3.5 py-2.5 bg-white/60 backdrop-blur-md rounded-xl border border-white/60">
                 <span className="flex items-center gap-1.5 font-medium text-[#071A33]">
                   <Globe className="w-3.5 h-3.5 text-[#17BEBB]" />
                   BDT (৳) · Dhaka Desk
@@ -725,7 +725,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         <nav
           id="mobile-bottom-nav"
           aria-label="Mobile Navigation"
-          className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200/90 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+          className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/75 backdrop-blur-2xl border-t border-white/60 px-3 pt-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] flex items-center justify-around shadow-[0_-4px_30px_rgba(0,0,0,0.06)]"
         >
           {mobileBottomTabs.map((tab) => {
             const isActive = tab.isActive;

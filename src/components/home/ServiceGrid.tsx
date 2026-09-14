@@ -81,7 +81,7 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
           <div
             key={srv.id}
             onClick={srv.action}
-            className={`p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between cursor-pointer group ${srv.border}`}
+            className={`p-5 rounded-2xl bg-white/60 hover:bg-white/85 backdrop-blur-xl border border-white/65 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer group ${srv.border}`}
           >
             <div className="space-y-3">
               <div className={`w-11 h-11 rounded-xl ${srv.bg} flex items-center justify-center`}>
@@ -91,11 +91,11 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
                 <h3 className="text-sm font-bold text-[#073B4C] group-hover:text-[#086788] transition-colors font-inter line-clamp-2">
                   {srv.title}
                 </h3>
-                <p className="text-xs text-slate-500 leading-relaxed line-clamp-3 font-inter">{srv.desc}</p>
+                <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 font-inter">{srv.desc}</p>
               </div>
             </div>
 
-            <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-[#086788] group-hover:text-[#073B4C]">
+            <div className="pt-3 mt-3 border-t border-white/50 flex items-center justify-between text-xs font-bold text-[#086788] group-hover:text-[#073B4C]">
               <span>{srv.cta}</span>
               <ArrowRight className="w-3.5 h-3.5 text-[#17BEBB] group-hover:translate-x-1 transition-transform" />
             </div>

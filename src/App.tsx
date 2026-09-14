@@ -36,6 +36,7 @@ import { AZRAQ_AGENCY_CONFIG } from './data/agencyConfig';
 import { POPULAR_AIRPORTS, buildWhiteLabelSearchUrl } from './data/flightsData';
 import { SEOHead } from './components/SEOHead';
 import { getOrganizationSchema, getWebSiteSchema } from './lib/seo';
+import { AnimatedSkyBackground } from './components/AnimatedSkyBackground';
 
 // Lazy-loaded routes for code-splitting and faster initial bundle loading
 const PackagesView = lazy(() => import('./components/PackagesView').then((m) => ({ default: m.PackagesView })));
@@ -568,8 +569,10 @@ function AppContent() {
 
   return (
     <ClientLayout
-      className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans selection:bg-[#0D6EFD] selection:text-white"
-      mainClassName="w-full min-h-screen flex flex-col transition-all duration-300 pb-16 md:pb-0"
+      className={`min-h-screen text-slate-900 font-sans selection:bg-[#0D6EFD] selection:text-white ${
+        currentView === 'discover' ? 'bg-transparent' : 'bg-[#F8FAFC]'
+      }`}
+      mainClassName="w-full min-h-screen flex flex-col transition-all duration-300 pb-16 md:pb-0 relative"
       navbar={(navRef) => (
         <Navigation
           ref={navRef as React.Ref<HTMLElement>}
@@ -591,6 +594,9 @@ function AppContent() {
         />
       )}
     >
+      {/* Dynamic Animated Travel Sky & Atmospheric Mesh Background */}
+      <AnimatedSkyBackground />
+
       {/* Root Website & Organization Schema for Home View */}
       {currentView === 'discover' && (
         <SEOHead

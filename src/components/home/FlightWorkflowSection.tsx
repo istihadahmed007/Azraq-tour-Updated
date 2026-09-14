@@ -50,18 +50,18 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
         {steps.map((s, idx) => (
           <div
             key={idx}
-            className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-shadow relative space-y-4"
+            className="p-6 rounded-2xl bg-white/60 hover:bg-white/85 backdrop-blur-xl border border-white/65 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all relative space-y-4"
           >
             <div className="flex items-center justify-between">
               <div className={`w-12 h-12 rounded-xl ${s.bg} flex items-center justify-center`}>
                 {s.icon}
               </div>
-              <span className="text-2xl font-black text-slate-200 font-mono">{s.step}</span>
+              <span className="text-2xl font-black text-[#17BEBB]/40 font-mono">{s.step}</span>
             </div>
 
             <div className="space-y-1.5">
               <h3 className="text-lg font-bold text-[#073B4C] tracking-[-0.015em]">{s.title}</h3>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-inter">{s.desc}</p>
+              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-inter">{s.desc}</p>
             </div>
           </div>
         ))}

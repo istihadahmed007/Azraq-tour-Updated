@@ -44,11 +44,11 @@ export const WhyAzraqSection: React.FC = () => {
   ];
 
   return (
-    <section className="w-full bg-[#FAF8F5] py-16 sm:py-20 border-y border-slate-200/70">
+    <section className="w-full bg-white/20 backdrop-blur-xl py-16 sm:py-20 border-y border-white/40">
       <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Header */}
         <div className="text-center max-w-2xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#071A33]/5 text-[#071A33] border border-[#071A33]/10 text-xs font-semibold tracking-wider uppercase">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/60 text-[#071A33] border border-white/60 backdrop-blur-md text-xs font-semibold tracking-wider uppercase shadow-xs">
             <Award className="w-3.5 h-3.5 text-[#17BEBB]" />
             <span>Why Choose Azraq</span>
           </div>
@@ -65,14 +65,14 @@ export const WhyAzraqSection: React.FC = () => {
           {credentials.map((c, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-[#17BEBB]/40 transition-all space-y-4 flex flex-col justify-between"
+              className="p-6 rounded-2xl bg-white/60 hover:bg-white/85 backdrop-blur-xl border border-white/65 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl hover:border-[#17BEBB]/50 transition-all space-y-4 flex flex-col justify-between"
             >
-              <div className="w-12 h-12 rounded-xl bg-[#071A33]/5 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-[#17BEBB]/10 border border-[#17BEBB]/20 flex items-center justify-center">
                 {c.icon}
               </div>
               <div className="space-y-1.5">
                 <h3 className="text-base font-bold text-[#071A33] font-inter">{c.title}</h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-inter">{c.desc}</p>
+                <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-inter">{c.desc}</p>
               </div>
               <div className="pt-2 flex items-center gap-1.5 text-xs font-semibold text-[#17BEBB]">
                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -83,7 +83,7 @@ export const WhyAzraqSection: React.FC = () => {
         </div>
 
         {/* Travel Standards Grid */}
-        <div className="p-8 sm:p-10 rounded-3xl bg-[#071A33] text-white shadow-xl">
+        <div className="p-8 sm:p-10 rounded-3xl bg-[#071A33]/85 backdrop-blur-2xl border border-white/20 text-white shadow-2xl">
           <div className="max-w-2xl mb-8 space-y-2">
             <span className="text-xs font-semibold uppercase tracking-wider text-[#17BEBB] font-mono">
               Our Commitment

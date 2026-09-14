@@ -103,7 +103,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
 
   return (
     <section id="popular-destinations" className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200/80 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-white/50 pb-5">
         <div className="space-y-1.5">
           <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#17BEBB]">
             <MapPin className="w-3.5 h-3.5" />
@@ -112,7 +112,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
           <h2 className="text-3xl sm:text-4xl font-bold text-[#071A33] tracking-[-0.025em]">
             Featured Destinations
           </h2>
-          <p className="text-sm text-slate-500 font-sans">
+          <p className="text-sm text-slate-600 font-sans">
             Handpicked escapes with direct flights from Dhaka, seamless visas, and verified stays.
           </p>
         </div>
@@ -121,7 +121,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
           <button
             onClick={onNavigateToDestinations}
             type="button"
-            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#071A33] hover:text-[#17BEBB] transition-colors cursor-pointer self-start sm:self-auto min-h-[44px]"
+            className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#071A33] hover:text-[#17BEBB] transition-colors cursor-pointer self-start sm:self-auto min-h-[44px] px-4 py-2 rounded-xl bg-white/40 hover:bg-white/70 backdrop-blur-md border border-white/50"
           >
             <span>View All Destinations</span>
             <ChevronRight className="w-4 h-4 text-[#17BEBB]" />
@@ -136,7 +136,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
           initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="lg:col-span-7 group relative rounded-3xl overflow-hidden min-h-[420px] sm:min-h-[500px] flex flex-col justify-end p-6 sm:p-10 cursor-pointer shadow-sm border border-slate-200/80"
+          className="lg:col-span-7 group relative rounded-3xl overflow-hidden min-h-[420px] sm:min-h-[500px] flex flex-col justify-end p-6 sm:p-10 cursor-pointer shadow-lg border border-white/60 backdrop-blur-md"
           onClick={() => handleCardClick(featuredDest.name)}
         >
           <img
@@ -210,7 +210,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
               }}
               whileHover={shouldReduceMotion ? undefined : { y: -2 }}
               onClick={() => handleCardClick(dest.name)}
-              className="group relative rounded-2xl overflow-hidden min-h-[160px] sm:min-h-[150px] lg:min-h-[155px] flex items-end p-5 cursor-pointer shadow-xs hover:shadow-md border border-slate-200/80 transition-all"
+              className="group relative rounded-2xl overflow-hidden min-h-[160px] sm:min-h-[150px] lg:min-h-[155px] flex items-end p-5 cursor-pointer shadow-md hover:shadow-xl border border-white/60 backdrop-blur-md transition-all"
             >
               <img
                 src={dest.imageUrl}

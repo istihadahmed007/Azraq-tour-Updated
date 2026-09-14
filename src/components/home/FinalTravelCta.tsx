@@ -16,14 +16,14 @@ export const FinalTravelCta: React.FC<FinalTravelCtaProps> = ({
 }) => {
   return (
     <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-      <div className="relative rounded-3xl overflow-hidden text-white p-8 sm:p-14 text-center space-y-6 shadow-2xl">
+      <div className="relative rounded-3xl overflow-hidden text-white p-8 sm:p-14 text-center space-y-6 shadow-2xl border border-white/30 backdrop-blur-xl">
         <img
           src="https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=2400&q=85"
           alt="Golden sunset ocean horizon and peaceful shoreline"
           loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center opacity-85"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#073B4C]/95 via-[#086788]/85 to-[#073B4C]/70" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#073B4C]/90 via-[#086788]/75 to-[#073B4C]/60 backdrop-blur-xs" />
 
         <div className="relative z-10 max-w-2xl mx-auto space-y-6">
           <div className="space-y-2">

@@ -73,6 +73,7 @@
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
     overflow-x: hidden;
+    background-color: transparent;
   }
 
   body {
@@ -80,7 +81,7 @@
     font-weight: 400;
     line-height: 1.65;
     color: var(--color-text-main);
-    background-color: var(--color-surface-base);
+    background-color: transparent;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -320,19 +321,22 @@
   transform: translateY(-1px);
 }
 
-/* Ocean Cards & Hover Effects */
+/* Ocean Cards & Glassmorphic Hover Effects */
 .ocean-card {
-  background: #FFFFFF;
-  border-radius: 1rem; /* rounded-2xl */
-  border: 1px solid rgba(226, 232, 240, 0.7);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 1.25rem; /* rounded-2xl */
+  border: 1px solid rgba(255, 255, 255, 0.75);
   box-shadow: var(--shadow-card);
-  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease, border-color 300ms ease;
+  transition: transform 300ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 300ms ease, border-color 300ms ease, background-color 300ms ease;
   overflow: hidden;
 }
 .ocean-card:hover {
+  background: rgba(255, 255, 255, 0.88);
   transform: translateY(-2px);
   box-shadow: var(--shadow-elevated);
-  border-color: rgba(23, 190, 187, 0.35);
+  border-color: rgba(23, 190, 187, 0.45);
 }
 
 .ocean-img-zoom {
@@ -346,9 +350,95 @@
   transform: scale(1.05);
 }
 
-/* Section Backgrounds (White -> Soft Aqua -> White -> Deep Ocean) */
+/* Glassmorphic Surface Utilities */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 0 12px 40px rgba(7, 26, 51, 0.06);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 32px 0 rgba(7, 26, 51, 0.04);
+  transition: all 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 40px 0 rgba(7, 26, 51, 0.08);
+}
+
+.glass-section {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.glass-section-subtle {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+/* Dynamic Animated Sky Background */
+.sky-natural-bg {
+  background-color: #071A33;
+  background-image: 
+    radial-gradient(circle at 15% 15%, rgba(23, 190, 187, 0.25) 0%, transparent 40%),
+    radial-gradient(circle at 85% 25%, rgba(8, 103, 136, 0.28) 0%, transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(13, 148, 136, 0.2) 0%, transparent 50%),
+    linear-gradient(135deg, #071A33 0%, #073B4C 35%, #086788 70%, #031326 100%);
+  background-size: 200% 200%;
+  background-attachment: fixed;
+  animation: skyMeshAmbient 24s ease-in-out infinite alternate;
+}
+
+@keyframes skyMeshAmbient {
+  0% {
+    background-position: 0% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes cloudDriftSlow {
+  0% {
+    transform: translateX(-10%);
+  }
+  100% {
+    transform: translateX(10%);
+  }
+}
+
+@keyframes ambientPulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.08);
+  }
+}
+
+/* Section Backgrounds */
 .bg-soft-aqua {
-  background-color: #EAF7F8;
+  background-color: rgba(234, 247, 248, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 .bg-deep-ocean {
   background-color: #073B4C;
@@ -360,14 +450,14 @@
 /* Custom Scrollbar */
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(23, 190, 187, 0.4) #EAF7F8;
+  scrollbar-color: rgba(23, 190, 187, 0.4) rgba(234, 247, 248, 0.5);
 }
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #EAF7F8;
+  background: rgba(234, 247, 248, 0.5);
   border-radius: 9999px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {

@@ -19,7 +19,7 @@ export const VisaAssistanceSection: React.FC<VisaAssistanceSectionProps> = ({
 
   return (
     <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6">
-      <div className="rounded-3xl bg-gradient-to-br from-[#073B4C] via-[#086788] to-[#073B4C] text-white p-6 sm:p-10 shadow-xl border border-[#17BEBB]/20 space-y-8">
+      <div className="rounded-3xl bg-gradient-to-br from-[#073B4C]/85 via-[#086788]/75 to-[#073B4C]/85 backdrop-blur-2xl text-white p-6 sm:p-10 shadow-2xl border border-white/20 space-y-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#17BEBB]/20 text-[#EAF7F8] border border-[#17BEBB]/30 text-xs font-bold tracking-wide uppercase font-mono">
@@ -55,7 +55,7 @@ export const VisaAssistanceSection: React.FC<VisaAssistanceSectionProps> = ({
           {topCountries.map((c, idx) => (
             <div
               key={idx}
-              className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors flex flex-col justify-between gap-3"
+              className="p-4 rounded-2xl bg-white/10 border border-white/20 hover:bg-white/15 backdrop-blur-md transition-all flex flex-col justify-between gap-3"
             >
               <div>
                 <h3 className="text-sm font-bold text-white font-inter">{c.name}</h3>

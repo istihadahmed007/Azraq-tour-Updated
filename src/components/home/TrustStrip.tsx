@@ -31,14 +31,14 @@ export const TrustStrip: React.FC = () => {
         {trustItems.map((item, idx) => (
           <div
             key={idx}
-            className="flex items-center gap-3.5 p-4 rounded-2xl bg-white border border-slate-200/70 shadow-xs hover:shadow-sm hover:border-[#17BEBB]/40 transition-all"
+            className="flex items-center gap-3.5 p-4 rounded-2xl bg-white/55 hover:bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-md hover:border-[#17BEBB]/50 transition-all cursor-default"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#071A33]/5 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-[#17BEBB]/10 border border-[#17BEBB]/20 flex items-center justify-center shrink-0">
               {item.icon}
             </div>
             <div>
               <h3 className="text-sm font-bold text-[#071A33] font-inter">{item.title}</h3>
-              <p className="text-xs text-slate-500 font-medium font-inter">{item.desc}</p>
+              <p className="text-xs text-slate-600 font-medium font-inter">{item.desc}</p>
             </div>
           </div>
         ))}
