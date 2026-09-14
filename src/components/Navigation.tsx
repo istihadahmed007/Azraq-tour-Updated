@@ -216,6 +216,13 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         isActive: currentView === 'packages',
       },
       {
+        id: 'buddies',
+        label: 'Travel Buddies',
+        icon: <Users className="w-4 h-4" />,
+        view: 'feed' as NavView,
+        isActive: currentView === 'feed',
+      },
+      {
         id: 'planner',
         label: 'Trip Planner',
         icon: <Sparkles className="w-4 h-4" />,
