@@ -11,31 +11,36 @@
   <meta name="description" content="Search and compare flight options from Bangladesh with Azraq Trips." />
   <title>Azraq Trips | Search and compare flights[:route_info:]</title>
 
-  <!-- Preconnect & Fonts -->
+  <!-- Preconnect & Fonts: Matching Azraq Trips Main Domain (Manrope) -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Manrope:wght@600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet"
   />
 
-  <!-- Consolidated Stylesheet -->
+  <!-- Consolidated Stylesheet: Glassy Transparent System -->
   <style>
     :root {
-      --navy: #072d5a;
-      --navy-2: #0b417f;
-      --blue: #0d6bcc;
-      --gold: #e3ae38;
-      --gold-soft: #fff5dc;
-      --aqua: #16a6ae;
-      --bg: #f8f9fa;
-      --paper: #ffffff;
-      --ink: #172b4d;
-      --muted: #63748a;
-      --line: #e4e9ef;
-      --main-accent: var(--navy);
+      --navy: #071A33;
+      --navy-2: #073B4C;
+      --blue: #086788;
+      --teal: #17BEBB;
+      --gold: #E3AE38;
+      --gold-soft: #FFF5DC;
+      --aqua: #17BEBB;
+      --ink: #071A33;
+      --ink-light: #0F172A;
+      --muted: #475569;
+      --muted-light: #94A3B8;
+      --line: rgba(255, 255, 255, 0.65);
+      --glass-card: rgba(255, 255, 255, 0.82);
+      --glass-card-hover: rgba(255, 255, 255, 0.94);
+      --glass-border: rgba(255, 255, 255, 0.7);
+      --glass-shadow: 0 16px 40px rgba(7, 26, 51, 0.08);
+      --main-accent: #071A33;
       --main-accent-contrast-color: #ffffff;
-      --font-main: "DM Sans", system-ui, -apple-system, sans-serif;
+      --font-main: "Manrope", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     *, *::before, *::after {
@@ -46,12 +51,34 @@
       scroll-behavior: smooth;
     }
 
+    /* Ambient Animated Sky Background — Matching Main Domain */
     body {
       margin: 0;
-      background: var(--bg);
       color: var(--ink);
       font-family: var(--font-main);
       -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+      background-color: #071A33;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(23, 190, 187, 0.28) 0%, transparent 40%),
+        radial-gradient(circle at 85% 25%, rgba(8, 103, 136, 0.32) 0%, transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(13, 148, 136, 0.22) 0%, transparent 50%),
+        linear-gradient(135deg, #071A33 0%, #073B4C 35%, #086788 70%, #031326 100%);
+      background-size: 200% 200%;
+      background-attachment: fixed;
+      animation: skyMeshAmbient 24s ease-in-out infinite alternate;
+    }
+
+    @keyframes skyMeshAmbient {
+      0% {
+        background-position: 0% 0%;
+      }
+      50% {
+        background-position: 100% 100%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
     }
 
     a {
@@ -64,87 +91,105 @@
       margin: 0 auto;
     }
 
-    /* Top Navigation */
+    /* Top Navigation: Frosted Dark Glass */
     .az-topbar {
-      background: var(--navy);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 26, 51, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 4px 24px rgba(7, 26, 51, 0.2);
       color: #ffffff;
     }
 
     .az-nav {
       display: flex;
       align-items: center;
-      min-height: 66px;
-      gap: 1rem;
+      min-height: 68px;
+      gap: 1.2rem;
     }
 
     .az-brand {
       display: inline-flex;
       align-items: center;
-      gap: 0.48rem;
+      gap: 0.6rem;
       flex: none;
-      font-family: "Manrope", system-ui, sans-serif;
+      font-family: var(--font-main);
       color: #ffffff;
-      font-size: 1.08rem;
+      font-size: 1.15rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.02em;
       text-transform: uppercase;
     }
 
     .az-brand-mark {
-      width: 24px;
-      height: 24px;
+      width: 32px;
+      height: 32px;
       display: grid;
       place-items: center;
-      border: 1.5px solid var(--gold);
-      border-radius: 7px;
-      color: var(--gold);
-      font-size: 0.74rem;
+      border: 1.5px solid var(--teal);
+      border-radius: 10px;
+      color: var(--teal);
+      background: rgba(23, 190, 187, 0.15);
+      font-size: 0.85rem;
+      font-weight: 800;
+      box-shadow: 0 0 15px rgba(23, 190, 187, 0.25);
     }
 
     .az-nav-links {
       display: flex;
       align-items: center;
-      gap: 1.05rem;
-      margin-left: 1.2rem;
+      gap: 1.25rem;
+      margin-left: 1.5rem;
     }
 
     .az-nav-links a {
-      color: rgba(255, 255, 255, 0.82);
-      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.8rem;
       font-weight: 700;
-      transition: color 0.15s ease;
+      letter-spacing: 0.01em;
+      transition: color 0.18s ease;
     }
 
     .az-nav-links a:first-child {
       color: #ffffff;
+      border-bottom: 2px solid var(--teal);
+      padding-bottom: 2px;
     }
 
     .az-nav-links a:hover {
-      color: var(--gold);
+      color: var(--teal);
     }
 
     .az-main-link {
       margin-left: auto;
-      padding: 0.55rem 0.7rem;
-      border: 1px solid rgba(255, 255, 255, 0.34);
-      border-radius: 4px;
+      padding: 0.6rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       color: #ffffff;
-      font-size: 0.67rem;
+      font-size: 0.72rem;
       font-weight: 800;
       letter-spacing: 0.04em;
       text-transform: uppercase;
-      transition: all 0.15s ease;
+      transition: all 0.2s ease;
     }
 
     .az-main-link:hover {
-      border-color: var(--gold);
-      color: var(--gold);
+      border-color: var(--teal);
+      background: rgba(23, 190, 187, 0.2);
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(23, 190, 187, 0.3);
     }
 
     /* Hero Search Area */
     .az-search-hero {
-      padding: 2.25rem 0 3.05rem;
-      background: linear-gradient(125deg, var(--navy) 0%, var(--navy-2) 100%);
+      padding: 2.75rem 0 3.25rem;
+      background: transparent;
       color: #ffffff;
     }
 
@@ -153,42 +198,48 @@
       align-items: flex-end;
       justify-content: space-between;
       gap: 2rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.5rem;
     }
 
     .az-kicker {
-      margin: 0 0 0.45rem;
-      color: #f4cf70;
-      font-size: 0.66rem;
+      margin: 0 0 0.5rem;
+      color: var(--teal);
+      font-size: 0.72rem;
       font-weight: 800;
-      letter-spacing: 0.13em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
+      text-shadow: 0 0 12px rgba(23, 190, 187, 0.4);
     }
 
     .az-search-intro h1 {
-      max-width: 680px;
+      max-width: 720px;
       margin: 0;
-      font-family: "Manrope", system-ui, sans-serif;
-      font-size: clamp(2rem, 4.8vw, 3.45rem);
+      font-family: var(--font-main);
+      font-size: clamp(2.1rem, 5vw, 3.5rem);
       font-weight: 800;
-      letter-spacing: -0.055em;
-      line-height: 1.05;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      color: #ffffff;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
 
     .az-search-intro p {
-      max-width: 290px;
+      max-width: 320px;
       margin: 0;
-      color: rgba(255, 255, 255, 0.76);
-      font-size: 0.78rem;
-      line-height: 1.55;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.82rem;
+      line-height: 1.6;
     }
 
+    /* Live Search Card: Frosted Glass */
     .az-search-card {
-      padding: 1.15rem;
-      border-radius: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      background: #ffffff;
-      box-shadow: 0 22px 44px rgba(0, 24, 56, 0.24);
+      padding: 1.5rem;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      box-shadow: 0 24px 60px rgba(7, 26, 51, 0.2), 0 0 32px rgba(23, 190, 187, 0.1);
       color: var(--ink);
     }
 
@@ -197,23 +248,26 @@
       flex-wrap: wrap;
       align-items: center;
       justify-content: space-between;
-      gap: 0.65rem;
-      padding-bottom: 0.9rem;
-      border-bottom: 1px solid var(--line);
+      gap: 0.75rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
     }
 
     .az-form-heading strong {
-      font-size: 0.85rem;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #071A33;
     }
 
     .az-form-heading span {
-      padding: 0.36rem 0.55rem;
+      padding: 0.4rem 0.75rem;
       border-radius: 99px;
-      background: var(--gold-soft);
-      color: #7a5710;
-      font-size: 0.62rem;
+      background: rgba(245, 158, 11, 0.15);
+      color: #b45309;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      font-size: 0.65rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
     }
 
@@ -226,73 +280,88 @@
       width: 100%;
     }
 
+    /* Universal Travelpayouts Typography Inheritance */
+    #tpwl-search, #tpwl-tickets, #tpwl-search *, #tpwl-tickets * {
+      font-family: var(--font-main) !important;
+    }
+
     .az-form-footnote {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.45rem 1rem;
-      padding-top: 0.7rem;
+      gap: 0.5rem 1.25rem;
+      padding-top: 0.9rem;
       color: var(--muted);
-      font-size: 0.68rem;
-      line-height: 1.45;
+      font-size: 0.72rem;
+      font-weight: 500;
+      line-height: 1.5;
     }
 
     .az-form-footnote span {
       display: inline-flex;
       align-items: center;
-      gap: 0.32rem;
+      gap: 0.4rem;
     }
 
     .az-form-footnote span::before {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
-      background: var(--aqua);
+      background: var(--teal);
       content: "";
+      box-shadow: 0 0 6px rgba(23, 190, 187, 0.5);
     }
 
-    /* Content & Results */
+    /* Content & Results Section */
     .az-content {
-      padding: 2.5rem 0 3rem;
+      padding: 2.75rem 0 3.5rem;
     }
 
     .az-section-head {
       display: flex;
       align-items: flex-end;
       justify-content: space-between;
-      gap: 1rem;
-      margin-bottom: 0.95rem;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
     }
 
     .az-section-label {
-      margin: 0 0 0.3rem;
-      color: var(--blue);
-      font-size: 0.64rem;
+      margin: 0 0 0.35rem;
+      color: var(--teal);
+      font-size: 0.7rem;
       font-weight: 800;
-      letter-spacing: 0.13em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(23, 190, 187, 0.3);
     }
 
     .az-section-head h2 {
       margin: 0;
-      font-family: "Manrope", system-ui, sans-serif;
-      font-size: 1.42rem;
-      letter-spacing: -0.04em;
+      font-family: var(--font-main);
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: #ffffff;
+      text-shadow: 0 2px 12px rgba(7, 26, 51, 0.3);
     }
 
     .az-section-head p {
-      max-width: 390px;
+      max-width: 420px;
       margin: 0;
-      color: var(--muted);
-      font-size: 0.74rem;
-      line-height: 1.55;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+      line-height: 1.6;
       text-align: right;
     }
 
+    /* Results Card: Frosted Glass */
     .az-results {
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: var(--paper);
-      box-shadow: 0 8px 20px rgba(20, 47, 77, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      box-shadow: 0 20px 50px rgba(7, 26, 51, 0.16);
+      overflow: hidden;
     }
 
     .az-results-top {
@@ -300,26 +369,29 @@
       flex-wrap: wrap;
       justify-content: space-between;
       gap: 0.6rem 1rem;
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--line);
-      background: #fbfcfe;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       color: var(--muted);
-      font-size: 0.7rem;
-      line-height: 1.45;
+      font-size: 0.74rem;
+      line-height: 1.5;
     }
 
     .az-results-top strong {
       color: var(--ink);
+      font-weight: 800;
     }
 
     .az-provider-note {
-      color: #0c7c81;
-      font-weight: 700;
+      color: #0d9488;
+      font-weight: 800;
     }
 
     #tpwl-tickets {
       min-height: 90px;
-      padding: 1rem;
+      padding: 1.25rem;
     }
 
     #tpwl-tickets > * {
@@ -328,45 +400,55 @@
 
     /* Popular Routes */
     .az-routes {
-      margin-top: 2rem;
+      margin-top: 2.75rem;
     }
 
     .az-route-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
+      gap: 1rem;
     }
 
+    /* Frosted Glass Route Cards */
     .az-route {
       position: relative;
       display: flex;
-      min-height: 105px;
+      min-height: 115px;
       flex-direction: column;
       justify-content: space-between;
       overflow: hidden;
-      padding: 1rem;
-      border: 1px solid var(--line);
-      border-radius: 9px;
-      background: #ffffff;
+      padding: 1.2rem;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       color: var(--ink);
-      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+      box-shadow: 0 10px 30px rgba(7, 26, 51, 0.06);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .az-route::after {
       position: absolute;
-      right: -18px;
-      top: -40px;
-      width: 95px;
-      height: 95px;
-      border: 16px solid #eaf3fc;
+      right: -20px;
+      top: -42px;
+      width: 105px;
+      height: 105px;
+      border: 18px solid rgba(23, 190, 187, 0.1);
       border-radius: 50%;
       content: "";
+      transition: transform 0.3s ease;
     }
 
     .az-route:hover {
-      transform: translateY(-2px);
-      border-color: #b5d7f4;
-      box-shadow: 0 10px 22px rgba(20, 71, 113, 0.1);
+      transform: translateY(-4px);
+      border-color: rgba(23, 190, 187, 0.6);
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 18px 40px rgba(7, 26, 51, 0.14), 0 0 24px rgba(23, 190, 187, 0.1);
+    }
+
+    .az-route:hover::after {
+      transform: scale(1.15);
     }
 
     .az-route small,
@@ -378,164 +460,218 @@
 
     .az-route small {
       color: var(--blue);
-      font-size: 0.61rem;
+      font-size: 0.66rem;
       font-weight: 800;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
     .az-route b {
-      font-family: "Manrope", system-ui, sans-serif;
-      font-size: 1.06rem;
-      letter-spacing: -0.035em;
+      font-family: var(--font-main);
+      font-size: 1.18rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: #071A33;
     }
 
     .az-route span {
       color: var(--blue);
-      font-size: 0.68rem;
+      font-size: 0.72rem;
       font-weight: 800;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
     .az-route span::after {
       content: " →";
+      transition: transform 0.2s ease;
     }
 
-    /* Why Compare Grid */
+    .az-route:hover span::after {
+      transform: translateX(3px);
+    }
+
+    /* Why Compare Grid: 4 Frosted Glass Pillars */
     .az-why {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1px;
-      margin-top: 2rem;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      overflow: hidden;
-      background: var(--line);
+      gap: 12px;
+      margin-top: 2.75rem;
+      border: none;
+      background: transparent;
     }
 
     .az-why article {
       min-height: 144px;
-      padding: 1rem;
-      background: #ffffff;
+      padding: 1.25rem;
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 10px 30px rgba(7, 26, 51, 0.06);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .az-why article:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 34px rgba(7, 26, 51, 0.1);
     }
 
     .az-why b {
       display: block;
-      color: #b27900;
-      font-size: 0.62rem;
+      color: #d97706;
+      font-size: 0.65rem;
+      font-weight: 800;
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
 
     .az-why h3 {
-      margin: 0.9rem 0 0.38rem;
-      font-family: "Manrope", system-ui, sans-serif;
-      font-size: 0.92rem;
-      letter-spacing: -0.03em;
+      margin: 0.8rem 0 0.4rem;
+      font-family: var(--font-main);
+      font-size: 0.98rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: #071A33;
     }
 
     .az-why p {
       margin: 0;
       color: var(--muted);
-      font-size: 0.7rem;
-      line-height: 1.55;
+      font-size: 0.74rem;
+      line-height: 1.6;
     }
 
-    /* Secondary Cards */
+    /* Secondary Cards: Frosted Glass */
     .az-secondary {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 0.8rem;
-      margin-top: 2rem;
+      gap: 1.25rem;
+      margin-top: 2.75rem;
     }
 
     .az-secondary article {
-      padding: 1.3rem;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #ffffff;
+      padding: 1.6rem;
+      border: 1px solid rgba(255, 255, 255, 0.7);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 12px 34px rgba(7, 26, 51, 0.07);
+      transition: transform 0.2s ease;
+    }
+
+    .az-secondary article:hover {
+      transform: translateY(-2px);
     }
 
     .az-secondary h3 {
-      margin: 0.18rem 0 0.55rem;
-      font-family: "Manrope", system-ui, sans-serif;
-      font-size: 1.25rem;
-      letter-spacing: -0.04em;
+      margin: 0.25rem 0 0.6rem;
+      font-family: var(--font-main);
+      font-size: 1.35rem;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: #071A33;
     }
 
     .az-secondary p {
       margin: 0;
       color: var(--muted);
-      font-size: 0.76rem;
-      line-height: 1.6;
+      font-size: 0.8rem;
+      line-height: 1.65;
     }
 
     .az-secondary a {
       display: inline-flex;
-      gap: 0.3rem;
-      margin-top: 0.9rem;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 1rem;
       color: var(--blue);
-      font-size: 0.7rem;
+      font-size: 0.74rem;
       font-weight: 800;
-      transition: color 0.15s ease;
+      transition: color 0.18s ease;
     }
 
     .az-secondary a::after {
       content: " →";
+      transition: transform 0.2s ease;
     }
 
     .az-secondary a:hover {
-      color: var(--aqua);
+      color: var(--teal);
     }
 
-    /* WhatsApp Desk Banner */
+    .az-secondary a:hover::after {
+      transform: translateX(3px);
+    }
+
+    /* Direct WhatsApp Concierge Desk: Frosted Dark Glass */
     .az-desk {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 1.4rem;
-      margin-top: 2rem;
-      padding: 1.35rem;
-      border-radius: 10px;
-      background: var(--navy);
+      gap: 1.5rem;
+      margin-top: 2.75rem;
+      padding: 1.85rem 2rem;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      background: rgba(7, 26, 51, 0.88);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       color: #ffffff;
+      box-shadow: 0 24px 50px rgba(7, 26, 51, 0.28);
     }
 
     .az-desk p {
       margin: 0;
-      color: #bed5e9;
-      font-size: 0.75rem;
-      line-height: 1.55;
+      color: var(--teal);
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     .az-desk h2 {
-      margin: 0.22rem 0 0;
-      font-family: "Manrope", system-ui, sans-serif;
-      font-size: 1.35rem;
-      letter-spacing: -0.04em;
+      margin: 0.3rem 0 0;
+      font-family: var(--font-main);
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: #ffffff;
     }
 
     .az-desk a {
       display: inline-flex;
       flex: none;
       align-items: center;
-      padding: 0.7rem 0.85rem;
-      border-radius: 6px;
-      background: var(--gold);
-      color: #342300;
-      font-size: 0.68rem;
+      gap: 0.4rem;
+      padding: 0.8rem 1.25rem;
+      border-radius: 14px;
+      background: #059669;
+      color: #ffffff;
+      font-size: 0.74rem;
       font-weight: 800;
-      transition: background 0.15s ease;
+      letter-spacing: 0.02em;
+      box-shadow: 0 4px 16px rgba(5, 150, 105, 0.35);
+      transition: all 0.2s ease;
     }
 
     .az-desk a:hover {
-      background: #f2c65b;
+      background: #10b981;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.45);
     }
 
-    /* Footer */
+    /* Footer: Frosted Dark Glass */
     .az-footer {
-      padding: 1.7rem 0;
-      background: #061d3a;
-      color: #95aec3;
+      padding: 2.2rem 0;
+      background: rgba(7, 26, 51, 0.92);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
     }
 
     .az-footer-inner {
@@ -547,14 +683,15 @@
 
     .az-footer p {
       margin: 0;
-      font-size: 0.68rem;
+      font-size: 0.74rem;
+      font-weight: 500;
     }
 
     .az-footer a {
-      color: #d6e9f7;
-      font-size: 0.7rem;
+      color: var(--teal);
+      font-size: 0.76rem;
       font-weight: 700;
-      transition: color 0.15s ease;
+      transition: color 0.18s ease;
     }
 
     .az-footer a:hover {
@@ -568,15 +705,15 @@
     /* Mobile Responsiveness */
     @media (max-width: 760px) {
       .az-shell {
-        width: min(100% - 1.25rem, 1180px);
+        width: min(100% - 1.5rem, 1180px);
       }
 
       .az-nav {
-        min-height: 58px;
+        min-height: 60px;
       }
 
       .az-brand {
-        font-size: 0.96rem;
+        font-size: 1.02rem;
       }
 
       .az-nav-links {
@@ -585,11 +722,12 @@
 
       .az-main-link {
         margin-left: auto;
-        font-size: 0.61rem;
+        font-size: 0.65rem;
+        padding: 0.5rem 0.8rem;
       }
 
       .az-search-hero {
-        padding: 1.65rem 0 2.1rem;
+        padding: 2rem 0 2.4rem;
       }
 
       .az-search-intro {
@@ -597,23 +735,24 @@
       }
 
       .az-search-intro p {
-        margin-top: 0.8rem;
+        margin-top: 0.85rem;
       }
 
       .az-search-card {
-        padding: 0.85rem;
+        padding: 1rem;
+        border-radius: 20px;
       }
 
       .az-form-heading strong {
-        font-size: 0.76rem;
+        font-size: 0.82rem;
       }
 
       .az-form-footnote {
-        font-size: 0.63rem;
+        font-size: 0.68rem;
       }
 
       .az-content {
-        padding-top: 1.6rem;
+        padding-top: 2rem;
       }
 
       .az-section-head {
@@ -621,44 +760,51 @@
       }
 
       .az-section-head p {
-        margin-top: 0.45rem;
+        margin-top: 0.5rem;
         text-align: left;
       }
 
       .az-route-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 0.6rem;
+        gap: 0.75rem;
       }
 
       .az-route {
-        min-height: 95px;
-        padding: 0.8rem;
+        min-height: 100px;
+        padding: 1rem;
+        border-radius: 16px;
       }
 
       .az-why {
         grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
       }
 
       .az-why article {
         min-height: 130px;
-        padding: 0.85rem;
+        padding: 1rem;
+        border-radius: 16px;
       }
 
       .az-secondary {
         grid-template-columns: 1fr;
+        gap: 1rem;
       }
 
       .az-desk {
         display: block;
+        padding: 1.4rem;
+        border-radius: 20px;
       }
 
       .az-desk a {
-        margin-top: 1rem;
+        margin-top: 1.15rem;
       }
 
       .az-footer-inner {
         align-items: flex-start;
         flex-direction: column;
+        gap: 0.6rem;
       }
     }
   </style>
@@ -676,7 +822,7 @@
 </head>
 
 <body>
-  <!-- Header -->
+  <!-- Header: Frosted Dark Glass Navbar -->
   <header class="az-topbar">
     <nav class="az-shell az-nav" aria-label="Azraq Navigation">
       <a class="az-brand" href="https://www.azraqtrips.com/">
@@ -684,9 +830,10 @@
       </a>
       <div class="az-nav-links">
         <a href="#tpwl-search">Flights</a>
-        <a href="https://www.azraqtrips.com/">Hotels</a>
-        <a href="https://www.azraqtrips.com/">Packages</a>
-        <a href="https://www.azraqtrips.com/">Visa</a>
+        <a href="https://www.azraqtrips.com/hotels">Hotels</a>
+        <a href="https://www.azraqtrips.com/packages">Packages</a>
+        <a href="https://www.azraqtrips.com/visa">Visa</a>
+        <a href="https://www.azraqtrips.com/buddies">Travel Buddies</a>
       </div>
       <a class="az-main-link" href="https://www.azraqtrips.com/">Azraq Home</a>
     </nav>
@@ -819,13 +966,13 @@
               Find country-requirement checks and documentation guidance for popular Bangladesh-origin routes. Confirm
               current rules with the relevant authority before travel.
             </p>
-            <a href="https://www.azraqtrips.com/">Explore visa assistance</a>
+            <a href="https://www.azraqtrips.com/visa">Explore visa assistance</a>
           </article>
           <article>
             <p class="az-section-label">Packages</p>
             <h3>Plan beyond the flight.</h3>
             <p>Ask Azraq about holiday planning with stays, transfers, excursions, and day-by-day itinerary support.</p>
-            <a href="https://www.azraqtrips.com/">Explore packages</a>
+            <a href="https://www.azraqtrips.com/packages">Explore packages</a>
           </article>
         </section>
 
@@ -847,7 +994,7 @@
     </section>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer: Frosted Dark Glass -->
   <footer class="az-footer">
     <div class="az-shell az-footer-inner">
       <p>Azraq Trips · Flight comparison, holiday planning, and visa documentation guidance from Dhaka.</p>

@@ -19,10 +19,10 @@ export const AnimatedSkyBackground: React.FC = () => {
           shouldReduceMotion
             ? false
             : {
-                x: ['-5%', '5%', '-5%'],
-                y: ['-5%', '8%', '-5%'],
-                scale: [1, 1.15, 1],
-              }
+              x: ['-5%', '5%', '-5%'],
+              y: ['-5%', '8%', '-5%'],
+              scale: [1, 1.15, 1],
+            }
         }
         transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] max-w-[900px] max-h-[900px] rounded-full bg-gradient-to-br from-[#17BEBB]/25 via-[#086788]/20 to-transparent blur-[100px] opacity-70"
@@ -33,10 +33,10 @@ export const AnimatedSkyBackground: React.FC = () => {
           shouldReduceMotion
             ? false
             : {
-                x: ['6%', '-6%', '6%'],
-                y: ['8%', '-8%', '8%'],
-                scale: [1.1, 0.95, 1.1],
-              }
+              x: ['6%', '-6%', '6%'],
+              y: ['8%', '-8%', '8%'],
+              scale: [1.1, 0.95, 1.1],
+            }
         }
         transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute top-[25%] -right-[15%] w-[60vw] h-[60vw] max-w-[850px] max-h-[850px] rounded-full bg-gradient-to-bl from-[#00D2C4]/20 via-[#0D9488]/15 to-transparent blur-[110px] opacity-60"
@@ -47,10 +47,10 @@ export const AnimatedSkyBackground: React.FC = () => {
           shouldReduceMotion
             ? false
             : {
-                x: ['-8%', '8%', '-8%'],
-                y: ['10%', '-5%', '10%'],
-                scale: [0.95, 1.1, 0.95],
-              }
+              x: ['-8%', '8%', '-8%'],
+              y: ['10%', '-5%', '10%'],
+              scale: [0.95, 1.1, 0.95],
+            }
         }
         transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute top-[60%] -left-[10%] w-[70vw] h-[70vw] max-w-[950px] max-h-[950px] rounded-full bg-gradient-to-tr from-[#086788]/25 via-[#17BEBB]/15 to-transparent blur-[120px] opacity-55"
@@ -61,10 +61,10 @@ export const AnimatedSkyBackground: React.FC = () => {
           shouldReduceMotion
             ? false
             : {
-                x: ['5%', '-5%', '5%'],
-                y: ['-6%', '6%', '-6%'],
-                scale: [1, 1.12, 1],
-              }
+              x: ['5%', '-5%', '5%'],
+              y: ['-6%', '6%', '-6%'],
+              scale: [1, 1.12, 1],
+            }
         }
         transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
         className="absolute bottom-[-10%] right-[10%] w-[55vw] h-[55vw] max-w-[800px] max-h-[800px] rounded-full bg-gradient-to-tl from-[#0A3D62]/35 via-[#17BEBB]/20 to-transparent blur-[100px] opacity-65"
@@ -76,8 +76,8 @@ export const AnimatedSkyBackground: React.FC = () => {
           shouldReduceMotion
             ? false
             : {
-                x: ['-20%', '20%', '-20%'],
-              }
+              x: ['-20%', '20%', '-20%'],
+            }
         }
         transition={{ duration: 45, repeat: Infinity, ease: 'linear' }}
         className="absolute top-[12%] left-[-20%] w-[140%] h-[350px] bg-gradient-to-r from-transparent via-white/[0.04] to-transparent blur-3xl transform rotate-[-3deg]"
@@ -88,8 +88,8 @@ export const AnimatedSkyBackground: React.FC = () => {
           shouldReduceMotion
             ? false
             : {
-                x: ['15%', '-15%', '15%'],
-              }
+              x: ['15%', '-15%', '15%'],
+            }
         }
         transition={{ duration: 55, repeat: Infinity, ease: 'linear' }}
         className="absolute top-[48%] left-[-15%] w-[130%] h-[400px] bg-gradient-to-r from-transparent via-[#17BEBB]/[0.05] to-transparent blur-3xl transform rotate-[2deg]"
