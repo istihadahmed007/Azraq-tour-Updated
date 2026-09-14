@@ -302,7 +302,7 @@ export const FlightDatepickerModal: React.FC<FlightDatepickerModalProps> = ({
       ref={containerRef}
       role="dialog"
       aria-label="Flight Date Picker"
-      className="absolute top-full left-0 right-0 sm:left-auto sm:right-0 sm:w-[660px] mt-2.5 z-50 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_24px_60px_rgba(7,26,51,0.22)] border border-white/80 p-4 sm:p-5 text-slate-900 animate-fadeIn"
+      className="absolute top-full left-0 sm:left-1/2 sm:-translate-x-1/2 w-full sm:w-[620px] max-w-[calc(100vw-2rem)] mt-2.5 z-50 bg-white/95 backdrop-blur-2xl rounded-3xl shadow-[0_24px_60px_rgba(7,26,51,0.22)] border border-white/80 p-4 sm:p-5 text-slate-900 animate-fadeIn"
     >
       {/* Top Header Controls: Active Tab Switcher & Trip Type */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">

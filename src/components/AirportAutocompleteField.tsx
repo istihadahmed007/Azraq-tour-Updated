@@ -333,7 +333,11 @@ export const AirportAutocompleteField: React.FC<AirportAutocompleteFieldProps> =
           id={listboxId}
           role="listbox"
           aria-label={`${label} options`}
-          className="absolute top-full left-0 mt-2 w-80 sm:w-96 bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_rgba(7,26,51,0.15)] border border-white/70 z-50 p-2 text-slate-900 animate-fadeIn"
+          className={`absolute top-full ${
+            label.toLowerCase().includes('arrival') || label.toLowerCase().includes('going')
+              ? 'left-0 sm:left-auto sm:right-0'
+              : 'left-0'
+          } mt-2 w-80 sm:w-96 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_16px_40px_rgba(7,26,51,0.15)] border border-white/70 z-50 p-2 text-slate-900 animate-fadeIn`}
         >
           {/* Search Input Bar */}
           <div className="p-2 border-b border-slate-100">

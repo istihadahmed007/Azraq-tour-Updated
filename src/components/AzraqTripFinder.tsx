@@ -352,9 +352,9 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
       </div>
 
       {/* 2. Main Search Container: Premium Glassmorphic Floating Panel */}
-      <div className="w-full bg-white/30 hover:bg-white/35 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 lg:p-7 shadow-[0_20px_50px_rgba(7,26,51,0.28)] border border-white/45 text-slate-900 ring-1 ring-white/30 relative overflow-hidden transition-all">
+      <div className="w-full bg-white/30 hover:bg-white/35 backdrop-blur-2xl rounded-3xl p-4 sm:p-6 lg:p-7 shadow-[0_20px_50px_rgba(7,26,51,0.28)] border border-white/45 text-slate-900 ring-1 ring-white/30 relative z-20 transition-all">
         {/* Luminous top specular refraction highlight */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none" />
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none rounded-t-3xl" />
 
         {/* ================= MODE 1: FLIGHTS ================= */}
         {activeTab === 'flights' && (
@@ -605,11 +605,11 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
             </div>
 
             {/* Main Primary Search Row (Unified Flight Engine Grid) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[minmax(0,2.5fr)_minmax(0,1.15fr)_minmax(0,1.15fr)_auto] gap-2.5 items-stretch relative">
-              {/* Departure Airport (Origin) & Arrival Airport (Destination) with Centered Swap Button */}
-              <div className="md:col-span-2 lg:col-span-1 relative grid grid-cols-1 sm:grid-cols-2 gap-2 h-full">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1.15fr)_auto] gap-2.5 items-stretch relative z-20">
+              {/* Departure Airport (Origin) & Arrival Airport (Destination) with Dedicated Center Swap Button */}
+              <div className="md:col-span-2 lg:col-span-1 grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] items-center gap-1.5 h-full">
                 {/* Departure (Origin) Field */}
-                <div>
+                <div className="min-w-0">
                   <AirportAutocompleteField
                     label="Departure (From)"
                     selectedAirport={origin}
@@ -621,13 +621,13 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                   />
                 </div>
 
-                {/* Desktop Center Swap Button */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 hidden sm:flex pointer-events-auto">
+                {/* Desktop Center Swap Button (Dedicated Column - Zero Overlap!) */}
+                <div className="hidden sm:flex items-center justify-center shrink-0">
                   <button
                     type="button"
                     onClick={handleSwapAirports}
                     aria-label="Swap departure and arrival airports"
-                    className="w-10 h-10 rounded-full bg-white/90 hover:bg-white backdrop-blur-lg border border-white/80 shadow-md hover:shadow-lg text-[#071A33] hover:text-[#17BEBB] hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer group"
+                    className="w-9 h-9 rounded-full bg-white/90 hover:bg-white backdrop-blur-lg border border-white/80 shadow-sm hover:shadow-md text-[#071A33] hover:text-[#17BEBB] hover:scale-110 active:scale-95 transition-all flex items-center justify-center cursor-pointer group"
                     title="Swap origin and destination"
                   >
                     <ArrowRightLeft className="w-4 h-4 transition-transform duration-300 group-hover:rotate-180" />
@@ -648,7 +648,7 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                 </div>
 
                 {/* Arrival (Destination) Field */}
-                <div>
+                <div className="min-w-0">
                   <AirportAutocompleteField
                     label="Arrival (To)"
                     selectedAirport={destination}
@@ -661,109 +661,42 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                 </div>
               </div>
 
-              {/* Departure Date Card */}
-              <div className="md:col-span-1 lg:col-span-1 relative">
-                <div
-                  onClick={() => setOpenDatePicker('departure')}
-                  className={`w-full h-[76px] min-h-[76px] p-3 sm:px-3.5 sm:py-2.5 bg-white/80 hover:bg-white/95 backdrop-blur-md rounded-2xl border ${
-                    openDatePicker === 'departure'
-                      ? 'border-[#071A33] ring-2 ring-[#071A33] bg-white'
-                      : 'border-white/60 hover:border-white shadow-sm'
-                  } flex items-center justify-between cursor-pointer transition-all relative group select-none`}
-                >
-                  <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                    <div className="w-10 h-10 rounded-xl bg-[#071A33]/10 text-[#17BEBB] flex items-center justify-center shrink-0 backdrop-blur-xs group-hover:scale-105 transition-transform">
-                      <Calendar className="w-4 h-4" />
+              {/* Departure & Return Dates Container (Paired Block with Anchored Calendar Popover) */}
+              <div className="md:col-span-2 lg:col-span-1 relative grid grid-cols-1 sm:grid-cols-2 gap-2 h-full">
+                {/* Departure Date Card */}
+                <div className="min-w-0">
+                  <div
+                    onClick={() => setOpenDatePicker('departure')}
+                    className={`w-full h-[76px] min-h-[76px] p-3 sm:px-3.5 sm:py-2.5 bg-white/80 hover:bg-white/95 backdrop-blur-md rounded-2xl border ${
+                      openDatePicker === 'departure'
+                        ? 'border-[#071A33] ring-2 ring-[#071A33] bg-white'
+                        : 'border-white/60 hover:border-white shadow-sm'
+                    } flex items-center justify-between cursor-pointer transition-all relative group select-none`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 pr-1 flex-1">
+                      <div className="w-10 h-10 rounded-xl bg-[#071A33]/10 text-[#17BEBB] flex items-center justify-center shrink-0 backdrop-blur-xs group-hover:scale-105 transition-transform">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block font-mono">
+                          Departure Date
+                        </span>
+                        <span className="text-base sm:text-lg font-bold text-[#071A33] block leading-tight mt-0.5 whitespace-nowrap">
+                          {formatFlightDate(departureDate)}
+                        </span>
+                        <span className="text-xs text-slate-600 block mt-0.5 whitespace-nowrap truncate">
+                          {tripType === 'round' ? 'Outbound flight' : 'One-way departure'}
+                        </span>
+                      </div>
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block font-mono">
-                        Departure Date
-                      </span>
-                      <span className="text-base sm:text-lg font-bold text-[#071A33] block leading-tight mt-0.5 whitespace-nowrap">
-                        {formatFlightDate(departureDate)}
-                      </span>
-                      <span className="text-xs text-slate-600 block mt-0.5 whitespace-nowrap">
-                        {tripType === 'round' ? 'Outbound flight' : 'One-way departure'}
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Day Stepper */}
-                  <div className="flex items-center gap-0.5 z-10 shrink-0">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDepartureDateChange(adjustDateByDays(departureDate, -1));
-                      }}
-                      className="w-6 h-6 rounded-lg hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-                      title="Previous Day"
-                    >
-                      ‹
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDepartureDateChange(adjustDateByDays(departureDate, 1));
-                      }}
-                      className="w-6 h-6 rounded-lg hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
-                      title="Next Day"
-                    >
-                      ›
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Return Date Card */}
-              <div className="md:col-span-1 lg:col-span-1 relative">
-                <div
-                  onClick={() => {
-                    if (tripType === 'oneway') {
-                      setTripType('round');
-                    }
-                    setOpenDatePicker('return');
-                  }}
-                  className={`w-full h-[76px] min-h-[76px] p-3 sm:px-3.5 sm:py-2.5 rounded-2xl border shadow-sm flex items-center justify-between cursor-pointer transition-all relative group select-none ${
-                    openDatePicker === 'return'
-                      ? 'border-[#071A33] ring-2 ring-[#071A33] bg-white'
-                      : tripType === 'oneway'
-                      ? 'bg-white/45 hover:bg-white/60 border-dashed border-2 border-white/70 text-slate-600 backdrop-blur-md'
-                      : 'bg-white/80 hover:bg-white/95 backdrop-blur-md border border-white/60 hover:border-white'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 min-w-0 pr-1 flex-1">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
-                        tripType === 'oneway'
-                          ? 'bg-white/50 text-slate-500'
-                          : 'bg-[#071A33]/10 text-[#17BEBB] backdrop-blur-xs'
-                      }`}
-                    >
-                      <Calendar className="w-4 h-4" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block font-mono">
-                        Return Date
-                      </span>
-                      <span className="text-base sm:text-lg font-bold text-[#071A33] block leading-tight mt-0.5 whitespace-nowrap">
-                        {tripType === 'oneway' ? 'Add return' : formatFlightDate(returnDate)}
-                      </span>
-                      <span className="text-xs text-slate-600 block mt-0.5 whitespace-nowrap">
-                        {tripType === 'oneway' ? 'Click for round-trip' : 'Return flight'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {tripType === 'round' && (
+                    {/* Day Stepper */}
                     <div className="flex items-center gap-0.5 z-10 shrink-0">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          const newD = adjustDateByDays(returnDate, -1);
-                          if (newD >= departureDate) handleReturnDateChange(newD);
+                          handleDepartureDateChange(adjustDateByDays(departureDate, -1));
                         }}
                         className="w-6 h-6 rounded-lg hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
                         title="Previous Day"
@@ -774,7 +707,7 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleReturnDateChange(adjustDateByDays(returnDate, 1));
+                          handleDepartureDateChange(adjustDateByDays(departureDate, 1));
                         }}
                         className="w-6 h-6 rounded-lg hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
                         title="Next Day"
@@ -782,8 +715,92 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                         ›
                       </button>
                     </div>
-                  )}
+                  </div>
                 </div>
+
+                {/* Return Date Card */}
+                <div className="min-w-0">
+                  <div
+                    onClick={() => {
+                      if (tripType === 'oneway') {
+                        setTripType('round');
+                      }
+                      setOpenDatePicker('return');
+                    }}
+                    className={`w-full h-[76px] min-h-[76px] p-3 sm:px-3.5 sm:py-2.5 rounded-2xl border shadow-sm flex items-center justify-between cursor-pointer transition-all relative group select-none ${
+                      openDatePicker === 'return'
+                        ? 'border-[#071A33] ring-2 ring-[#071A33] bg-white'
+                        : tripType === 'oneway'
+                        ? 'bg-white/45 hover:bg-white/60 border-dashed border-2 border-white/70 text-slate-600 backdrop-blur-md'
+                        : 'bg-white/80 hover:bg-white/95 backdrop-blur-md border border-white/60 hover:border-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 pr-1 flex-1">
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${
+                          tripType === 'oneway'
+                            ? 'bg-white/50 text-slate-500'
+                            : 'bg-[#071A33]/10 text-[#17BEBB] backdrop-blur-xs'
+                        }`}
+                      >
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block font-mono">
+                          Return Date
+                        </span>
+                        <span className="text-base sm:text-lg font-bold text-[#071A33] block leading-tight mt-0.5 whitespace-nowrap">
+                          {tripType === 'oneway' ? 'Add return' : formatFlightDate(returnDate)}
+                        </span>
+                        <span className="text-xs text-slate-600 block mt-0.5 whitespace-nowrap truncate">
+                          {tripType === 'oneway' ? 'Click for round-trip' : 'Return flight'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {tripType === 'round' && (
+                      <div className="flex items-center gap-0.5 z-10 shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const newD = adjustDateByDays(returnDate, -1);
+                            if (newD >= departureDate) handleReturnDateChange(newD);
+                          }}
+                          className="w-6 h-6 rounded-lg hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+                          title="Previous Day"
+                        >
+                          ‹
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleReturnDateChange(adjustDateByDays(returnDate, 1));
+                          }}
+                          className="w-6 h-6 rounded-lg hover:bg-black/5 flex items-center justify-center text-slate-600 hover:text-slate-900 text-xs font-bold transition-colors cursor-pointer"
+                          title="Next Day"
+                        >
+                          ›
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Interactive Glassmorphic Calendar Popover - Anchored to Dates block */}
+                <FlightDatepickerModal
+                  isOpen={openDatePicker !== null}
+                  onClose={() => setOpenDatePicker(null)}
+                  activeField={openDatePicker || 'departure'}
+                  onSelectActiveField={(field) => setOpenDatePicker(field)}
+                  departureDate={departureDate}
+                  returnDate={returnDate}
+                  tripType={tripType}
+                  onDepartureDateChange={handleDepartureDateChange}
+                  onReturnDateChange={handleReturnDateChange}
+                  onTripTypeChange={setTripType}
+                />
               </div>
 
               {/* Primary Search CTA Button with Voice Search Option */}
@@ -816,20 +833,6 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
                   </button>
                 )}
               </div>
-
-              {/* Interactive Glassmorphic Calendar Popover */}
-              <FlightDatepickerModal
-                isOpen={openDatePicker !== null}
-                onClose={() => setOpenDatePicker(null)}
-                activeField={openDatePicker || 'departure'}
-                onSelectActiveField={(field) => setOpenDatePicker(field)}
-                departureDate={departureDate}
-                returnDate={returnDate}
-                tripType={tripType}
-                onDepartureDateChange={handleDepartureDateChange}
-                onReturnDateChange={handleReturnDateChange}
-                onTripTypeChange={setTripType}
-              />
             </div>
 
             {/* Validation Error Message */}
