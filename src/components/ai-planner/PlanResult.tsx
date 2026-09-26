@@ -22,7 +22,12 @@ import {
   ShieldCheck,
   Smartphone,
 } from 'lucide-react';
-import { AGENCY_CONFIG, AZRAQ_AFFILIATE_LINKS } from '../../data/agencyConfig';
+import {
+  AGENCY_CONFIG,
+  getAffiliateLink,
+  trackAffiliateClick,
+  AFFILIATE_DISCLOSURE_TEXT,
+} from '../../data/agencyConfig';
 
 export interface TravelPlanResultData {
   overview: string;
@@ -150,6 +155,17 @@ export function PlanResult({
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
 
+            <a
+              href={getAffiliateLink('aviasales', 'planner_flight_aviasales')}
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              onClick={() => trackAffiliateClick('aviasales', 'planner_flight_aviasales')}
+              className="mt-2 text-center text-xs font-medium text-slate-500 hover:text-slate-800 transition flex items-center justify-center gap-1"
+            >
+              <span>Optional: Browse flights on Aviasales</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+
             {/* Flight Arrival & Airport Transfers */}
             <div className="mt-4 pt-3.5 border-t border-slate-100 space-y-2">
               <div className="flex items-center justify-between">
@@ -158,14 +174,15 @@ export function PlanResult({
                   <span>Flight Arrival & Airport Transfers</span>
                 </span>
                 <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded">
-                  Instant Pickup
+                  Arrival Options
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+                  href={getAffiliateLink('kiwitaxi', 'planner_transfers_kiwitaxi')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('kiwitaxi', 'planner_transfers_kiwitaxi')}
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50/70 border border-slate-200/80 hover:border-blue-200 transition flex items-center justify-between text-xs group cursor-pointer"
                 >
                   <div className="space-y-0.5">
@@ -173,13 +190,14 @@ export function PlanResult({
                       Kiwitaxi Airport Transfer
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-[#006ce4]" />
                     </span>
-                    <p className="text-[11px] text-slate-500">Nameplate meet & greet at arrivals</p>
+                    <p className="text-[11px] text-slate-500">Compare terminal meetup rates</p>
                   </div>
                 </a>
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+                  href={getAffiliateLink('gettransfer', 'planner_transfers_gettransfer')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('gettransfer', 'planner_transfers_gettransfer')}
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200/80 hover:border-emerald-200 transition flex items-center justify-between text-xs group cursor-pointer"
                 >
                   <div className="space-y-0.5">
@@ -187,7 +205,7 @@ export function PlanResult({
                       GetTransfer Private Ride
                       <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-emerald-700" />
                     </span>
-                    <p className="text-[11px] text-slate-500">Chauffeur & intercity private cars</p>
+                    <p className="text-[11px] text-slate-500">Compare private driver quotes</p>
                   </div>
                 </a>
               </div>
@@ -256,13 +274,14 @@ export function PlanResult({
             <span>Day-by-Day Travel Schedule</span>
           </h3>
           <a
-            href={AZRAQ_AFFILIATE_LINKS.klook}
+            href={getAffiliateLink('klook', 'planner_schedule_klook')}
             target="_blank"
-            rel="noopener noreferrer sponsored"
+            rel="sponsored noopener noreferrer"
+            onClick={() => trackAffiliateClick('klook', 'planner_schedule_klook')}
             className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 text-xs font-bold transition shadow-2xs"
           >
             <Ticket className="w-4 h-4 text-amber-600" />
-            <span>Book Tours & Activities on Klook</span>
+            <span>Explore activities on Klook</span>
             <ExternalLink className="w-3.5 h-3.5 text-amber-600" />
           </a>
         </div>
@@ -287,9 +306,10 @@ export function PlanResult({
                       Activities & Highlights
                     </p>
                     <a
-                      href={AZRAQ_AFFILIATE_LINKS.klook}
+                      href={getAffiliateLink('klook', 'planner_day_klook')}
                       target="_blank"
-                      rel="noopener noreferrer sponsored"
+                      rel="sponsored noopener noreferrer"
+                      onClick={() => trackAffiliateClick('klook', 'planner_day_klook')}
                       className="text-[11px] font-bold text-amber-700 hover:text-amber-800 flex items-center gap-1 hover:underline"
                     >
                       <span>Find Day {dayItem.day} Passes on Klook</span>
@@ -336,16 +356,17 @@ export function PlanResult({
               <span>Activities & Sightseeing Tickets</span>
             </div>
             <p className="text-xs text-slate-600">
-              Skip lines and secure tickets for theme parks, island cruises, city passes, and guided tours in {destinationName}.
+              Explore entry tickets, theme parks, island cruises, city passes, and guided tours in {destinationName}.
             </p>
           </div>
           <a
-            href={AZRAQ_AFFILIATE_LINKS.klook}
+            href={getAffiliateLink('klook', 'planner_banner_klook')}
             target="_blank"
-            rel="noopener noreferrer sponsored"
+            rel="sponsored noopener noreferrer"
+            onClick={() => trackAffiliateClick('klook', 'planner_banner_klook')}
             className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition shrink-0 flex items-center justify-center gap-1.5 shadow-sm"
           >
-            <span>Book Tickets on Klook</span>
+            <span>Explore on Klook</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -412,14 +433,15 @@ export function PlanResult({
                 {plan.estimatedBudget.activities && (
                   <div className="flex justify-between items-center py-1.5 border-b border-slate-100">
                     <span className="text-slate-600 flex items-center gap-1.5">
-                      <span>Activities & Sightseeing</span>
+                      <span>Activities &amp; Sightseeing</span>
                       <a
-                        href={AZRAQ_AFFILIATE_LINKS.klook}
+                        href={getAffiliateLink('klook', 'planner_budget_klook')}
                         target="_blank"
-                        rel="noopener noreferrer sponsored"
+                        rel="sponsored noopener noreferrer"
+                        onClick={() => trackAffiliateClick('klook', 'planner_budget_klook')}
                         className="text-[10px] text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded font-bold hover:underline"
                       >
-                        Klook Deals
+                        Explore Klook
                       </a>
                     </span>
                     <span className="font-semibold text-slate-900">{plan.estimatedBudget.activities}</span>
@@ -430,12 +452,13 @@ export function PlanResult({
                     <span className="text-slate-600 flex items-center gap-1.5">
                       <span>Local Transport</span>
                       <a
-                        href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+                        href={getAffiliateLink('gettransfer', 'planner_budget_gettransfer')}
                         target="_blank"
-                        rel="noopener noreferrer sponsored"
+                        rel="sponsored noopener noreferrer"
+                        onClick={() => trackAffiliateClick('gettransfer', 'planner_budget_gettransfer')}
                         className="text-[10px] text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded font-bold hover:underline"
                       >
-                        Private Transfers
+                        Compare Transfers
                       </a>
                     </span>
                     <span className="font-semibold text-slate-900">{plan.estimatedBudget.transport}</span>
@@ -453,12 +476,13 @@ export function PlanResult({
             <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
               <span>Need private airport pickup?</span>
               <a
-                href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+                href={getAffiliateLink('kiwitaxi', 'planner_budget_kiwitaxi')}
                 target="_blank"
-                rel="noopener noreferrer sponsored"
+                rel="sponsored noopener noreferrer"
+                onClick={() => trackAffiliateClick('kiwitaxi', 'planner_budget_kiwitaxi')}
                 className="font-bold text-[#0D6EFD] hover:underline inline-flex items-center gap-1"
               >
-                <span>Book on Kiwitaxi</span>
+                <span>Compare on Kiwitaxi</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
             </div>
@@ -514,12 +538,13 @@ export function PlanResult({
             </div>
 
             <a
-              href={AZRAQ_AFFILIATE_LINKS.yesim}
+              href={getAffiliateLink('yesim', 'planner_esim_yesim')}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="sponsored noopener noreferrer"
+              onClick={() => trackAffiliateClick('yesim', 'planner_esim_yesim')}
               className="mt-4 w-full py-2.5 px-4 rounded-xl bg-[#006ce4] hover:bg-[#0057b8] text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-xs"
             >
-              <span>Get Yesim eSIM for {destinationName}</span>
+              <span>Compare Yesim Unlimited Plans</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>
@@ -552,16 +577,21 @@ export function PlanResult({
             </div>
 
             <a
-              href={AZRAQ_AFFILIATE_LINKS.airalo}
+              href={getAffiliateLink('airalo', 'planner_esim_airalo')}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="sponsored noopener noreferrer"
+              onClick={() => trackAffiliateClick('airalo', 'planner_esim_airalo')}
               className="mt-4 w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs transition flex items-center justify-center gap-1.5"
             >
-              <span>View Airalo eSIM Plans</span>
+              <span>Compare Airalo Regional Plans</span>
               <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
             </a>
           </div>
         </div>
+
+        <p className="mt-4 text-[10px] text-slate-500 italic">
+          {AFFILIATE_DISCLOSURE_TEXT}
+        </p>
       </div>
 
       {/* Practical Tips & Cultural Notes */}

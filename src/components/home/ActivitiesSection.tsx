@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Compass, Star, MapPin, Clock, ArrowRight, Sparkles, ExternalLink } from 'lucide-react';
-import { AZRAQ_AFFILIATE_LINKS } from '../../data/agencyConfig';
+import { getAffiliateLink, trackAffiliateClick } from '../../data/agencyConfig';
 
 interface ActivitiesSectionProps {
   onNavigateToView?: (view: string, extra?: any) => void;
@@ -43,7 +43,7 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
       originalPriceBDT: 6200,
       tag: 'Bestseller',
       image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80',
-      klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+      klookUrl: getAffiliateLink('klook', 'activities_section_phi_phi'),
     },
     {
       id: 'act-gardens-by-the-bay',
@@ -57,7 +57,7 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
       originalPriceBDT: 3900,
       tag: 'Instant Voucher',
       image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=80',
-      klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+      klookUrl: getAffiliateLink('klook', 'activities_section_gardens_bay'),
     },
     {
       id: 'act-genting-skyworlds',
@@ -71,7 +71,7 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
       originalPriceBDT: 5400,
       tag: 'Family Favorite',
       image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=800&q=80',
-      klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+      klookUrl: getAffiliateLink('klook', 'activities_section_genting'),
     },
     {
       id: 'act-bali-atv-waterfall',
@@ -85,7 +85,7 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
       originalPriceBDT: 5100,
       tag: 'Top Adventure',
       image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80',
-      klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+      klookUrl: getAffiliateLink('klook', 'activities_section_bali_atv'),
     },
     {
       id: 'act-burj-khalifa-top',
@@ -99,7 +99,7 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
       originalPriceBDT: 7200,
       tag: 'Must Visit',
       image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80',
-      klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+      klookUrl: getAffiliateLink('klook', 'activities_section_burj'),
     },
     {
       id: 'act-maldives-nurse-shark',
@@ -113,7 +113,7 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
       originalPriceBDT: 8000,
       tag: 'Underwater Tour',
       image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80',
-      klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+      klookUrl: getAffiliateLink('klook', 'activities_section_maldives'),
     },
   ];
 
@@ -227,10 +227,11 @@ export const ActivitiesSection: React.FC<ActivitiesSectionProps> = ({
                 <a
                   href={item.klookUrl}
                   target="_blank"
-                  rel="noopener noreferrer"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('klook', `activities_section_${item.id}`)}
                   className="px-3.5 py-1.5 rounded-xl bg-[#073B4C] hover:bg-[#086788] text-white font-bold text-xs transition-colors flex items-center gap-1 cursor-pointer shadow-xs hover:shadow-md"
                 >
-                  <span>Book Ticket</span>
+                  <span>Explore on Klook</span>
                   <ExternalLink className="w-3 h-3 text-[#17BEBB]" />
                 </a>
               </div>

@@ -1,5 +1,6 @@
 import React from 'react';
-import { Search, FileText, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Search, FileText, CheckCircle2, ArrowRight, ExternalLink } from 'lucide-react';
+import { getAffiliateLink, trackAffiliateClick } from '../../data/agencyConfig';
 
 interface FlightWorkflowSectionProps {
   onNavigateToFlights?: () => void;
@@ -67,18 +68,31 @@ export const FlightWorkflowSection: React.FC<FlightWorkflowSectionProps> = ({
         ))}
       </div>
 
-      <div className="text-center pt-2">
+      <div className="text-center pt-2 space-y-2">
         <button
           type="button"
           onClick={() => {
             if (onNavigateToFlights) onNavigateToFlights();
             else window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
           }}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-[#086788] hover:text-[#073B4C] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#086788] hover:bg-[#073B4C] text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
         >
-          <span>Start flight search</span>
+          <span>Start flight search on Azraq Flights</span>
           <ArrowRight className="w-4 h-4 text-[#17BEBB]" />
         </button>
+
+        <div>
+          <a
+            href={getAffiliateLink('aviasales', 'home_flight_aviasales')}
+            target="_blank"
+            rel="sponsored noopener noreferrer"
+            onClick={() => trackAffiliateClick('aviasales', 'home_flight_aviasales')}
+            className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-[#086788] transition-colors"
+          >
+            <span>Optional: Browse flights on Aviasales</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
       </div>
     </section>
   );

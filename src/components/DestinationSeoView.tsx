@@ -31,10 +31,9 @@ import {
 import { TRAVEL_GUIDES } from '../data/travelGuidesData';
 import { CURATED_ITINERARIES } from '../data/itinerariesData';
 import {
-  AZRAQ_AFFILIATE_LINKS,
-  buildPartnerActivityUrl,
-  buildPartnerTransferUrl,
-  buildPartnerEsimUrl,
+  getAffiliateLink,
+  trackAffiliateClick,
+  AFFILIATE_DISCLOSURE_TEXT,
 } from '../data/agencyConfig';
 
 interface DestinationSeoViewProps {
@@ -269,13 +268,14 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                   <span>Top Attractions & Things to Do in {destination.name}</span>
                 </h2>
                 <a
-                  href={buildPartnerActivityUrl(destination.name)}
+                  href={getAffiliateLink('klook', 'dest_activities_klook')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('klook', 'dest_activities_klook')}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition shadow-2xs self-start sm:self-auto"
                 >
                   <Ticket className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Book on Klook</span>
+                  <span>Explore on Klook</span>
                   <ExternalLink className="w-3 h-3 text-amber-600" />
                 </a>
               </div>
@@ -303,12 +303,13 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                   <p className="text-xs text-slate-600 mt-0.5">Explore skip-the-line passes, museum admissions, and excursion deals in {destination.name}.</p>
                 </div>
                 <a
-                  href={buildPartnerActivityUrl(destination.name)}
+                  href={getAffiliateLink('klook', 'dest_activities_strip_klook')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('klook', 'dest_activities_strip_klook')}
                   className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition shrink-0 flex items-center justify-center gap-1.5"
                 >
-                  <span>Explore on Klook</span>
+                  <span>Explore activities on Klook</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </a>
               </div>
@@ -335,12 +336,13 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={buildPartnerTransferUrl('kiwitaxi', destination.name)}
+                    href={getAffiliateLink('kiwitaxi', 'dest_transfers_kiwitaxi')}
                     target="_blank"
-                    rel="noopener noreferrer sponsored"
+                    rel="sponsored noopener noreferrer"
+                    onClick={() => trackAffiliateClick('kiwitaxi', 'dest_transfers_kiwitaxi')}
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
                   >
-                    <span>Book Kiwitaxi Transfer</span>
+                    <span>Compare Kiwitaxi transfers</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
@@ -356,12 +358,13 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={buildPartnerTransferUrl('gettransfer', destination.name)}
+                    href={getAffiliateLink('gettransfer', 'dest_transfers_gettransfer')}
                     target="_blank"
-                    rel="noopener noreferrer sponsored"
+                    rel="sponsored noopener noreferrer"
+                    onClick={() => trackAffiliateClick('gettransfer', 'dest_transfers_gettransfer')}
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
                   >
-                    <span>Get Transfer Quotes</span>
+                    <span>Compare GetTransfer quotes</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
@@ -393,12 +396,13 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={buildPartnerEsimUrl('yesim', destination.country || destination.name)}
+                    href={getAffiliateLink('yesim', 'dest_esim_yesim')}
                     target="_blank"
-                    rel="noopener noreferrer sponsored"
+                    rel="sponsored noopener noreferrer"
+                    onClick={() => trackAffiliateClick('yesim', 'dest_esim_yesim')}
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
                   >
-                    <span>Get Yesim eSIM</span>
+                    <span>Compare Yesim plans</span>
                     <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
@@ -418,15 +422,22 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={buildPartnerEsimUrl('airalo', destination.country || destination.name)}
+                    href={getAffiliateLink('airalo', 'dest_esim_airalo')}
                     target="_blank"
-                    rel="noopener noreferrer sponsored"
+                    rel="sponsored noopener noreferrer"
+                    onClick={() => trackAffiliateClick('airalo', 'dest_esim_airalo')}
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs transition flex items-center justify-center gap-1.5"
                   >
-                    <span>View Airalo Plans</span>
+                    <span>Compare Airalo plans</span>
                     <ExternalLink className="w-3 h-3 text-slate-500" />
                   </a>
                 </div>
+              </div>
+
+              {/* Partner Disclosure Notice */}
+              <div className="mt-4 p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px] text-slate-500 leading-relaxed">
+                <span className="font-semibold text-slate-700">Partner Notice: </span>
+                {AFFILIATE_DISCLOSURE_TEXT}
               </div>
             </section>
 
@@ -547,10 +558,24 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                 >
                   <span className="flex items-center gap-2">
                     <Plane className="w-4 h-4 text-[#0D6EFD]" />
-                    <span>Search Flights from Dhaka (DAC)</span>
+                    <span>Search Flights on flights.azraqtrips.com</span>
                   </span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-400" />
                 </button>
+
+                <a
+                  href={getAffiliateLink('aviasales', 'dest_flight_aviasales')}
+                  target="_blank"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('aviasales', 'dest_flight_aviasales')}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 bg-white text-[11px] font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Optional: Browse flights on Aviasales</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">aviasales.tp.st</span>
+                </a>
 
                 {onOpenVisaQuote && (
                   <button

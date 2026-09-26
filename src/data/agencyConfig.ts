@@ -1,40 +1,50 @@
 export const AZRAQ_AFFILIATE_LINKS = {
+  aviasales: 'https://aviasales.tp.st/iSztvBRi',
   klook: 'https://klook.tp.st/aXDQ3uLD',
+  airalo: 'https://airalo.tp.st/tsOiboPM',
   yesim: 'https://yesim.tp.st/Y1ph3dlm',
   kiwitaxi: 'https://kiwitaxi.tp.st/hffw13VN',
   gettransfer: 'https://gettransfer.tp.st/L24TtJvV',
-  airalo: 'https://airalo.tp.st/tsOiboPM',
 } as const;
 
+export type AffiliateBrand = keyof typeof AZRAQ_AFFILIATE_LINKS;
+
 /**
- * Builds destination-specific affiliate link for Klook activities
+ * Builds an authentic Travelpayouts partner link with documented sub_id placement tracking.
+ * Preserves the exact verified short-link path without appending unsupported ?url= parameters.
  */
-export function buildPartnerActivityUrl(destinationOrActivity: string): string {
-  const q = encodeURIComponent(destinationOrActivity.trim());
-  return `https://klook.tp.st/aXDQ3uLD?url=${encodeURIComponent(`https://www.klook.com/en-US/search?query=${q}`)}`;
+export function getAffiliateLink(brand: AffiliateBrand, placement?: string): string {
+  const base = AZRAQ_AFFILIATE_LINKS[brand];
+  if (!placement) return base;
+  const cleanPlacement = placement.trim().replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+  return `${base}?sub_id=${cleanPlacement}`;
 }
 
 /**
- * Builds destination-specific affiliate link for airport and intercity transfers
+ * Records a privacy-safe outbound click event without delaying navigation
+ * or storing customer personal data.
  */
-export function buildPartnerTransferUrl(provider: 'kiwitaxi' | 'gettransfer', destination: string): string {
-  const dest = encodeURIComponent(destination.trim());
-  if (provider === 'gettransfer') {
-    return `https://gettransfer.tp.st/L24TtJvV?url=${encodeURIComponent(`https://gettransfer.com/en?destination=${dest}`)}`;
+export function trackAffiliateClick(brand: AffiliateBrand, placement: string): void {
+  try {
+    if (typeof window !== 'undefined') {
+      const detail = {
+        event: 'affiliate_click',
+        brand,
+        placement,
+        timestamp: new Date().toISOString(),
+      };
+      window.dispatchEvent(new CustomEvent('azraq_affiliate_click', { detail }));
+      if ((import.meta as any).env?.DEV) {
+        console.log(`%c[Affiliate Click] ${brand} (${placement})`, 'color: #10b981; font-weight: bold;', detail);
+      }
+    }
+  } catch {
+    // Non-blocking error containment
   }
-  return `https://kiwitaxi.tp.st/hffw13VN?url=${encodeURIComponent(`https://kiwitaxi.com/search?from=${dest}`)}`;
 }
 
-/**
- * Builds destination-specific affiliate link for international eSIM data packages
- */
-export function buildPartnerEsimUrl(provider: 'yesim' | 'airalo', countryOrDestination: string): string {
-  const norm = encodeURIComponent(countryOrDestination.trim().toLowerCase());
-  if (provider === 'airalo') {
-    return `https://airalo.tp.st/tsOiboPM?url=${encodeURIComponent(`https://www.airalo.com/${norm}-esim`)}`;
-  }
-  return `https://yesim.tp.st/Y1ph3dlm?url=${encodeURIComponent(`https://yesim.app/country/${norm}/`)}`;
-}
+export const AFFILIATE_DISCLOSURE_TEXT =
+  'Affiliate Disclosure: Flight comparison is powered by our White Label engine at flights.azraqtrips.com. Tours, travel eSIMs, and airport transfers are fulfilled through authorized global partners (Klook, Airalo, Yesim, Kiwitaxi, GetTransfer, Aviasales). Azraq Trips may earn an affiliate commission on qualifying purchases at no extra cost to you. Final prices and terms are established on respective partner websites.';
 
 export interface AgencyConfig {
   agencyName: string;

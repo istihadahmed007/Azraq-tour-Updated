@@ -16,6 +16,7 @@ import { FeaturedPackagesSection } from './home/FeaturedPackagesSection';
 import { VoicePlannerBanner } from './home/VoicePlannerBanner';
 import { VisaAssistanceSection } from './home/VisaAssistanceSection';
 import { FlightWorkflowSection } from './home/FlightWorkflowSection';
+import { TravelEssentialsSection } from './home/TravelEssentialsSection';
 import { WhyAzraqSection } from './home/WhyAzraqSection';
 import { EditorialStoriesSection } from './home/EditorialStoriesSection';
 import { TravelBuddiesPreview } from './home/TravelBuddiesPreview';
@@ -165,6 +166,11 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
             window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
           }}
         />
+      </div>
+
+      {/* 09: Travel Essentials (Tours, eSIM, Transfers) */}
+      <div className="w-full py-14 sm:py-20 border-b border-white/40 bg-white/20 backdrop-blur-md">
+        <TravelEssentialsSection />
       </div>
 
       {/* 09: Why Azraq (Authentic Trust & Local Dhaka Office) */}

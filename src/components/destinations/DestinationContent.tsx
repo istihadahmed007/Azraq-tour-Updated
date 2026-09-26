@@ -23,7 +23,11 @@ import {
 import { Destination } from '../../types';
 import { SEO } from '../shared/SEO';
 import { getTouristDestinationSchema, getBreadcrumbSchema, getFAQSchema, SITE_URL } from '../../lib/seo';
-import { AZRAQ_AFFILIATE_LINKS } from '../../data/agencyConfig';
+import {
+  getAffiliateLink,
+  trackAffiliateClick,
+  AFFILIATE_DISCLOSURE_TEXT,
+} from '../../data/agencyConfig';
 
 interface DestinationContentProps {
   destination: Destination;
@@ -165,13 +169,14 @@ export function DestinationContent({
                   Top Attractions & Landmarks
                 </h2>
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  href={getAffiliateLink('klook', 'dest_content_klook')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('klook', 'dest_content_klook')}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition shadow-2xs self-start sm:self-auto"
                 >
                   <Ticket className="w-3.5 h-3.5 text-amber-600" />
-                  <span>Book on Klook</span>
+                  <span>Explore on Klook</span>
                   <ExternalLink className="w-3 h-3 text-amber-600" />
                 </a>
               </div>
@@ -194,9 +199,10 @@ export function DestinationContent({
 
               <div className="pt-2">
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  href={getAffiliateLink('klook', 'dest_content_strip_klook')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('klook', 'dest_content_strip_klook')}
                   className="w-full p-3 rounded-xl bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-200/80 hover:border-amber-300 flex items-center justify-between text-xs font-bold text-amber-900 transition"
                 >
                   <span className="flex items-center gap-2">
@@ -286,6 +292,17 @@ export function DestinationContent({
               <Plane className="w-4 h-4" />
               <span>Search Flights to {destination.name}</span>
             </button>
+
+            <a
+              href={getAffiliateLink('aviasales', 'dest_content_flight_aviasales')}
+              target="_blank"
+              rel="sponsored noopener noreferrer"
+              onClick={() => trackAffiliateClick('aviasales', 'dest_content_flight_aviasales')}
+              className="mt-2 text-center text-xs font-medium text-slate-500 hover:text-slate-800 transition flex items-center justify-center gap-1"
+            >
+              <span>Optional: Browse flights on Aviasales</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
 
           {/* Holiday Packages CTA */}
@@ -324,18 +341,20 @@ export function DestinationContent({
               </span>
               <div className="grid grid-cols-2 gap-2">
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+                  href={getAffiliateLink('kiwitaxi', 'dest_content_transfers_kiwitaxi')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('kiwitaxi', 'dest_content_transfers_kiwitaxi')}
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 transition text-center"
                 >
                   <span className="text-xs font-bold text-slate-900 block">Kiwitaxi</span>
                   <span className="text-[10px] text-slate-500">Airport Taxi</span>
                 </a>
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+                  href={getAffiliateLink('gettransfer', 'dest_content_transfers_gettransfer')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('gettransfer', 'dest_content_transfers_gettransfer')}
                   className="p-2.5 rounded-xl bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-200 transition text-center"
                 >
                   <span className="text-xs font-bold text-slate-900 block">GetTransfer</span>
@@ -352,9 +371,10 @@ export function DestinationContent({
               </span>
               <div className="space-y-1.5">
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.yesim}
+                  href={getAffiliateLink('yesim', 'dest_content_esim_yesim')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('yesim', 'dest_content_esim_yesim')}
                   className="p-2.5 rounded-xl bg-sky-50/70 hover:bg-sky-100/70 border border-sky-200 transition flex items-center justify-between text-xs"
                 >
                   <div>
@@ -364,9 +384,10 @@ export function DestinationContent({
                   <ExternalLink className="w-3 h-3 text-sky-600" />
                 </a>
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.airalo}
+                  href={getAffiliateLink('airalo', 'dest_content_esim_airalo')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('airalo', 'dest_content_esim_airalo')}
                   className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 transition flex items-center justify-between text-xs"
                 >
                   <div>
@@ -376,6 +397,11 @@ export function DestinationContent({
                   <ExternalLink className="w-3 h-3 text-slate-400" />
                 </a>
               </div>
+            </div>
+
+            {/* Affiliate Disclosure */}
+            <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-500 leading-tight">
+              {AFFILIATE_DISCLOSURE_TEXT}
             </div>
           </div>
         </div>

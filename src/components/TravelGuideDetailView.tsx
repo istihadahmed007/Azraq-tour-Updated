@@ -1,5 +1,6 @@
 import React from 'react';
 import { TravelGuide } from '../data/travelGuidesData';
+import { CURATED_ITINERARIES } from '../data/itinerariesData';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SEOHead } from './SEOHead';
 import {
@@ -28,8 +29,11 @@ import {
   Smartphone,
   ExternalLink,
 } from 'lucide-react';
-import { CURATED_ITINERARIES } from '../data/itinerariesData';
-import { AZRAQ_AFFILIATE_LINKS } from '../data/agencyConfig';
+import {
+  getAffiliateLink,
+  trackAffiliateClick,
+  AFFILIATE_DISCLOSURE_TEXT,
+} from '../data/agencyConfig';
 
 interface TravelGuideDetailViewProps {
   guide: TravelGuide;
@@ -191,13 +195,14 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
               Top Attractions to Visit in {guide.destination}
             </h2>
             <a
-              href={AZRAQ_AFFILIATE_LINKS.klook}
+              href={getAffiliateLink('klook', 'guide_attractions_klook')}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="sponsored noopener noreferrer"
+              onClick={() => trackAffiliateClick('klook', 'guide_attractions_klook')}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition shadow-2xs self-start sm:self-auto not-prose"
             >
               <Ticket className="w-3.5 h-3.5 text-amber-600" />
-              <span>Book Tickets on Klook</span>
+              <span>Explore activities on Klook</span>
               <ExternalLink className="w-3 h-3 text-amber-600" />
             </a>
           </div>
@@ -214,9 +219,10 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
                   </div>
                 </div>
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  href={getAffiliateLink('klook', 'guide_attraction_item_klook')}
                   target="_blank"
-                  rel="noopener noreferrer sponsored"
+                  rel="sponsored noopener noreferrer"
+                  onClick={() => trackAffiliateClick('klook', 'guide_attraction_item_klook')}
                   className="text-[11px] font-bold text-amber-700 hover:text-amber-800 bg-amber-50 px-2 py-1 rounded border border-amber-200/80 inline-flex items-center gap-1 shrink-0"
                 >
                   <span>Passes</span>
@@ -235,9 +241,10 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
           </p>
           <div className="not-prose grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8">
             <a
-              href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+              href={getAffiliateLink('kiwitaxi', 'guide_transfers_kiwitaxi')}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="sponsored noopener noreferrer"
+              onClick={() => trackAffiliateClick('kiwitaxi', 'guide_transfers_kiwitaxi')}
               className="p-3.5 rounded-xl bg-blue-50/60 hover:bg-blue-100/60 border border-blue-200 flex items-center justify-between text-xs transition"
             >
               <div className="flex items-center gap-2.5">
@@ -250,9 +257,10 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
               <ExternalLink className="w-3.5 h-3.5 text-blue-600" />
             </a>
             <a
-              href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+              href={getAffiliateLink('gettransfer', 'guide_transfers_gettransfer')}
               target="_blank"
-              rel="noopener noreferrer sponsored"
+              rel="sponsored noopener noreferrer"
+              onClick={() => trackAffiliateClick('gettransfer', 'guide_transfers_gettransfer')}
               className="p-3.5 rounded-xl bg-emerald-50/60 hover:bg-emerald-100/60 border border-emerald-200 flex items-center justify-between text-xs transition"
             >
               <div className="flex items-center gap-2.5">
@@ -293,24 +301,29 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
               <a
-                href={AZRAQ_AFFILIATE_LINKS.yesim}
+                href={getAffiliateLink('yesim', 'guide_esim_yesim')}
                 target="_blank"
-                rel="noopener noreferrer sponsored"
+                rel="sponsored noopener noreferrer"
+                onClick={() => trackAffiliateClick('yesim', 'guide_esim_yesim')}
                 className="py-2 px-3 rounded-lg bg-[#006ce4] hover:bg-[#0057b8] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition"
               >
-                <span>Yesim Unlimited eSIM (Recommended)</span>
+                <span>Compare Yesim Unlimited Plans</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
               <a
-                href={AZRAQ_AFFILIATE_LINKS.airalo}
+                href={getAffiliateLink('airalo', 'guide_esim_airalo')}
                 target="_blank"
-                rel="noopener noreferrer sponsored"
+                rel="sponsored noopener noreferrer"
+                onClick={() => trackAffiliateClick('airalo', 'guide_esim_airalo')}
                 className="py-2 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1.5 transition"
               >
-                <span>Airalo Regional eSIM</span>
+                <span>Compare Airalo Regional Plans</span>
                 <ExternalLink className="w-3 h-3 text-slate-400" />
               </a>
             </div>
+            <p className="text-[10px] text-slate-500 italic pt-1">
+              {AFFILIATE_DISCLOSURE_TEXT}
+            </p>
           </div>
 
           {/* Interactive AI Trip Planner Callout */}
