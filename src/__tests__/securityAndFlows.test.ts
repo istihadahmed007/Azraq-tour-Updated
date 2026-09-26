@@ -3,6 +3,7 @@ import { createServer, Server } from 'http';
 import { AddressInfo } from 'net';
 import app, { usersStore, requestsStore, quotesStore } from '../../server';
 import { sessionStore } from '../../server/sessionStore';
+import { buildWhiteLabelSearchUrl } from '../data/flightsData';
 
 describe('Security & Business Flow Regression Suite', () => {
   let server: Server;
@@ -580,6 +581,28 @@ describe('Security & Business Flow Regression Suite', () => {
       expect(url).toContain('currency=bdt');
       expect(url).toContain('origin_iata=DAC');
       expect(url).toContain('destination_iata=BKK');
+    });
+
+    it('buildWhiteLabelSearchUrl preserves marker=765415, trs=565363, and currency=bdt', () => {
+      const searchUrl = buildWhiteLabelSearchUrl({
+        origin: 'DAC',
+        destination: 'BKK',
+        departDate: '2026-11-20',
+      });
+      expect(searchUrl).toContain('marker=765415');
+      expect(searchUrl).toContain('trs=565363');
+      expect(searchUrl).toContain('currency=bdt');
+      expect(searchUrl).toContain('flightSearch=DAC2011BKK1');
+    });
+
+    it('server redirects /flights to flights.azraqtrips.com with marker=765415 and trs=565363', async () => {
+      const res = await fetch(`${baseUrl}/flights`, { redirect: 'manual' });
+      expect(res.status).toBe(301);
+      const location = res.headers.get('location') || '';
+      expect(location).toContain('marker=765415');
+      expect(location).toContain('trs=565363');
+      expect(location).toContain('currency=bdt');
+      expect(location).toContain('https://flights.azraqtrips.com');
     });
   });
 });

@@ -8330,7 +8330,7 @@ app.get("/api/flights/aviasales-prices", async (req, res) => {
     }
 
     const searchKey = `${origin}${depDDMM}${destination}${retDDMM}${paxSuffix}`;
-    const aviasalesDirectUrl = `https://www.aviasales.com/search/${searchKey}?marker=765415&trs=565363&params=${origin}1`;
+    const aviasalesDirectUrl = `https://www.aviasales.com/search/${searchKey}?marker=765415&trs=565363&currency=bdt&locale=en&params=${origin}1`;
 
     const token =
       process.env.TRAVELPAYOUTS_TOKEN ||
@@ -8384,7 +8384,7 @@ app.get("/api/flights/aviasales-prices", async (req, res) => {
               }
 
               const itemBookingLink = item.link
-                ? (item.link.startsWith("http") ? item.link : `https://www.aviasales.com${item.link}${item.link.includes("?") ? "&" : "?"}marker=765415&trs=565363`)
+                ? (item.link.startsWith("http") ? item.link : `https://www.aviasales.com${item.link}${item.link.includes("?") ? "&" : "?"}marker=765415&trs=565363&currency=bdt&locale=en`)
                 : aviasalesDirectUrl;
 
               return {
@@ -8519,7 +8519,7 @@ app.post("/api/flights/revalidate-price", async (req, res) => {
     }
 
     const searchKey = `${origCode}${depDDMM}${destCode}${retDDMM}${paxSuffix}`;
-    const directPartnerUrl = bookingUrl || `https://www.aviasales.com/search/${searchKey}?marker=765415&trs=565363&params=${origCode}1`;
+    const directPartnerUrl = bookingUrl || `https://www.aviasales.com/search/${searchKey}?marker=765415&trs=565363&currency=bdt&locale=en&params=${origCode}1`;
 
     let freshPriceBDT = Number(cachedPrice) || 0;
     let freshOriginalPrice = freshPriceBDT;
@@ -8577,7 +8577,7 @@ app.post("/api/flights/revalidate-price", async (req, res) => {
             if (selected.link) {
               freshBookingUrl = selected.link.startsWith("http")
                 ? selected.link
-                : `https://www.aviasales.com${selected.link}${selected.link.includes("?") ? "&" : "?"}marker=765415&trs=565363`;
+                : `https://www.aviasales.com${selected.link}${selected.link.includes("?") ? "&" : "?"}marker=765415&trs=565363&currency=bdt&locale=en`;
             }
             hasLiveApiMatch = true;
           }
@@ -8657,12 +8657,12 @@ app.get(["/healthz", "/api/health"], (req, res) => {
 
 // 301 Permanent Redirect for /flights and /flight to https://flights.azraqtrips.com/
 app.get(["/flights", "/flight", "/flights/", "/flight/", "/flights/*", "/flight/*"], (req, res) => {
-  const flightSearch = req.query.flightSearch;
-  if (flightSearch) {
-    return res.redirect(301, `https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(String(flightSearch))}`);
-  }
-  const queryString = req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "";
-  return res.redirect(301, `https://flights.azraqtrips.com${queryString ? "/" + queryString : "/?marker=765415&trs=565363&currency=bdt"}`);
+  const queryIndex = req.url.indexOf("?");
+  const sp = new URLSearchParams(queryIndex !== -1 ? req.url.slice(queryIndex + 1) : "");
+  if (!sp.has("marker")) sp.set("marker", "765415");
+  if (!sp.has("trs")) sp.set("trs", "565363");
+  if (!sp.has("currency")) sp.set("currency", "bdt");
+  return res.redirect(301, `https://flights.azraqtrips.com/?${sp.toString()}`);
 });
 
 // 301 Permanent Redirects for non-www and trailing slashes

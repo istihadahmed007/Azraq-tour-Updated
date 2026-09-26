@@ -1080,10 +1080,11 @@ export interface AviasalesSearchParams {
 /**
  * Builds the existing Azraq Trips White Label search URL.
  * The subdomain owns search, results, filtering, and provider handoff.
+ * Preserves the immutable Travelpayouts affiliate marker (765415), TRS (565363), and currency (bdt).
  */
 export function buildWhiteLabelSearchUrl(params: AviasalesSearchParams = {}): string {
   const searchKey = getAviasalesSearchKey(params);
-  return `https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(searchKey)}`;
+  return `https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(searchKey)}&marker=765415&trs=565363&currency=bdt`;
 }
 
 /**

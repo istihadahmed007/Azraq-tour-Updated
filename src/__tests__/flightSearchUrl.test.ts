@@ -147,7 +147,7 @@ describe('Aviasales Search Key & White Label URL Generator', () => {
   });
 
   describe('White Label URL Structure & Hand-off', () => {
-    it('routes searches directly to https://flights.azraqtrips.com/?flightSearch=...', () => {
+    it('routes searches directly to https://flights.azraqtrips.com/?flightSearch=... with affiliate marker', () => {
       const url = buildWhiteLabelSearchUrl({
         origin: 'DAC',
         destination: 'BKK',
@@ -158,10 +158,13 @@ describe('Aviasales Search Key & White Label URL Generator', () => {
         cabin: 'Business',
       });
 
-      expect(url).toBe('https://flights.azraqtrips.com/?flightSearch=DAC2009BKKc321');
+      expect(url).toBe('https://flights.azraqtrips.com/?flightSearch=DAC2009BKKc321&marker=765415&trs=565363&currency=bdt');
+      expect(url).toContain('marker=765415');
+      expect(url).toContain('trs=565363');
+      expect(url).toContain('currency=bdt');
     });
 
-    it('buildAviasalesSearchUrl acts as backward-compatible alias to White Label', () => {
+    it('buildAviasalesSearchUrl acts as backward-compatible alias to White Label with affiliate parameters', () => {
       const url = buildAviasalesSearchUrl({
         origin: 'DAC',
         destination: 'CGP',
@@ -169,7 +172,8 @@ describe('Aviasales Search Key & White Label URL Generator', () => {
         adults: 1,
       });
 
-      expect(url).toBe('https://flights.azraqtrips.com/?flightSearch=DAC1508CGP1');
+      expect(url).toBe('https://flights.azraqtrips.com/?flightSearch=DAC1508CGP1&marker=765415&trs=565363&currency=bdt');
+      expect(url).toContain('marker=765415');
     });
   });
 });

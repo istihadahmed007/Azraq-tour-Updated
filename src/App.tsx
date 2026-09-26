@@ -84,12 +84,11 @@ function parseUrlToRoute(): RouteState {
     pathname.startsWith('/flight/') ||
     search.includes('view=flights')
   ) {
-    const flightSearch = new URLSearchParams(search).get('flightSearch');
-    if (flightSearch) {
-      window.location.replace(`https://flights.azraqtrips.com/?flightSearch=${encodeURIComponent(flightSearch)}`);
-    } else {
-      window.location.replace(`https://flights.azraqtrips.com/${search ? search : '?marker=765415&trs=565363&currency=bdt'}`);
-    }
+    const sp = new URLSearchParams(search);
+    if (!sp.has('marker')) sp.set('marker', '765415');
+    if (!sp.has('trs')) sp.set('trs', '565363');
+    if (!sp.has('currency')) sp.set('currency', 'bdt');
+    window.location.replace(`https://flights.azraqtrips.com/?${sp.toString()}`);
     return { view: 'discover' };
   }
 

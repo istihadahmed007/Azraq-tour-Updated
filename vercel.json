@@ -3,12 +3,12 @@
   "redirects": [
     {
       "source": "/flights",
-      "destination": "https://flights.azraqtrips.com/",
+      "destination": "https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt",
       "permanent": true
     },
     {
       "source": "/flight",
-      "destination": "https://flights.azraqtrips.com/",
+      "destination": "https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt",
       "permanent": true
     },
     {
