@@ -128,38 +128,10 @@ export const TrackQuoteModal: React.FC<TrackQuoteModalProps> = ({
             </button>
           </form>
 
-          {/* Quick Example Fillers */}
+          {/* Genuine Tracking Instructions */}
           {!quotes && (
-            <div className="flex items-center gap-2 text-xs text-slate-400">
-              <span>Try example:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('FLQ-849201');
-                  setTimeout(() => {
-                    fetch('/api/quotes/track?query=FLQ-849201')
-                      .then((res) => res.json())
-                      .then((d) => { if (d.quotes) setQuotes(d.quotes); });
-                  }, 50);
-                }}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-sky-300 border border-white/10 font-mono"
-              >
-                FLQ-849201
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSearchQuery('VSQ-930214');
-                  setTimeout(() => {
-                    fetch('/api/quotes/track?query=VSQ-930214')
-                      .then((res) => res.json())
-                      .then((d) => { if (d.quotes) setQuotes(d.quotes); });
-                  }, 50);
-                }}
-                className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-teal-300 border border-white/10 font-mono"
-              >
-                VSQ-930214
-              </button>
+            <div className="text-xs text-slate-400">
+              <span>Enter your unique Request Reference ID (provided upon submitting a flight, hotel, package, or visa request) to view live progress.</span>
             </div>
           )}
 

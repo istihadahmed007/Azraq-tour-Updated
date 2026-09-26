@@ -48,31 +48,9 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network-First strategy for API routes under /api/
+  // CRITICAL SECURITY: Never cache API endpoints under /api/
+  // All API requests must be fetched live from the server to prevent data leakage across users or sessions.
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(async () => {
-          // Fall back to cache when offline
-          const cachedResponse = await caches.match(request);
-          if (cachedResponse) {
-            return cachedResponse;
-          }
-          return new Response(JSON.stringify({ error: 'Offline', message: 'You are currently offline.' }), {
-            status: 503,
-            headers: { 'Content-Type': 'application/json' }
-          });
-        })
-    );
     return;
   }
 

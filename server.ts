@@ -9,10 +9,45 @@ import { INITIAL_SOCIAL_PROOF_ACTIVITIES } from "./src/data/socialProofData";
 import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
 import { requestsStore, UnifiedRequestType, UnifiedRequestStatus, RequestPriority } from "./server/requestsStore";
 import { emailService } from "./server/emailService";
+import { sessionStore } from "./server/sessionStore";
 
 const INITIAL_BLOG_POSTS: any[] = [];
 
+
+// Durable Data Directory configuration for local and cloud serverless hosting
+const DATA_DIR = process.env.DATA_DIR || (process.env.VERCEL ? "/tmp" : process.cwd());
+
+function atomicWriteJsonSync(filePath: string, data: any) {
+  try {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    const tmpFile = `${filePath}.tmp.${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+    fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2), "utf-8");
+    fs.renameSync(tmpFile, filePath);
+  } catch (err) {
+    try {
+      fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+    } catch (e) {
+      console.error("[AtomicWrite] Failed to write to " + filePath, e);
+    }
+  }
+}
+
 const app = express();
+
+// In-memory rate limiting map for OTP and password recovery requests (60s cooldown)
+const authRateLimitMap = new Map<string, number>();
+function checkAuthRateLimit(identifier: string, cooldownMs: number = 60000): { allowed: boolean; remainingSec: number } {
+  const norm = identifier.toLowerCase().trim();
+  const lastTime = authRateLimitMap.get(norm) || 0;
+  const elapsed = Date.now() - lastTime;
+  if (elapsed < cooldownMs) {
+    return { allowed: false, remainingSec: Math.ceil((cooldownMs - elapsed) / 1000) };
+  }
+  authRateLimitMap.set(norm, Date.now());
+  return { allowed: true, remainingSec: 0 };
+}
+
 const PORT = 3000;
 
 // Ensure public/uploads directory exists for permanent media storage
@@ -294,12 +329,12 @@ interface ServerUser {
   resetTokenExpiry?: number;
 }
 
-const DB_FILE = path.join(process.cwd(), ".users_db.json");
+const DB_FILE = path.join(DATA_DIR, ".users_db.json");
 
 function isOwnerEmail(email: string): boolean {
   const norm = (email || '').toLowerCase().trim();
-  const owners = ['info@azraqtrips.com', 'istihadahmed1163@gmail.com', 'admin@globetrotter.ai', 'owner@globetrotter.ai'];
-  return owners.includes(norm) || norm.startsWith('admin') || norm.startsWith('owner');
+  const owners = ['info@azraqtrips.com', 'istihadahmed1163@gmail.com'];
+  return owners.includes(norm);
 }
 
 // Password Validator helper
@@ -311,77 +346,31 @@ function validatePasswordRequirements(password: string): { valid: boolean; error
 }
 
 function loadUsersFromDisk(): Map<string, ServerUser> {
+  const map = new Map<string, ServerUser>();
   try {
     if (fs.existsSync(DB_FILE)) {
       const data = fs.readFileSync(DB_FILE, "utf-8");
       const parsed = JSON.parse(data);
-      const map = new Map<string, ServerUser>();
       for (const [key, val] of Object.entries(parsed)) {
-        map.set(key, val as ServerUser);
+        const u = val as ServerUser & { needsPasswordRotation?: boolean };
+        // Check for legacy default password hash ("pass1234") and flag for immediate rotation
+        if (u.passwordSalt && u.passwordHash) {
+          const legacyCheck = hashPassword("pass1234", u.passwordSalt);
+          if (u.passwordHash === legacyCheck.hash) {
+            u.needsPasswordRotation = true;
+          }
+        }
+        map.set(key.toLowerCase(), u as ServerUser);
       }
       return map;
     }
   } catch (err) {
     console.error("Failed to read user DB file:", err);
   }
-  // Default owner account
-  const istihadSaltHash = hashPassword("pass1234");
-  return new Map<string, ServerUser>([
-    [
-      "istihadahmed1163@gmail.com",
-      {
-        uid: "user_istihad_001",
-        fullName: "Istihad Ahmed",
-        email: "istihadahmed1163@gmail.com",
-        phone: "+880 1851-172032",
-        country: "Bangladesh",
-        passwordHash: istihadSaltHash.hash,
-        passwordSalt: istihadSaltHash.salt,
-        photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80",
-        bio: "Managing Director at Azraq Tours & Travels.",
-        languages: ["Bengali", "English", "Arabic"],
-        emailVerified: true,
-        phoneVerified: true,
-        provider: "email",
-        createdAt: new Date().toISOString(),
-        homeLocation: "Dhaka, Bangladesh",
-        travelPreferences: ["Culture", "Nature", "Luxury", "Food"],
-        isProfileComplete: true,
-        isAdmin: true,
-        role: "admin",
-      },
-    ],
-  ]);
+  return map;
 }
 
 const usersStore = loadUsersFromDisk();
-
-// Ensure owner account is populated
-if (!usersStore.has("istihadahmed1163@gmail.com")) {
-  const istihadSaltHash = hashPassword("pass1234");
-  usersStore.set("istihadahmed1163@gmail.com", {
-    uid: "user_istihad_001",
-    fullName: "Istihad Ahmed",
-    email: "istihadahmed1163@gmail.com",
-    phone: "+880 1851-172032",
-    country: "Bangladesh",
-    passwordHash: istihadSaltHash.hash,
-    passwordSalt: istihadSaltHash.salt,
-    photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80",
-    bio: "Managing Director at Azraq Tours & Travels.",
-    languages: ["Bengali", "English", "Arabic"],
-    emailVerified: true,
-    phoneVerified: true,
-    provider: "email",
-    createdAt: new Date().toISOString(),
-    homeLocation: "Dhaka, Bangladesh",
-    travelPreferences: ["Culture", "Nature", "Luxury", "Food"],
-    isProfileComplete: true,
-    isAdmin: true,
-    role: "admin",
-  });
-  saveUsersToDisk();
-}
 
 function saveUsersToDisk() {
   try {
@@ -389,7 +378,7 @@ function saveUsersToDisk() {
     usersStore.forEach((val, key) => {
       obj[key] = val;
     });
-    fs.writeFileSync(DB_FILE, JSON.stringify(obj, null, 2), "utf-8");
+    atomicWriteJsonSync(DB_FILE, obj);
   } catch (err) {
     console.error("Failed to save user DB file:", err);
   }
@@ -445,66 +434,74 @@ function findUserByEmailOrPhone(identifier: string): ServerUser | undefined {
 
 // --- Authentication Endpoints ---
 
-// Active token storage map (token -> user email)
-const activeTokensMap = new Map<string, string>();
-
-// Helper to issue and register a new session token for a specific user
+// Helper to issue and register a new session token for a specific user using 256-bit crypto
 function issueSessionToken(user: ServerUser): string {
-  const token = `token_${user.uid}_${Date.now()}`;
-  activeTokensMap.set(token, user.email.toLowerCase());
-  return token;
+  return sessionStore.createSession(
+    user.uid,
+    user.email,
+    user.role || (user.isAdmin ? "admin" : "user")
+  );
+}
+
+// Helper to authenticate user strictly from cryptographically secure session
+function getAuthenticatedUser(req: express.Request): ServerUser | null {
+  const authHeader = req.headers.authorization || "";
+  let token = "";
+  if (authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7).trim();
+  } else if (req.headers["x-auth-token"]) {
+    token = String(req.headers["x-auth-token"]).trim();
+  }
+  if (!token) return null;
+
+  const session = sessionStore.getSession(token);
+  if (!session) return null;
+
+  const user = usersStore.get(session.email.toLowerCase());
+  if (!user || user.isSuspended) return null;
+  return user;
+}
+
+// Middleware: Require Authenticated User (401 on failure)
+function requireAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const user = getAuthenticatedUser(req);
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      error: "Authentication required. Please log in to continue.",
+    });
+  }
+  (req as any).user = user;
+  next();
+}
+
+// Middleware: Require Admin or Owner Privilege (401 unauthenticated, 403 unauthorized)
+function requireAdmin(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const user = getAuthenticatedUser(req);
+  if (!user) {
+    return res.status(401).json({
+      success: false,
+      error: "Authentication required. Please log in as an administrator.",
+    });
+  }
+  const isAdmin = user.role === "admin" || user.role === "owner" || user.isAdmin === true;
+  if (!isAdmin) {
+    return res.status(403).json({
+      success: false,
+      error: "Forbidden: You do not have permission to access this administrative resource.",
+    });
+  }
+  (req as any).user = user;
+  next();
 }
 
 // 0. Authenticated /api/auth/me Endpoint (STRICT logged-in user identification)
-app.get("/api/auth/me", (req, res) => {
+app.get("/api/auth/me", requireAuth, (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    let token = "";
-    if (authHeader.startsWith("Bearer ")) {
-      token = authHeader.substring(7).trim();
-    } else if (req.headers["x-auth-token"]) {
-      token = String(req.headers["x-auth-token"]).trim();
-    }
-
-    // Strict check: token must be present
-    if (!token) {
-      return res.status(401).json({ error: "Unauthorized: No session token provided." });
-    }
-
-    let foundUser: ServerUser | undefined;
-
-    // 1. Check registered active tokens
-    if (activeTokensMap.has(token)) {
-      const email = activeTokensMap.get(token)!;
-      foundUser = usersStore.get(email.toLowerCase());
-    }
-
-    // 2. Strict lookup by UID extracted from token format "token_<uid>_<timestamp>"
-    if (!foundUser && token.startsWith("token_")) {
-      const parts = token.split("_");
-      if (parts.length >= 3) {
-        const targetUid = parts.slice(1, parts.length - 1).join("_");
-        for (const u of usersStore.values()) {
-          if (u.uid === targetUid) {
-            foundUser = u;
-            // Cache token to email mapping for subsequent fast lookups
-            activeTokensMap.set(token, u.email.toLowerCase());
-            break;
-          }
-        }
-      }
-    }
-
-    // CRITICAL: If no user matches the specific token, return 401 Unauthorized.
-    // NEVER return the first user or any random fallback user.
-    if (!foundUser) {
-      return res.status(401).json({ error: "Unauthorized: User session not found or expired." });
-    }
-
-    // Return ONLY the authenticated user's data
+    const user = (req as any).user as ServerUser;
     res.json({
       success: true,
-      user: sanitizeUserPayload(foundUser),
+      user: sanitizeUserPayload(user),
     });
   } catch (err: any) {
     console.error("Get /api/auth/me error:", err);
@@ -589,18 +586,18 @@ app.post("/api/auth/register", (req, res) => {
       photoURL: photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(fullName)}`,
       bio: `Hello! I am ${fullName.trim()}, excited to discover amazing travel destinations.`,
       languages: ["English"],
-      emailVerified: true,
+      emailVerified: false, // Must be verified via genuine code delivery
       emailVerificationCode,
       emailCodeExpiry: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-      phoneVerified: true,
+      phoneVerified: false,
       phoneOtpCode,
       phoneOtpExpiry: Date.now() + 10 * 60 * 1000, // 10 mins
       provider: "email",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isProfileComplete: true,
-      isAdmin: isOwnerEmail(normalizedEmail),
-      role: isOwnerEmail(normalizedEmail) ? "admin" : "user",
+      isAdmin: false,
+      role: "user",
     };
 
     usersStore.set(normalizedEmail, newUser);
@@ -617,8 +614,6 @@ app.post("/api/auth/register", (req, res) => {
       success: true,
       message: "Account created! We've sent a 6-digit verification code to your email.",
       user: sanitizeUserPayload(newUser),
-      demoEmailCode: emailVerificationCode,
-      demoPhoneOtp: phoneOtpCode,
       token,
     });
   } catch (err: any) {
@@ -655,6 +650,14 @@ app.post("/api/auth/login", (req, res) => {
       const remainingMins = Math.ceil(remainingSeconds / 60);
       return res.status(429).json({
         error: `Account temporarily locked due to repeated failed login attempts. Please try again in ${remainingMins} minute(s).`,
+      });
+    }
+
+    // Check for deprecated default credentials rotation requirement
+    if ((existingUser as any).needsPasswordRotation || password === "pass1234") {
+      return res.status(403).json({
+        error: "Default credentials have been deprecated for security. Please use the password reset recovery process or bootstrap a new administrator password.",
+        needsPasswordRotation: true,
       });
     }
 
@@ -747,7 +750,7 @@ app.post("/api/auth/verify-email-code", (req, res) => {
 });
 
 // 4. Resend Email Verification Code
-app.post("/api/auth/resend-email-verification", (req, res) => {
+app.post("/api/auth/resend-email-verification", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
@@ -759,16 +762,30 @@ app.post("/api/auth/resend-email-verification", (req, res) => {
       return res.status(400).json({ error: "User account not found." });
     }
 
+    // Rate limiting (60s cooldown)
+    const rateCheck = checkAuthRateLimit(user.email, 60000);
+    if (!rateCheck.allowed) {
+      return res.status(429).json({
+        error: `Please wait ${rateCheck.remainingSec} second(s) before requesting another verification code.`,
+      });
+    }
+
     const newCode = Math.floor(100000 + Math.random() * 900000).toString();
     user.emailVerificationCode = newCode;
     user.emailCodeExpiry = Date.now() + 24 * 60 * 60 * 1000;
     usersStore.set(user.email, user);
     saveUsersToDisk();
 
+    const dispatchResult = await emailService.sendAuthOtpEmail(user.email, newCode);
+    if (!dispatchResult.success) {
+      return res.status(503).json({
+        error: "Failed to deliver verification code. Please check your email address or try again later.",
+      });
+    }
+
     res.json({
       success: true,
       message: `A new 6-digit verification code has been sent to ${user.email}.`,
-      demoEmailCode: newCode,
     });
   } catch (err: any) {
     console.error("Resend Email Verification Error:", err);
@@ -790,6 +807,14 @@ app.post("/api/auth/send-phone-otp", (req, res) => {
       return res.status(400).json({ error: "User account not found." });
     }
 
+    // Rate limiting (60s cooldown)
+    const rateCheck = checkAuthRateLimit(user.phone || user.email, 60000);
+    if (!rateCheck.allowed) {
+      return res.status(429).json({
+        error: `Please wait ${rateCheck.remainingSec} second(s) before requesting another OTP.`,
+      });
+    }
+
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     user.phoneOtpCode = otpCode;
     user.phoneOtpExpiry = Date.now() + 5 * 60 * 1000; // 5 mins
@@ -801,7 +826,6 @@ app.post("/api/auth/send-phone-otp", (req, res) => {
     res.json({
       success: true,
       message: `6-Digit OTP code sent to ${user.phone || 'your mobile number'}. Valid for 5 minutes.`,
-      demoOtp: otpCode,
     });
   } catch (err: any) {
     console.error("Send Phone OTP Error:", err);
@@ -870,7 +894,6 @@ app.post("/api/auth/verify-phone-otp", (req, res) => {
 // 6b. Send Email OTP Endpoint (Passwordless Email Auth & Universal Recipient Resolution)
 app.post(["/api/auth/send-email-otp", "/api/auth/send_otp", "/api/auth/send-otp"], async (req, res) => {
   try {
-    // Robust extraction: never allow recipient email to be null or empty
     const rawEmail = (
       req.body?.email ||
       req.body?.to ||
@@ -887,6 +910,14 @@ app.post(["/api/auth/send-email-otp", "/api/auth/send_otp", "/api/auth/send-otp"
     const normalizedEmail = rawEmail.toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
       return res.status(400).json({ error: "Please enter a valid email address format." });
+    }
+
+    // Rate limiting (60s cooldown)
+    const rateCheck = checkAuthRateLimit(normalizedEmail, 60000);
+    if (!rateCheck.allowed) {
+      return res.status(429).json({
+        error: `Please wait ${rateCheck.remainingSec} second(s) before requesting another verification code.`,
+      });
     }
 
     let user = usersStore.get(normalizedEmail);
@@ -921,15 +952,19 @@ app.post(["/api/auth/send-email-otp", "/api/auth/send_otp", "/api/auth/send-otp"
     usersStore.set(normalizedEmail, user);
     saveUsersToDisk();
 
-    // Dispatch real email via unified email provider (Resend API or SMTP)
+    // Dispatch real email via unified email provider
     const emailResult = await emailService.sendAuthOtpEmail(normalizedEmail, otpCode);
-    console.log(`[AUTH] Sent 6-digit Email OTP to ${normalizedEmail} via ${emailResult.provider} (${emailResult.status})`);
+    if (!emailResult.success) {
+      return res.status(503).json({
+        success: false,
+        error: "Failed to deliver verification code. Please check your email service configuration or try again later.",
+      });
+    }
 
     res.json({
       success: true,
       message: `A 6-digit verification code has been sent to ${normalizedEmail}.`,
       to: normalizedEmail,
-      demoOtp: otpCode,
       provider: emailResult.provider,
       isNewUser: isNew || !user.isProfileComplete,
     });
@@ -1004,14 +1039,26 @@ app.post("/api/auth/verify-email-otp", (req, res) => {
 });
 
 // 7. Google One-Click Auth Endpoint
-app.post("/api/auth/google", (req, res) => {
+app.post("/api/auth/google", async (req, res) => {
   try {
-    const { email, fullName, photoURL } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "Email is required for Google authentication." });
+    const idToken = req.body?.idToken || req.body?.credential || req.body?.token;
+    if (!idToken || typeof idToken !== "string") {
+      return res.status(400).json({ error: "Genuine Google ID token is required. Raw email parameters are not accepted." });
     }
-    const normalizedEmail = email.trim().toLowerCase();
-    const userName = fullName ? fullName.trim() : normalizedEmail.split("@")[0].replace(".", " ");
+
+    // Verify token directly with Google OAuth endpoint
+    const tokenInfoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+    if (!tokenInfoRes.ok) {
+      return res.status(401).json({ error: "Invalid or expired Google identity token." });
+    }
+
+    const tokenInfo: any = await tokenInfoRes.json();
+    if (!tokenInfo.email || (tokenInfo.email_verified !== "true" && tokenInfo.email_verified !== true)) {
+      return res.status(401).json({ error: "Google account email is missing or unverified by Google." });
+    }
+
+    const normalizedEmail = tokenInfo.email.trim().toLowerCase();
+    const userName = tokenInfo.name || normalizedEmail.split("@")[0].replace(/[._]/g, " ");
 
     let existingUser = usersStore.get(normalizedEmail);
 
@@ -1022,20 +1069,26 @@ app.post("/api/auth/google", (req, res) => {
         email: normalizedEmail,
         phone: "",
         country: "Bangladesh",
-        photoURL: photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(normalizedEmail)}`,
-        bio: `Hello! I am ${userName}, a travel enthusiast at Azraq Tours.`,
+        photoURL: tokenInfo.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(normalizedEmail)}`,
+        bio: `Hello! I am ${userName}, a travel enthusiast at Azraq Trips.`,
         languages: ["English"],
-        emailVerified: true, // Google accounts pre-verified
+        emailVerified: true, // Google accounts verified by identity provider
         phoneVerified: false,
         provider: "google",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         isProfileComplete: true,
-        isAdmin: isOwnerEmail(normalizedEmail),
-        role: isOwnerEmail(normalizedEmail) ? "admin" : "user",
+        isAdmin: false,
+        role: "user",
       };
       usersStore.set(normalizedEmail, existingUser);
       saveUsersToDisk();
+    } else {
+      if (!existingUser.emailVerified) {
+        existingUser.emailVerified = true;
+        usersStore.set(normalizedEmail, existingUser);
+        saveUsersToDisk();
+      }
     }
 
     const token = issueSessionToken(existingUser);
@@ -1053,7 +1106,7 @@ app.post("/api/auth/google", (req, res) => {
 });
 
 // 8. Forgot Password Endpoint (Generates 6-Digit Reset Code)
-app.post("/api/auth/forgot-password", (req, res) => {
+app.post("/api/auth/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) {
@@ -1065,6 +1118,14 @@ app.post("/api/auth/forgot-password", (req, res) => {
       return res.status(400).json({ error: "No account found registered with that email or phone number." });
     }
 
+    // Rate limiting (60s cooldown)
+    const rateCheck = checkAuthRateLimit(user.email, 60000);
+    if (!rateCheck.allowed) {
+      return res.status(429).json({
+        error: `Please wait ${rateCheck.remainingSec} second(s) before requesting another password reset.`,
+      });
+    }
+
     // Generate 6-digit code valid for 15 minutes
     const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
     user.resetToken = resetCode;
@@ -1072,12 +1133,19 @@ app.post("/api/auth/forgot-password", (req, res) => {
     usersStore.set(user.email, user);
     saveUsersToDisk();
 
+    // Dispatch reset code via verified email delivery
+    const emailResult = await emailService.sendPasswordResetEmail(user.email, resetCode);
+    if (!emailResult.success) {
+      return res.status(503).json({
+        error: "Failed to deliver password reset email. Please contact our support team at info@azraqtrips.com.",
+      });
+    }
+
     res.json({
       success: true,
       message: `Password reset verification code sent to ${user.email}.`,
       sent: true,
       resetCodeSent: true,
-      demoResetCode: resetCode,
     });
   } catch (err: any) {
     console.error("Forgot Password Error:", err);
@@ -1126,6 +1194,9 @@ app.post("/api/auth/reset-password", (req, res) => {
     usersStore.set(user.email, user);
     saveUsersToDisk();
 
+    // Revoke all active sessions on password reset across all devices
+    sessionStore.revokeAllUserSessions(user.uid);
+
     res.json({
       success: true,
       message: "Password reset successfully! You can now log in with your new password.",
@@ -1136,15 +1207,115 @@ app.post("/api/auth/reset-password", (req, res) => {
   }
 });
 
-// 10. Update Profile / Photo / Bio / Preferences Endpoint
-app.post("/api/auth/update-profile", (req, res) => {
+
+// 9b. Logout Endpoint (Revokes active session token)
+app.post("/api/auth/logout", (req, res) => {
   try {
-    const { email, fullName, phone, country, bio, languages, homeLocation, travelPreferences, photoURL } = req.body;
-    if (!email) {
-      return res.status(400).json({ error: "User email is required." });
+    const authHeader = req.headers.authorization || "";
+    let token = "";
+    if (authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7).trim();
+    } else if (req.headers["x-auth-token"]) {
+      token = String(req.headers["x-auth-token"]).trim();
     }
 
-    const user = findUserByEmailOrPhone(email);
+    if (token) {
+      sessionStore.revokeSession(token);
+    }
+
+    res.json({ success: true, message: "Logged out successfully." });
+  } catch (err: any) {
+    console.error("Logout Error:", err);
+    res.status(500).json({ error: "Failed to logout session." });
+  }
+});
+
+// 9c. Secure Owner Bootstrap & Recovery Endpoint
+app.post("/api/auth/bootstrap-owner", (req, res) => {
+  try {
+    const { email, password, fullName, phone, bootstrapToken } = req.body;
+
+    const expectedToken = process.env.ADMIN_BOOTSTRAP_TOKEN;
+    const hasAnyAdmin = Array.from(usersStore.values()).some(
+      (u) => u.role === "admin" || u.role === "owner" || u.isAdmin
+    );
+
+    if (hasAnyAdmin) {
+      if (!expectedToken || bootstrapToken !== expectedToken) {
+        return res.status(403).json({
+          error: "Administrator accounts already exist. Bootstrap requires a valid ADMIN_BOOTSTRAP_TOKEN environment secret.",
+        });
+      }
+    }
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required for admin bootstrap." });
+    }
+
+    const passCheck = validatePasswordRequirements(password);
+    if (!passCheck.valid) {
+      return res.status(400).json({ error: passCheck.error });
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const { hash, salt } = hashPassword(password);
+
+    let user = usersStore.get(normalizedEmail);
+    if (user) {
+      user.passwordHash = hash;
+      user.passwordSalt = salt;
+      user.role = "owner";
+      user.isAdmin = true;
+      user.emailVerified = true;
+      delete (user as any).needsPasswordRotation;
+      user.updatedAt = new Date().toISOString();
+    } else {
+      user = {
+        uid: `owner_${Date.now()}`,
+        fullName: fullName ? fullName.trim() : "System Administrator",
+        email: normalizedEmail,
+        phone: phone ? phone.trim() : "+880 1851-172032",
+        country: "Bangladesh",
+        passwordHash: hash,
+        passwordSalt: salt,
+        photoURL: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=400&q=80",
+        bio: "Authorized System Administrator at Azraq Tours & Travels.",
+        languages: ["English", "Bengali"],
+        emailVerified: true,
+        phoneVerified: true,
+        provider: "email",
+        createdAt: new Date().toISOString(),
+        role: "owner",
+        isAdmin: true,
+        isProfileComplete: true,
+      };
+    }
+
+    usersStore.set(normalizedEmail, user);
+    saveUsersToDisk();
+
+    sessionStore.revokeAllUserSessions(user.uid);
+    const token = issueSessionToken(user);
+
+    res.json({
+      success: true,
+      message: "Administrator account bootstrapped successfully.",
+      user: sanitizeUserPayload(user),
+      token,
+    });
+  } catch (err: any) {
+    console.error("Bootstrap Owner Error:", err);
+    res.status(500).json({ error: "Failed to bootstrap owner account." });
+  }
+});
+
+// 10. Update Profile / Photo / Bio / Preferences Endpoint
+app.post("/api/auth/update-profile", requireAuth, (req, res) => {
+  try {
+    const authUser = (req as any).user as ServerUser;
+    const { fullName, phone, country, bio, languages, homeLocation, travelPreferences, photoURL } = req.body;
+
+    const user = usersStore.get(authUser.email.toLowerCase());
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
@@ -1171,15 +1342,16 @@ app.post("/api/auth/update-profile", (req, res) => {
 });
 
 // 10b. Change Password Endpoint (Authenticated / Current Password Check)
-app.post("/api/auth/change-password", (req, res) => {
+app.post("/api/auth/change-password", requireAuth, (req, res) => {
   try {
-    const { email, currentPassword, newPassword } = req.body;
+    const authUser = (req as any).user as ServerUser;
+    const { currentPassword, newPassword } = req.body;
 
-    if (!email || !currentPassword || !newPassword) {
-      return res.status(400).json({ error: "Email, current password, and new password are required." });
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ error: "Current password and new password are required." });
     }
 
-    const user = findUserByEmailOrPhone(email);
+    const user = usersStore.get(authUser.email.toLowerCase());
     if (!user) {
       return res.status(404).json({ error: "User account not found." });
     }
@@ -1202,14 +1374,18 @@ app.post("/api/auth/change-password", (req, res) => {
     const { hash, salt } = hashPassword(newPassword);
     user.passwordHash = hash;
     user.passwordSalt = salt;
+    delete (user as any).needsPasswordRotation;
     user.updatedAt = new Date().toISOString();
 
     usersStore.set(user.email, user);
     saveUsersToDisk();
 
+    // Invalidate sessions across all other devices
+    sessionStore.revokeAllUserSessions(user.uid);
+
     res.json({
       success: true,
-      message: "Password changed successfully!",
+      message: "Password changed successfully! All other sessions have been logged out.",
     });
   } catch (err: any) {
     console.error("Change Password Error:", err);
@@ -1220,7 +1396,7 @@ app.post("/api/auth/change-password", (req, res) => {
 // --- Admin Users & Verification Management Endpoints ---
 
 // 11. Admin Get All Registered Users & Metrics
-app.get("/api/admin/users", (req, res) => {
+app.get("/api/admin/users", requireAdmin, (req, res) => {
   try {
     const userList: any[] = [];
     let totalUsers = 0;
@@ -1258,7 +1434,7 @@ app.get("/api/admin/users", (req, res) => {
 });
 
 // 12. Admin Toggle User Status (Suspend/Reactivate, Verification override)
-app.patch("/api/admin/users/:uid/status", (req, res) => {
+app.patch("/api/admin/users/:uid/status", requireAdmin, (req, res) => {
   try {
     const { uid } = req.params;
     const { isSuspended, emailVerified, phoneVerified, role } = req.body;
@@ -1275,7 +1451,10 @@ app.patch("/api/admin/users/:uid/status", (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
-    if (isSuspended !== undefined) targetUser.isSuspended = isSuspended;
+    if (isSuspended !== undefined) {
+      targetUser.isSuspended = isSuspended;
+      if (isSuspended) sessionStore.revokeAllUserSessions(targetUser.uid);
+    }
     if (emailVerified !== undefined) targetUser.emailVerified = emailVerified;
     if (phoneVerified !== undefined) targetUser.phoneVerified = phoneVerified;
     if (role !== undefined) {
@@ -1299,11 +1478,11 @@ app.patch("/api/admin/users/:uid/status", (req, res) => {
 });
 
 // 13. Admin System Settings Endpoints
-app.get("/api/admin/settings", (req, res) => {
+app.get("/api/admin/settings", requireAdmin, (req, res) => {
   res.json({ success: true, settings: systemSettings });
 });
 
-app.post("/api/admin/settings", (req, res) => {
+app.post("/api/admin/settings", requireAdmin, (req, res) => {
   const { requireEmailVerification, requirePhoneOtp } = req.body;
   if (requireEmailVerification !== undefined) systemSettings.requireEmailVerification = requireEmailVerification;
   if (requirePhoneOtp !== undefined) systemSettings.requirePhoneOtp = requirePhoneOtp;
@@ -3724,12 +3903,6 @@ Return valid JSON with an array of spots containing: name, category, distance (e
 });
 
 // --- Persistent Quotations Database ---
-const QUOTES_DB_FILE = path.join(process.cwd(), ".quotes_db.json");
-const ACTIVITY_LOGS_FILE = path.join(process.cwd(), ".activity_logs.json");
-const NOTIFICATIONS_FILE = path.join(process.cwd(), ".admin_notifications.json");
-const USER_ACTIVITIES_FILE = path.join(process.cwd(), ".user_activities.json");
-const SYSTEM_ANNOUNCEMENTS_FILE = path.join(process.cwd(), ".system_announcements.json");
-const USER_READ_FEEDS_FILE = path.join(process.cwd(), ".user_read_feeds.json");
 
 interface InternalNoteRecord {
   id: string;
@@ -3810,238 +3983,74 @@ export interface SystemAnnouncementDbRecord {
   actionLabel?: string;
 }
 
+const QUOTES_DB_FILE = path.join(DATA_DIR, ".quotes_db.json");
+const ACTIVITY_LOGS_FILE = path.join(DATA_DIR, ".activity_logs_db.json");
+const NOTIFICATIONS_FILE = path.join(DATA_DIR, ".notifications_db.json");
+const USER_ACTIVITIES_FILE = path.join(DATA_DIR, ".user_activities_db.json");
+const SYSTEM_ANNOUNCEMENTS_FILE = path.join(DATA_DIR, ".system_announcements_db.json");
+const USER_READ_FEEDS_FILE = path.join(DATA_DIR, ".user_read_feeds_db.json");
+
+// Fabricated quote/activity IDs to remove permanently from production memory & storage
+const FABRICATED_IDS = new Set(["FLQ-849201", "VSQ-930214", "AZR-1024", "act_1", "act_2", "notif_1", "uact_1", "uact_2", "uact_3", "uact_4"]);
+
 function loadQuotesFromDisk(): QuoteRecord[] {
   try {
     if (fs.existsSync(QUOTES_DB_FILE)) {
       const data = fs.readFileSync(QUOTES_DB_FILE, "utf-8");
-      return JSON.parse(data);
+      const list: QuoteRecord[] = JSON.parse(data);
+      if (Array.isArray(list)) {
+        return list.filter((q) => q && q.id && !FABRICATED_IDS.has(q.id));
+      }
     }
   } catch (err) {
     console.error("Failed to read quotes DB file:", err);
   }
-  return [
-    {
-      id: "FLQ-849201",
-      type: "flight",
-      tripType: "Round Trip",
-      from: "San Francisco (SFO)",
-      to: "Tokyo Haneda (HND)",
-      departureDate: "2026-10-15",
-      returnDate: "2026-10-28",
-      adults: 2,
-      children: 0,
-      infants: 0,
-      cabinClass: "Business",
-      preferredAirline: "Japan Airlines / ANA",
-      flexibleDate: "Yes",
-      additionalRequirements: "Prefer direct flights or minimum layover in Tokyo. Window seats preferred.",
-      customerName: "Istihad Ahmed",
-      email: "istihadahmed1163@gmail.com",
-      phone: "+880 1851-172032",
-      preferredContactMethod: "WhatsApp",
-      status: "Quoted",
-      assignedStaff: "Istihad Ahmed (Super Admin)",
-      assignedStaffId: "staff_1",
-      createdAt: new Date(Date.now() - 3600000 * 24).toISOString(),
-      updatedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-      staffNote: "Found 2 direct Business Class options with JAL and ANA.",
-      quotedPrice: "$3,450 / person",
-      flightOptions: "JAL Flight JL001 (SFO-HND Nonstop) - $3,450 USD. ANA Flight NH107 - $3,620 USD.",
-      internalNotes: [
-        {
-          id: "note_1",
-          authorName: "Istihad Ahmed",
-          authorRole: "Super Admin",
-          text: "Client requested fast VIP lounge assistance at Haneda. Offered partner perks.",
-          createdAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-        }
-      ],
-      acknowledgmentSent: true,
-    },
-    {
-      id: "VSQ-930214",
-      type: "visa",
-      destinationCountry: "Schengen / France",
-      visaType: "Tourist",
-      intendedTravelDate: "2026-11-05",
-      applicantsCount: 2,
-      applicantNationality: "United States",
-      passportValidity: "More than 6 months",
-      previousVisa: "Yes",
-      previousRefusal: "No",
-      currentResidence: "United States",
-      requiredService: "Full Package",
-      additionalInfo: "Need assistance with appointment booking and document translation.",
-      customerName: "Sarah Jenkins",
-      email: "sarah.j@example.com",
-      phone: "+1 (555) 987-6543",
-      preferredContactMethod: "Email",
-      status: "Processing",
-      assignedStaff: "Tania Sultana (Visa Specialist)",
-      assignedStaffId: "staff_3",
-      createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-      updatedAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-      staffNote: "Reviewing passport & itinerary documents. Appointment slot available for next Tuesday.",
-      quotedPrice: "BDT 18,500 Total Service & Embassy Fee",
-      visaFee: "BDT 11,500 Embassy Fee",
-      internalNotes: [
-        {
-          id: "note_2",
-          authorName: "Tania Sultana",
-          authorRole: "Visa Specialist",
-          text: "Verified bank balance and employment NOC. Ready for biometric submission slot.",
-          createdAt: new Date(Date.now() - 3600000 * 3).toISOString(),
-        }
-      ],
-      acknowledgmentSent: true,
-    },
-    {
-      id: "AZR-1024",
-      type: "flight",
-      tripType: "Round Trip",
-      from: "Dhaka (DAC)",
-      to: "Bangkok (BKK)",
-      departureDate: "2026-11-20",
-      returnDate: "2026-11-27",
-      adults: 2,
-      children: 1,
-      infants: 0,
-      cabinClass: "Economy",
-      preferredAirline: "Thai Airways / Biman",
-      flexibleDate: "No",
-      additionalRequirements: "Halal meal and extra baggage allowance requested.",
-      customerName: "Istihad Ahmed",
-      email: "istihadahmed1163@gmail.com",
-      phone: "+8801712345678",
-      preferredContactMethod: "WhatsApp",
-      status: "New",
-      assignedStaff: "Rahim Chowdhury (Flight Specialist)",
-      assignedStaffId: "staff_2",
-      createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-      updatedAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-      staffNote: "",
-      internalNotes: [],
-      acknowledgmentSent: true,
-    },
-  ];
+  return [];
 }
 
 function loadActivityLogs(): ActivityRecord[] {
   try {
     if (fs.existsSync(ACTIVITY_LOGS_FILE)) {
-      return JSON.parse(fs.readFileSync(ACTIVITY_LOGS_FILE, "utf-8"));
+      const data = fs.readFileSync(ACTIVITY_LOGS_FILE, "utf-8");
+      const list: ActivityRecord[] = JSON.parse(data);
+      if (Array.isArray(list)) {
+        return list.filter((a) => a && a.id && !FABRICATED_IDS.has(a.id) && !FABRICATED_IDS.has(a.quoteId));
+      }
     }
   } catch (err) {
     console.error("Failed to read activity logs DB file:", err);
   }
-  return [
-    {
-      id: "act_1",
-      quoteId: "AZR-1024",
-      action: "New Quote Submitted",
-      performedBy: "Istihad Ahmed (Client)",
-      details: "Round Trip Dhaka -> Bangkok requested for 2 Adults, 1 Child.",
-      timestamp: new Date(Date.now() - 3600000 * 1).toISOString(),
-    },
-    {
-      id: "act_2",
-      quoteId: "VSQ-930214",
-      action: "Assigned Staff & Status Changed",
-      performedBy: "Super Admin",
-      details: "Assigned to Tania Sultana. Status changed from New to Processing.",
-      timestamp: new Date(Date.now() - 3600000 * 3).toISOString(),
-    },
-  ];
+  return [];
 }
 
 function loadNotifications(): NotificationRecord[] {
   try {
     if (fs.existsSync(NOTIFICATIONS_FILE)) {
-      return JSON.parse(fs.readFileSync(NOTIFICATIONS_FILE, "utf-8"));
+      const data = fs.readFileSync(NOTIFICATIONS_FILE, "utf-8");
+      const list: NotificationRecord[] = JSON.parse(data);
+      if (Array.isArray(list)) {
+        return list.filter((n) => n && n.id && !FABRICATED_IDS.has(n.id) && (!n.quoteId || !FABRICATED_IDS.has(n.quoteId)));
+      }
     }
   } catch (err) {
     console.error("Failed to read notifications DB file:", err);
   }
-  return [
-    {
-      id: "notif_1",
-      title: "⚡ Urgent New Quote",
-      message: "Istihad Ahmed requested a Bangkok Flight quote (AZR-1024).",
-      quoteId: "AZR-1024",
-      type: "quote_new",
-      isRead: false,
-      createdAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-    },
-  ];
+  return [];
 }
 
 function loadUserActivities(): UserActivityDbRecord[] {
   try {
     if (fs.existsSync(USER_ACTIVITIES_FILE)) {
-      return JSON.parse(fs.readFileSync(USER_ACTIVITIES_FILE, "utf-8"));
+      const data = fs.readFileSync(USER_ACTIVITIES_FILE, "utf-8");
+      const list: UserActivityDbRecord[] = JSON.parse(data);
+      if (Array.isArray(list)) {
+        return list.filter((u) => u && u.id && !FABRICATED_IDS.has(u.id) && (!u.quoteId || !FABRICATED_IDS.has(u.quoteId)));
+      }
     }
   } catch (err) {
     console.error("Failed to read user activities DB file:", err);
   }
-  // Default seeded activities for Istihad Ahmed
-  const now = Date.now();
-  return [
-    {
-      id: "uact_1",
-      userEmail: "istihadahmed1163@gmail.com",
-      quoteId: "AZR-1024",
-      quoteType: "flight",
-      routeOrDestination: "Dhaka (DAC) ➔ Bangkok (BKK)",
-      status: "Processing",
-      title: "📞 Specialist Assigned & GDS Search Initiated",
-      message: "Our senior flight specialist Rahim Chowdhury is reviewing wholesale airline tariffs and non-stop flight connections.",
-      dotColor: "yellow",
-      iconType: "phone",
-      agentName: "Rahim Chowdhury",
-      timestamp: new Date(now - 1000 * 60 * 45).toISOString(),
-    },
-    {
-      id: "uact_2",
-      userEmail: "istihadahmed1163@gmail.com",
-      quoteId: "AZR-1024",
-      quoteType: "flight",
-      routeOrDestination: "Dhaka (DAC) ➔ Bangkok (BKK)",
-      status: "New",
-      title: "📩 Quote Request for Bangkok Received",
-      message: "Your quotation request for 2 Adults, 1 Child (Round Trip) was successfully received and logged into Azraq priority queue.",
-      dotColor: "yellow",
-      iconType: "mail",
-      timestamp: new Date(now - 1000 * 60 * 60).toISOString(),
-    },
-    {
-      id: "uact_3",
-      userEmail: "istihadahmed1163@gmail.com",
-      quoteId: "FLQ-849201",
-      quoteType: "flight",
-      routeOrDestination: "San Francisco (SFO) ➔ Tokyo (HND)",
-      status: "Quoted",
-      title: "💬 Personalized Quote Dispatched via WhatsApp",
-      message: "Your official quote assessment ($3,450 / person Business Class on JAL & ANA) was prepared and sent via WhatsApp.",
-      dotColor: "green",
-      iconType: "message",
-      quotedPrice: "$3,450 / person",
-      agentName: "Istihad Ahmed",
-      timestamp: new Date(now - 1000 * 60 * 60 * 24).toISOString(),
-    },
-    {
-      id: "uact_4",
-      userEmail: "istihadahmed1163@gmail.com",
-      quoteId: "FLQ-849201",
-      quoteType: "flight",
-      routeOrDestination: "San Francisco (SFO) ➔ Tokyo (HND)",
-      status: "Booked",
-      title: "✅ Booking Confirmed & Vouchers Ready! Trip ID: FLQ-849201",
-      message: "Your Tokyo journey is confirmed. E-ticket receipts and lounge access vouchers are available.",
-      dotColor: "green",
-      iconType: "check",
-      timestamp: new Date(now - 1000 * 60 * 60 * 18).toISOString(),
-    },
-  ];
+  return [];
 }
 
 function loadSystemAnnouncements(): SystemAnnouncementDbRecord[] {
@@ -4113,7 +4122,7 @@ let userReadFeedsStore: Record<string, string[]> = loadReadFeeds();
 
 function saveQuotesToDisk() {
   try {
-    fs.writeFileSync(QUOTES_DB_FILE, JSON.stringify(quotesStore, null, 2), "utf-8");
+    atomicWriteJsonSync(QUOTES_DB_FILE, quotesStore);
   } catch (err) {
     console.error("Failed to save quotes DB file:", err);
   }
@@ -4121,7 +4130,7 @@ function saveQuotesToDisk() {
 
 function saveActivityLogsToDisk() {
   try {
-    fs.writeFileSync(ACTIVITY_LOGS_FILE, JSON.stringify(activityLogsStore, null, 2), "utf-8");
+    atomicWriteJsonSync(ACTIVITY_LOGS_FILE, activityLogsStore);
   } catch (err) {
     console.error("Failed to save activity logs DB file:", err);
   }
@@ -4129,7 +4138,7 @@ function saveActivityLogsToDisk() {
 
 function saveNotificationsToDisk() {
   try {
-    fs.writeFileSync(NOTIFICATIONS_FILE, JSON.stringify(notificationsStore, null, 2), "utf-8");
+    atomicWriteJsonSync(NOTIFICATIONS_FILE, notificationsStore);
   } catch (err) {
     console.error("Failed to save notifications DB file:", err);
   }
@@ -4137,7 +4146,7 @@ function saveNotificationsToDisk() {
 
 function saveUserActivitiesToDisk() {
   try {
-    fs.writeFileSync(USER_ACTIVITIES_FILE, JSON.stringify(userActivitiesStore, null, 2), "utf-8");
+    atomicWriteJsonSync(USER_ACTIVITIES_FILE, userActivitiesStore);
   } catch (err) {
     console.error("Failed to save user activities DB file:", err);
   }
@@ -4153,7 +4162,7 @@ function saveSystemAnnouncementsToDisk() {
 
 function saveReadFeedsToDisk() {
   try {
-    fs.writeFileSync(USER_READ_FEEDS_FILE, JSON.stringify(userReadFeedsStore, null, 2), "utf-8");
+    atomicWriteJsonSync(USER_READ_FEEDS_FILE, userReadFeedsStore);
   } catch (err) {
     console.error("Failed to save read feeds DB file:", err);
   }
@@ -4350,10 +4359,18 @@ app.get("/api/requests/track", (req, res) => {
   try {
     const query = String(req.query.query || req.query.id || req.query.email || "").trim();
     if (!query) {
-      return res.status(400).json({ success: false, error: "Please enter a Request ID or Email address to search." });
+      return res.status(400).json({ success: false, error: "Please enter a Request ID or Reference Number to track." });
     }
 
     if (query.includes("@")) {
+      // Querying by email requires being authenticated as that user or admin
+      const authUser = getAuthenticatedUser(req);
+      if (!authUser || (authUser.email.toLowerCase() !== query.toLowerCase() && !authUser.isAdmin && authUser.role !== 'admin' && authUser.role !== 'owner')) {
+        return res.status(401).json({
+          success: false,
+          error: "Unauthorized: Tracking by email address requires signing in with that account. Alternatively, please enter your specific Request ID.",
+        });
+      }
       const userRequests = requestsStore.getUserRequests({ email: query });
       return res.json({ success: true, count: userRequests.length, requests: userRequests });
     }
@@ -4363,7 +4380,7 @@ app.get("/api/requests/track", (req, res) => {
       return res.status(404).json({ success: false, error: `No request found matching '${query}'.` });
     }
 
-    // Strip internal admin notes for client safety
+    // Strip internal admin notes and IP for privacy and security
     const { admin_notes, client_ip, user_agent, ...safeReq } = singleReq;
     res.json({ success: true, request: safeReq });
   } catch (err: any) {
@@ -4373,26 +4390,10 @@ app.get("/api/requests/track", (req, res) => {
 });
 
 // 3. Authenticated User's Request History
-app.get("/api/users/me/requests", (req, res) => {
+app.get("/api/users/me/requests", requireAuth, (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
-    if (!token && req.headers["x-auth-token"]) {
-      token = String(req.headers["x-auth-token"]).trim();
-    }
-
-    let userEmail = "";
-    if (token && activeTokensMap.has(token)) {
-      userEmail = activeTokensMap.get(token)!;
-    } else if (req.query.email) {
-      userEmail = String(req.query.email).trim().toLowerCase();
-    }
-
-    if (!userEmail) {
-      return res.json({ success: true, count: 0, requests: [] });
-    }
-
-    const userRequests = requestsStore.getUserRequests({ email: userEmail });
+    const authUser = (req as any).user as ServerUser;
+    const userRequests = requestsStore.getUserRequests({ email: authUser.email.toLowerCase() });
     res.json({ success: true, count: userRequests.length, requests: userRequests });
   } catch (err: any) {
     console.error("[User Requests Error]:", err);
@@ -4401,7 +4402,7 @@ app.get("/api/users/me/requests", (req, res) => {
 });
 
 // 4. Admin List Requests CRM (with search, filter, sort, pagination)
-app.get("/api/admin/requests", (req, res) => {
+app.get("/api/admin/requests", requireAdmin, (req, res) => {
   try {
     const search = req.query.search as string | undefined;
     const type = req.query.type as string | undefined;
@@ -4436,7 +4437,7 @@ app.get("/api/admin/requests", (req, res) => {
 });
 
 // 5. Admin Single Request Detail View
-app.get("/api/admin/requests/:id", (req, res) => {
+app.get("/api/admin/requests/:id", requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const singleReq = requestsStore.getRequestById(id);
@@ -4500,7 +4501,7 @@ app.patch("/api/admin/requests/:id", (req, res) => {
 });
 
 // 7. Admin Resend Notification Email
-app.post("/api/admin/requests/:id/resend-email", async (req, res) => {
+app.post("/api/admin/requests/:id/resend-email", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { performedBy, performedEmail } = req.body;
@@ -4522,7 +4523,7 @@ app.post("/api/admin/requests/:id/resend-email", async (req, res) => {
 });
 
 // 8. Admin Delete Request
-app.delete("/api/admin/requests/:id", (req, res) => {
+app.delete("/api/admin/requests/:id", requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const deleted = requestsStore.deleteRequest(id);
@@ -4832,27 +4833,186 @@ app.post("/api/quotes/visa", async (req, res) => {
 });
 
 // 7. Track Quotation Request (By Request ID or Email)
+// --- Genuine Universal Quotation & Booking Creation Endpoint ---
+app.post("/api/quotes", async (req, res) => {
+  try {
+    const {
+      type = "custom_trip",
+      customerName,
+      email,
+      phone,
+      from,
+      to,
+      destination,
+      departureDate,
+      returnDate,
+      adults = 1,
+      children = 0,
+      infants = 0,
+      cabinClass,
+      hotelName,
+      roomType,
+      packageId,
+      packageName,
+      visaCategory,
+      additionalRequirements,
+      preferredContactMethod = "WhatsApp",
+      totalPriceBDT,
+      passengers,
+    } = req.body;
+
+    const resolvedName = (customerName || "").trim();
+    const resolvedPhone = (phone || "").trim();
+    const resolvedEmail = (email || "").trim().toLowerCase();
+
+    if (!resolvedName) {
+      return res.status(400).json({ success: false, error: "Customer name is required." });
+    }
+    if (!resolvedPhone && !resolvedEmail) {
+      return res.status(400).json({ success: false, error: "Please provide either a mobile phone number or an email address." });
+    }
+
+    const authUser = getAuthenticatedUser(req);
+    const finalEmail = resolvedEmail || (authUser ? authUser.email : "");
+    const finalPhone = resolvedPhone || (authUser ? authUser.phone || "+880 1851-172032" : "+880 1851-172032");
+
+    const prefix = String(type).slice(0, 3).toUpperCase();
+    const uniqueId = `AZR-${prefix}-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    const newQuote: QuoteRecord = {
+      id: uniqueId,
+      type: type as any,
+      tripType: returnDate ? "Round Trip" : "One Way",
+      from: from || (type === "hotel" ? "" : "Dhaka (DAC)"),
+      to: to || destination || hotelName || packageName || "International",
+      departureDate: departureDate || new Date().toISOString().split("T")[0],
+      returnDate: returnDate || undefined,
+      adults: Number(adults) || 1,
+      children: Number(children) || 0,
+      infants: Number(infants) || 0,
+      cabinClass: cabinClass || undefined,
+      additionalRequirements: additionalRequirements || (hotelName ? `Hotel: ${hotelName}, Room: ${roomType || 'Standard'}` : ""),
+      customerName: resolvedName,
+      email: finalEmail,
+      phone: finalPhone,
+      preferredContactMethod: preferredContactMethod as any,
+      status: "New",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      staffNote: "",
+      internalNotes: [],
+      acknowledgmentSent: Boolean(finalEmail),
+    };
+
+    quotesStore.unshift(newQuote);
+    saveQuotesToDisk();
+
+    // Map to Unified Requests CRM store
+    let uType: UnifiedRequestType = "custom";
+    if (type === "flight") uType = "flight";
+    else if (type === "visa") uType = "visa";
+    else if (type === "package") uType = "package";
+    else if (type === "hotel") uType = "hotel";
+
+    requestsStore.createRequest({
+      requestType: uType,
+      customerName: resolvedName,
+      customerEmail: finalEmail || "desk@azraqtrips.com",
+      customerPhone: finalPhone,
+      priority: "NORMAL",
+      destination: to || destination || hotelName || packageName,
+      origin: from,
+      travelDate: departureDate,
+      returnDate,
+      passengers: Number(adults) || 1,
+      message: additionalRequirements,
+      metadata: {
+        quote_id: uniqueId,
+        type,
+        totalPriceBDT,
+        passengers,
+      },
+    });
+
+    // Send email acknowledgment if customer provided email
+    if (finalEmail) {
+      emailService.sendCustomerConfirmation({
+        requestId: uniqueId,
+        requestType: type,
+        customerName: resolvedName,
+        customerEmail: finalEmail,
+        customerPhone: finalPhone,
+        destination: to || destination || hotelName || packageName,
+        origin: from,
+        travelDate: departureDate,
+        returnDate,
+      }).catch((err) => {
+        console.warn("[Quote Confirmation Email Error]:", err);
+      });
+    }
+
+    res.json({
+      success: true,
+      id: uniqueId,
+      reference: uniqueId,
+      quote: newQuote,
+      message: `Quotation request recorded successfully! Your reference ID is ${uniqueId}.`,
+    });
+  } catch (err: any) {
+    console.error("Universal Quote Creation Error:", err);
+    res.status(500).json({ success: false, error: "Failed to submit quotation request. Please try again." });
+  }
+});
+
+
+
+// 7. Track Quotation Request (By Request ID or Authenticated Email)
 app.get("/api/quotes/track", (req, res) => {
   try {
     const query = String(req.query.query || req.query.id || "").trim().toLowerCase();
     if (!query) {
-      return res.status(400).json({ error: "Please enter a valid Request ID or Email address." });
+      return res.status(400).json({ error: "Please enter a valid Request ID or Reference Number." });
     }
 
-    const results = quotesStore.filter(
-      (q) => q.id.toLowerCase() === query || q.email.toLowerCase() === query
-    );
-
-    // If querying by email, return the list (even if empty) to avoid UI errors
     if (query.includes("@")) {
+      const authUser = getAuthenticatedUser(req);
+      if (!authUser || (authUser.email.toLowerCase() !== query.toLowerCase() && !authUser.isAdmin && authUser.role !== 'admin' && authUser.role !== 'owner')) {
+        return res.status(401).json({
+          error: "Unauthorized: Tracking by email address requires signing in with that account. Alternatively, please enter your specific Request ID.",
+        });
+      }
+      const results = quotesStore.filter((q) => q.email.toLowerCase() === query);
       return res.json({ success: true, quotes: results });
     }
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: "No quotation request found matching your Request ID or Email." });
+    const quote = quotesStore.find((q) => q.id.toLowerCase() === query);
+    if (!quote) {
+      const uReq = requestsStore.getRequestById(query);
+      if (!uReq) {
+        return res.status(404).json({ error: "No quotation request found matching your Request ID." });
+      }
+      const { admin_notes, client_ip, user_agent, ...safeReq } = uReq;
+      return res.json({ success: true, quotes: [safeReq] });
     }
 
-    res.json({ success: true, quotes: results });
+    const authUser = getAuthenticatedUser(req);
+    const isOwner = authUser && (authUser.email.toLowerCase() === quote.email.toLowerCase() || authUser.isAdmin || authUser.role === 'admin' || authUser.role === 'owner');
+
+    const safeQuote = isOwner ? quote : {
+      id: quote.id,
+      type: quote.type,
+      status: quote.status,
+      createdAt: quote.createdAt,
+      departureDate: quote.departureDate,
+      returnDate: quote.returnDate,
+      to: quote.to,
+      from: quote.from,
+      adults: quote.adults,
+      children: quote.children,
+      email: quote.email ? quote.email.replace(/^([^@]{1,2})[^@]*(@.*)$/, "$1***$2") : undefined,
+    };
+
+    res.json({ success: true, quotes: [safeQuote] });
   } catch (err: any) {
     console.error("Track Quote Error:", err);
     res.status(500).json({ error: "Failed to track quotation." });
@@ -4860,26 +5020,10 @@ app.get("/api/quotes/track", (req, res) => {
 });
 
 // 7b. User's Own Quote History & Count Endpoint
-app.get("/api/users/me/quotes", (req, res) => {
+app.get("/api/users/me/quotes", requireAuth, (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
-    if (!token && req.headers["x-auth-token"]) {
-      token = String(req.headers["x-auth-token"]).trim();
-    }
-
-    let userEmail = "";
-    if (token && activeTokensMap.has(token)) {
-      userEmail = activeTokensMap.get(token)!;
-    } else if (req.query.email) {
-      userEmail = String(req.query.email).trim().toLowerCase();
-    }
-
-    if (!userEmail) {
-      return res.status(401).json({ error: "Unauthorized: Please provide a valid session token or email." });
-    }
-
-    const userQuotes = quotesStore.filter((q) => q.email.toLowerCase() === userEmail.toLowerCase());
+    const authUser = (req as any).user as ServerUser;
+    const userQuotes = quotesStore.filter((q) => q.email.toLowerCase() === authUser.email.toLowerCase());
     res.json({ success: true, quotes: userQuotes, count: userQuotes.length });
   } catch (err: any) {
     console.error("User Quotes Error:", err);
@@ -4887,26 +5031,10 @@ app.get("/api/users/me/quotes", (req, res) => {
   }
 });
 
-app.get("/api/users/me/quotes/count", (req, res) => {
+app.get("/api/users/me/quotes/count", requireAuth, (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
-    if (!token && req.headers["x-auth-token"]) {
-      token = String(req.headers["x-auth-token"]).trim();
-    }
-
-    let userEmail = "";
-    if (token && activeTokensMap.has(token)) {
-      userEmail = activeTokensMap.get(token)!;
-    } else if (req.query.email) {
-      userEmail = String(req.query.email).trim().toLowerCase();
-    }
-
-    if (!userEmail) {
-      return res.status(401).json({ error: "Unauthorized: Please provide a valid session token or email." });
-    }
-
-    const userQuotes = quotesStore.filter((q) => q.email.toLowerCase() === userEmail.toLowerCase());
+    const authUser = (req as any).user as ServerUser;
+    const userQuotes = quotesStore.filter((q) => q.email.toLowerCase() === authUser.email.toLowerCase());
     res.json({ success: true, count: userQuotes.length });
   } catch (err: any) {
     console.error("User Quotes Count Error:", err);
@@ -4914,27 +5042,10 @@ app.get("/api/users/me/quotes/count", (req, res) => {
   }
 });
 
-// 7c. User's Personalized Trip Status Timeline Feed
-app.get("/api/users/me/timeline", (req, res) => {
+app.get("/api/users/me/timeline", requireAuth, (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
-    if (!token && req.headers["x-auth-token"]) {
-      token = String(req.headers["x-auth-token"]).trim();
-    }
-
-    let userEmail = "";
-    if (token && activeTokensMap.has(token)) {
-      userEmail = activeTokensMap.get(token)!;
-    } else if (req.query.email) {
-      userEmail = String(req.query.email).trim().toLowerCase();
-    }
-
-    if (!userEmail) {
-      return res.status(401).json({ error: "Unauthorized: Please provide a valid session token or email." });
-    }
-
-    const userQuotes = quotesStore.filter((q) => q.email.toLowerCase() === userEmail.toLowerCase());
+    const authUser = (req as any).user as ServerUser;
+    const userQuotes = quotesStore.filter((q) => q.email.toLowerCase() === authUser.email.toLowerCase());
     
     // Generate rich step-by-step activity timeline for this user's trip requests
     const timelineEvents: Array<{
@@ -5050,25 +5161,92 @@ app.get("/api/users/me/timeline", (req, res) => {
   }
 });
 
-// 7d. Unified Live Updates Feed (Personal Activity + System Announcements)
-app.get("/api/feed", (req, res) => {
+
+// --- Genuine Payment Inquiry & Offline Reconciliation Endpoint ---
+app.post("/api/payments/record", (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
-    if (!token && req.headers["x-auth-token"]) {
-      token = String(req.headers["x-auth-token"]).trim();
+    const {
+      bookingId,
+      amountBDT,
+      paymentMethod,
+      customerName,
+      customerPhone,
+      customerEmail,
+      serviceDescription,
+      transactionRef,
+    } = req.body;
+
+    if (!bookingId || !customerPhone) {
+      return res.status(400).json({
+        success: false,
+        error: "Booking Reference ID and Customer Phone number are required for payment verification.",
+      });
     }
 
-    let userEmail = "";
-    if (token && activeTokensMap.has(token)) {
-      userEmail = activeTokensMap.get(token)!;
-    } else if (req.query.email) {
-      userEmail = String(req.query.email).trim().toLowerCase();
+    const paymentRecord = {
+      id: `PAY-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`,
+      bookingId,
+      amountBDT: Number(amountBDT) || 0,
+      paymentMethod: paymentMethod || "manual",
+      customerName: customerName || "Customer",
+      customerPhone,
+      customerEmail: customerEmail || "",
+      serviceDescription: serviceDescription || "Azraq Travel Service",
+      transactionRef: transactionRef || "",
+      status: "PENDING_OFFICE_VERIFICATION",
+      verified: false,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Update quote status in memory & disk if matching
+    const qIdx = quotesStore.findIndex((q) => q.id.toLowerCase() === String(bookingId).toLowerCase());
+    if (qIdx !== -1) {
+      quotesStore[qIdx].status = "Processing";
+      quotesStore[qIdx].updatedAt = new Date().toISOString();
+      if (!quotesStore[qIdx].internalNotes) quotesStore[qIdx].internalNotes = [];
+      quotesStore[qIdx].internalNotes!.push({
+        id: `note_${Date.now()}`,
+        authorName: "Payment Verification Queue",
+        authorRole: "System",
+        text: `Manual payment record submitted (${paymentMethod}: ৳${amountBDT}, Ref: ${transactionRef || 'N/A'}). Awaiting office verification.`,
+        createdAt: new Date().toISOString(),
+      });
+      saveQuotesToDisk();
     }
 
-    if (!userEmail) {
-      return res.status(401).json({ error: "Unauthorized: Please provide a valid session token or email." });
-    }
+    activityLogsStore.unshift({
+      id: `act_${Date.now()}`,
+      quoteId: bookingId,
+      action: "Manual Payment Submitted",
+      performedBy: customerName || customerEmail || "Customer",
+      details: `${paymentMethod.toUpperCase()} payment of ৳${amountBDT} submitted. Ref: ${transactionRef || 'None'}. Status: PENDING_OFFICE_VERIFICATION`,
+      timestamp: new Date().toISOString(),
+    });
+    saveActivityLogsToDisk();
+
+    res.json({
+      success: true,
+      verified: false,
+      status: "PENDING_OFFICE_VERIFICATION",
+      message: `Manual payment inquiry logged for Booking #${bookingId}. Our Dhaka office will verify this transaction against bank records within 1-2 hours.`,
+      record: paymentRecord,
+    });
+  } catch (err: any) {
+    console.error("Payment Record Error:", err);
+    res.status(500).json({
+      success: false,
+      verified: false,
+      status: "FAILED",
+      error: "Failed to record payment verification request.",
+    });
+  }
+});
+
+// 7d. Unified Live Updates Feed (Personal Activity + System Announcements)
+app.get("/api/feed", requireAuth, (req, res) => {
+  try {
+    const authUser = (req as any).user as ServerUser;
+    const userEmail = authUser.email.toLowerCase();
 
     const emailKey = userEmail.toLowerCase();
     const readIds = userReadFeedsStore[emailKey] || [];
@@ -5233,24 +5411,10 @@ app.get("/api/feed", (req, res) => {
 });
 
 // 7e. Mark Feed Items as Read
-app.post("/api/feed/read", (req, res) => {
+app.post("/api/feed/read", requireAuth, (req, res) => {
   try {
-    const authHeader = req.headers.authorization || "";
-    let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
-    if (!token && req.headers["x-auth-token"]) {
-      token = String(req.headers["x-auth-token"]).trim();
-    }
-
-    let userEmail = "";
-    if (token && activeTokensMap.has(token)) {
-      userEmail = activeTokensMap.get(token)!;
-    } else if (req.body.email) {
-      userEmail = String(req.body.email).trim().toLowerCase();
-    }
-
-    if (!userEmail) {
-      return res.status(401).json({ error: "Unauthorized: Please provide a valid session token or email." });
-    }
+    const authUser = (req as any).user as ServerUser;
+    const userEmail = authUser.email.toLowerCase();
 
     const { itemIds, markAll } = req.body;
     const emailKey = userEmail.toLowerCase();
@@ -5422,32 +5586,7 @@ function saveTravelBuddiesDb() {
   }
 }
 
-// Helper to authenticate user from token or header
-function getAuthenticatedUser(req: express.Request): ServerUser | null {
-  const authHeader = req.headers.authorization || "";
-  let token = authHeader.startsWith("Bearer ") ? authHeader.substring(7).trim() : "";
-  if (!token && req.headers["x-auth-token"]) {
-    token = String(req.headers["x-auth-token"]).trim();
-  }
-  if (!token) return null;
-
-  if (activeTokensMap.has(token)) {
-    const email = activeTokensMap.get(token)!;
-    const user = usersStore.get(email.toLowerCase());
-    if (user) return user;
-  }
-
-  if (token.startsWith("token_")) {
-    const parts = token.split("_");
-    if (parts.length >= 3) {
-      const targetUid = parts.slice(1, parts.length - 1).join("_");
-      for (const u of usersStore.values()) {
-        if (u.uid === targetUid) return u;
-      }
-    }
-  }
-  return null;
-}
+// Authenticated user helper defined in main auth block
 
 // 1. GET ALL TRAVEL BUDDY PROFILES (Real database users only)
 app.get("/api/travel-buddies/profiles", (req, res) => {
@@ -5554,7 +5693,7 @@ app.get("/api/travel-buddies/profiles/:id", (req, res) => {
 });
 
 // 3. SAVE / UPDATE MY BUDDY PROFILE
-app.post("/api/travel-buddies/profiles", (req, res) => {
+app.post("/api/travel-buddies/profiles", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const {
@@ -5624,7 +5763,7 @@ app.post("/api/travel-buddies/profiles", (req, res) => {
 });
 
 // 4. BUDDY REQUESTS — GET MY REQUESTS
-app.get("/api/travel-buddies/requests", (req, res) => {
+app.get("/api/travel-buddies/requests", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const userId = authUser ? authUser.uid : String(req.query.userId || "");
@@ -5645,7 +5784,7 @@ app.get("/api/travel-buddies/requests", (req, res) => {
 });
 
 // 5. BUDDY REQUESTS — SEND REQUEST
-app.post("/api/travel-buddies/requests", (req, res) => {
+app.post("/api/travel-buddies/requests", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const { senderId, receiverId, message, senderProfile, receiverProfile } = req.body;
@@ -5711,7 +5850,7 @@ app.post("/api/travel-buddies/requests", (req, res) => {
 });
 
 // 6. BUDDY REQUESTS — RESPOND (Accept / Decline)
-app.post("/api/travel-buddies/requests/:id/respond", (req, res) => {
+app.post("/api/travel-buddies/requests/:id/respond", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -5765,7 +5904,7 @@ app.post("/api/travel-buddies/requests/:id/respond", (req, res) => {
 });
 
 // 7. BUDDY REQUESTS — CANCEL
-app.delete("/api/travel-buddies/requests/:id", (req, res) => {
+app.delete("/api/travel-buddies/requests/:id", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const existing = travelBuddiesDb.buddyRequests[id];
@@ -5804,7 +5943,7 @@ app.get("/api/travel-buddies/communities", (req, res) => {
 });
 
 // 9. COMMUNITIES — CREATE COMMUNITY
-app.post("/api/travel-buddies/communities", (req, res) => {
+app.post("/api/travel-buddies/communities", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const { name, destination, image, description, tags } = req.body;
@@ -5843,7 +5982,7 @@ app.post("/api/travel-buddies/communities", (req, res) => {
 });
 
 // 10. COMMUNITIES — JOIN COMMUNITY
-app.post("/api/travel-buddies/communities/:id/join", (req, res) => {
+app.post("/api/travel-buddies/communities/:id/join", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const authUser = getAuthenticatedUser(req);
@@ -5873,7 +6012,7 @@ app.post("/api/travel-buddies/communities/:id/join", (req, res) => {
 });
 
 // 11. COMMUNITIES — LEAVE COMMUNITY
-app.post("/api/travel-buddies/communities/:id/leave", (req, res) => {
+app.post("/api/travel-buddies/communities/:id/leave", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const authUser = getAuthenticatedUser(req);
@@ -5934,7 +6073,7 @@ app.get("/api/travel-buddies/trips", (req, res) => {
 });
 
 // 13. GROUP TRIPS — CREATE GROUP TRIP
-app.post("/api/travel-buddies/trips", (req, res) => {
+app.post("/api/travel-buddies/trips", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const {
@@ -5995,7 +6134,7 @@ app.post("/api/travel-buddies/trips", (req, res) => {
 });
 
 // 14. GROUP TRIPS — JOIN TRIP
-app.post("/api/travel-buddies/trips/:id/join", (req, res) => {
+app.post("/api/travel-buddies/trips/:id/join", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const authUser = getAuthenticatedUser(req);
@@ -6068,7 +6207,7 @@ app.post("/api/travel-buddies/trips/:id/join", (req, res) => {
 });
 
 // 15. GROUP TRIPS — LEAVE TRIP
-app.post("/api/travel-buddies/trips/:id/leave", (req, res) => {
+app.post("/api/travel-buddies/trips/:id/leave", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const authUser = getAuthenticatedUser(req);
@@ -6201,7 +6340,7 @@ app.get("/api/travel-buddies/posts", (req, res) => {
 });
 
 // 17. SOCIAL POSTS — CREATE POST (Travel Story, Buddy Request, Trip Plan, Travel Update)
-app.post("/api/travel-buddies/posts", (req, res) => {
+app.post("/api/travel-buddies/posts", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const {
@@ -6281,7 +6420,7 @@ app.post("/api/travel-buddies/posts", (req, res) => {
 });
 
 // 18. SOCIAL POSTS — LIKE / REACTION TOGGLE
-app.post("/api/travel-buddies/posts/:id/like", (req, res) => {
+app.post("/api/travel-buddies/posts/:id/like", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const { reaction_type = "like" } = req.body;
@@ -6376,7 +6515,7 @@ app.get("/api/travel-buddies/posts/:id/comments", (req, res) => {
 });
 
 // 20. SOCIAL POSTS — ADD COMMENT
-app.post("/api/travel-buddies/posts/:id/comments", (req, res) => {
+app.post("/api/travel-buddies/posts/:id/comments", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const { content } = req.body;
@@ -6456,7 +6595,7 @@ app.post("/api/travel-buddies/posts/:id/comments", (req, res) => {
 });
 
 // 21. SOCIAL POSTS — TOGGLE SAVE POST
-app.post("/api/travel-buddies/posts/:id/save", (req, res) => {
+app.post("/api/travel-buddies/posts/:id/save", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const authUser = getAuthenticatedUser(req);
@@ -6489,7 +6628,7 @@ app.post("/api/travel-buddies/posts/:id/save", (req, res) => {
 });
 
 // 22. SOCIAL POSTS — DELETE POST
-app.delete("/api/travel-buddies/posts/:id", (req, res) => {
+app.delete("/api/travel-buddies/posts/:id", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const authUser = getAuthenticatedUser(req);
@@ -6499,7 +6638,7 @@ app.delete("/api/travel-buddies/posts/:id", (req, res) => {
       return res.status(404).json({ error: "Post not found." });
     }
 
-    if (authUser && post.user_id !== authUser.uid && authUser.role !== "admin") {
+    if (post.user_id !== authUser.uid && authUser.role !== "admin" && !authUser.isAdmin) {
       return res.status(403).json({ error: "You can only delete your own posts." });
     }
 
@@ -6516,7 +6655,7 @@ app.delete("/api/travel-buddies/posts/:id", (req, res) => {
 });
 
 // 23. SOCIAL NOTIFICATIONS — GET MY NOTIFICATIONS
-app.get("/api/travel-buddies/notifications", (req, res) => {
+app.get("/api/travel-buddies/notifications", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const userId = authUser ? authUser.uid : String(req.query.userId || "");
@@ -6540,7 +6679,7 @@ app.get("/api/travel-buddies/notifications", (req, res) => {
 });
 
 // 24. SOCIAL NOTIFICATIONS — MARK SINGLE READ
-app.post("/api/travel-buddies/notifications/:id/read", (req, res) => {
+app.post("/api/travel-buddies/notifications/:id/read", requireAuth, (req, res) => {
   try {
     const { id } = req.params;
     const authUser = getAuthenticatedUser(req);
@@ -6562,7 +6701,7 @@ app.post("/api/travel-buddies/notifications/:id/read", (req, res) => {
 });
 
 // 25. SOCIAL NOTIFICATIONS — MARK ALL READ
-app.post("/api/travel-buddies/notifications/read-all", (req, res) => {
+app.post("/api/travel-buddies/notifications/read-all", requireAuth, (req, res) => {
   try {
     const authUser = getAuthenticatedUser(req);
     const userId = authUser ? authUser.uid : String(req.body.userId || "");
@@ -6582,7 +6721,7 @@ app.post("/api/travel-buddies/notifications/read-all", (req, res) => {
 });
 
 // 8. Admin List All Quotations
-app.get("/api/quotes/admin", (req, res) => {
+app.get("/api/quotes/admin", requireAdmin, (req, res) => {
   try {
     res.json({
       success: true,
@@ -6597,7 +6736,7 @@ app.get("/api/quotes/admin", (req, res) => {
 });
 
 // 9. Admin Update Quotation Status & Details
-app.patch("/api/quotes/admin/:id", (req, res) => {
+app.patch("/api/quotes/admin/:id", requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -6723,7 +6862,7 @@ app.patch("/api/quotes/admin/:id", (req, res) => {
 });
 
 // 9b. Admin Delete Quotation (Super Admin Only)
-app.delete("/api/quotes/admin/:id", (req, res) => {
+app.delete("/api/quotes/admin/:id", requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const { performedBy } = req.body || {};
@@ -6746,7 +6885,7 @@ app.delete("/api/quotes/admin/:id", (req, res) => {
 });
 
 // 9c. Admin Bulk Actions Endpoint
-app.post("/api/quotes/admin/bulk-action", (req, res) => {
+app.post("/api/quotes/admin/bulk-action", requireAdmin, (req, res) => {
   try {
     const { action, ids, value, performedBy } = req.body;
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -6789,11 +6928,11 @@ app.post("/api/quotes/admin/bulk-action", (req, res) => {
 });
 
 // 9d. Admin Notifications & Audit Logs
-app.get("/api/admin/notifications", (req, res) => {
+app.get("/api/admin/notifications", requireAdmin, (req, res) => {
   res.json({ success: true, notifications: notificationsStore });
 });
 
-app.post("/api/admin/notifications/mark-read", (req, res) => {
+app.post("/api/admin/notifications/mark-read", requireAdmin, (req, res) => {
   const { id, all } = req.body;
   if (all) {
     notificationsStore = notificationsStore.map((n) => ({ ...n, isRead: true }));
@@ -6804,7 +6943,7 @@ app.post("/api/admin/notifications/mark-read", (req, res) => {
   res.json({ success: true, notifications: notificationsStore });
 });
 
-app.get("/api/admin/activity-logs", (req, res) => {
+app.get("/api/admin/activity-logs", requireAdmin, (req, res) => {
   res.json({ success: true, activityLogs: activityLogsStore });
 });
 
@@ -6924,7 +7063,7 @@ app.get("/api/packages/:id", (req, res) => {
 });
 
 // 3. Save / Update / Bulk Publish Packages (Admin)
-app.post("/api/packages/save", (req, res) => {
+app.post("/api/packages/save", requireAdmin, (req, res) => {
   try {
     const { packages } = req.body;
     if (!Array.isArray(packages)) {
@@ -6981,7 +7120,7 @@ app.patch("/api/packages/:id", (req, res) => {
   }
 });
 
-app.delete("/api/packages/:id", (req, res) => {
+app.delete("/api/packages/:id", requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     packagesStore = packagesStore.filter((p) => p.id !== id);
@@ -7105,6 +7244,49 @@ app.post("/api/quotes/package", async (req, res) => {
   } catch (err: any) {
     console.error("Package Quote Error:", err);
     res.status(500).json({ error: "Failed to submit quotation request." });
+  }
+});
+
+// Single Quote detail by Reference ID (Sanitized for unauthenticated guest tracking)
+app.get("/api/quotes/:id", (req, res) => {
+  try {
+    const { id } = req.params;
+    const cleanId = (id || "").trim().toLowerCase();
+
+    const quote = quotesStore.find((q) => q.id.toLowerCase() === cleanId);
+    if (!quote) {
+      const uReq = requestsStore.getRequestById(id);
+      if (!uReq) {
+        return res.status(404).json({ success: false, error: `Quotation #${id} not found.` });
+      }
+      return res.json({ success: true, quote: uReq });
+    }
+
+    const authUser = getAuthenticatedUser(req);
+    const isOwner = authUser && (authUser.email.toLowerCase() === quote.email.toLowerCase() || authUser.isAdmin || authUser.role === 'admin' || authUser.role === 'owner');
+
+    if (!isOwner) {
+      // Redact sensitive contact details for guest tracking
+      const safeQuote = {
+        id: quote.id,
+        type: quote.type,
+        status: quote.status,
+        createdAt: quote.createdAt,
+        departureDate: quote.departureDate,
+        returnDate: quote.returnDate,
+        to: quote.to,
+        from: quote.from,
+        adults: quote.adults,
+        children: quote.children,
+        email: quote.email ? quote.email.replace(/^([^@]{1,2})[^@]*(@.*)$/, "$1***$2") : undefined,
+      };
+      return res.json({ success: true, quote: safeQuote });
+    }
+
+    res.json({ success: true, quote });
+  } catch (err: any) {
+    console.error("Get Single Quote Error:", err);
+    res.status(500).json({ success: false, error: "Failed to retrieve quotation details." });
   }
 });
 
@@ -7362,7 +7544,60 @@ app.get("/api/cloudinary/config", (req, res) => {
 });
 
 // 2. Upload Image or Video to Cloudinary with local storage fallback
-app.post(["/api/cloudinary/upload", "/api/upload/image", "/api/upload/avatar"], async (req, res) => {
+
+// Authenticated User Avatar Upload Endpoint (5MB size limit & image validation)
+app.post("/api/upload/avatar", requireAuth, async (req, res) => {
+  try {
+    const { file, image } = req.body;
+    const mediaSource = file || image;
+    if (!mediaSource) {
+      return res.status(400).json({ error: "Missing image payload." });
+    }
+
+    // Size limit check (approx 5MB base64 is ~7MB string)
+    if (typeof mediaSource === "string" && mediaSource.length > 7 * 1024 * 1024) {
+      return res.status(400).json({ error: "Avatar image exceeds maximum allowed size of 5MB." });
+    }
+
+    const authUser = (req as any).user as ServerUser;
+
+    if (process.env.CLOUDINARY_API_SECRET) {
+      try {
+        const cld = getCloudinary();
+        const result = await cld.uploader.upload(mediaSource, {
+          folder: "azraq_avatars",
+          public_id: `avatar_${authUser.uid}`,
+          resource_type: "image",
+          overwrite: true,
+          invalidate: true,
+          transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
+        });
+        return res.json({ success: true, secure_url: result.secure_url, url: result.secure_url });
+      } catch (cldErr: any) {
+        console.warn("[Avatar Upload] Cloudinary error, falling back to local storage:", cldErr);
+      }
+    }
+
+    // Fallback: save to public/uploads
+    if (typeof mediaSource === "string" && mediaSource.startsWith("data:image/")) {
+      const parts = mediaSource.split(";base64,");
+      const ext = parts[0].split("/")[1] || "png";
+      const filename = `avatar_${authUser.uid}_${Date.now()}.${ext}`;
+      const diskPath = path.join(uploadsDir, filename);
+      fs.writeFileSync(diskPath, Buffer.from(parts[1], "base64"));
+      const localUrl = `/uploads/${filename}`;
+      return res.json({ success: true, secure_url: localUrl, url: localUrl });
+    }
+
+    res.json({ success: true, secure_url: mediaSource, url: mediaSource });
+  } catch (err: any) {
+    console.error("Avatar Upload Error:", err);
+    res.status(500).json({ error: "Failed to upload avatar image." });
+  }
+});
+
+// Admin Cloudinary & Image Upload Endpoint
+app.post(["/api/cloudinary/upload", "/api/upload/image"], requireAdmin, async (req, res) => {
   try {
     const {
       file,
@@ -7523,7 +7758,7 @@ app.post("/api/cloudinary/optimize-url", (req, res) => {
 });
 
 // 4. Generate Upload Signature for Direct Client Uploads (optional)
-app.post("/api/cloudinary/sign", (req, res) => {
+app.post("/api/cloudinary/sign", requireAdmin, (req, res) => {
   try {
     const { folder = "azraq_media", tags = "azraq" } = req.body;
     const api_secret = process.env.CLOUDINARY_API_SECRET;
@@ -7646,7 +7881,7 @@ app.get("/api/blog/posts/:idOrSlug", (req, res) => {
 });
 
 // 3. Create New Blog Post (Admin)
-app.post("/api/blog/posts", (req, res) => {
+app.post("/api/blog/posts", requireAdmin, (req, res) => {
   try {
     const {
       title,
@@ -7727,7 +7962,7 @@ app.patch("/api/blog/posts/:id", (req, res) => {
 });
 
 // 5. Delete Blog Post (Admin)
-app.delete("/api/blog/posts/:id", (req, res) => {
+app.delete("/api/blog/posts/:id", requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
     const index = blogPostsStore.findIndex((p) => p.id === id);
@@ -8444,6 +8679,15 @@ app.get("/sitemap.xml", (req, res) => {
 // Serve static files from public directory
 app.use(express.static(path.join(process.cwd(), "public")));
 
+
+// Unknown /api/* routes MUST return JSON 404 in all environments (never single-page HTML fallback)
+app.all("/api/*", (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: `API route '${req.method} ${req.path}' not found on Azraq Trips API server.`,
+  });
+});
+
 // --- Vite Middleware / Static Server with Server-Side SEO Injection ---
 async function startServer() {
   const distPath = path.join(process.cwd(), "dist");
@@ -8533,4 +8777,9 @@ async function startServer() {
   process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
-startServer();
+if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
+export { app };

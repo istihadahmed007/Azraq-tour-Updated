@@ -30,10 +30,7 @@ if (typeof window !== 'undefined') {
 
   window.addEventListener('unhandledrejection', (event) => {
     const reasonStr = String(event?.reason?.message || event?.reason || '');
-    if (
-      isPartnerError(reasonStr) ||
-      reasonStr.includes('Failed to fetch')
-    ) {
+    if (isPartnerError(reasonStr)) {
       // Prevent console crash/error overlay for non-critical third-party analytics/partner URL requests
       event.preventDefault();
       console.warn('Handled external partner network notice:', reasonStr);

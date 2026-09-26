@@ -710,15 +710,7 @@ export interface User {
 
 export function isWebsiteOwner(user: User | null): boolean {
   if (!user) return false;
-  if (user.isAdmin || user.role === 'admin' || user.role === 'owner') return true;
-  const ownerEmails = [
-    'info@azraqtrips.com',
-    'istihadahmed1163@gmail.com',
-    'admin@globetrotter.ai',
-    'owner@globetrotter.ai',
-  ];
-  const email = (user.email || '').toLowerCase();
-  return ownerEmails.includes(email) || email.startsWith('admin') || email.startsWith('owner');
+  return Boolean(user.isAdmin || user.role === 'admin' || user.role === 'owner');
 }
 
 export type AuthModalView =
@@ -731,8 +723,7 @@ export type AuthModalView =
   | 'otp_verify'
   | 'profile_setup'
   | 'phone_otp'
-  | 'onboarding'
-  | 'google_prompt';
+  | 'onboarding';
 
 export interface PendingAction {
   type:

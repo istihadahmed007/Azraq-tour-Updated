@@ -14,7 +14,7 @@ export interface HotelSearchParams {
 
 export interface HotelQuoteRequest {
   customerName: string;
-  email: string;
+  email?: string;
   phone: string;
   destination: string;
   hotelName?: string;

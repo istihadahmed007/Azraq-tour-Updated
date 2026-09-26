@@ -60,8 +60,14 @@ export const paymentService = {
     ];
   },
 
-  // Submit payment confirmation or manual transaction reference
-  async submitPaymentRecord(payment: PaymentDetails): Promise<{ success: boolean; message: string; receiptUrl?: string }> {
+  // Submit manual payment inquiry or transaction reference for desk verification
+  async submitPaymentRecord(payment: PaymentDetails): Promise<{
+    success: boolean;
+    verified: boolean;
+    status: string;
+    message: string;
+    error?: string;
+  }> {
     try {
       const res = await fetch('/api/payments/record', {
         method: 'POST',
@@ -69,16 +75,31 @@ export const paymentService = {
         body: JSON.stringify(payment),
       });
 
-      if (res.ok) {
-        return await res.json();
+      const data = await res.json();
+      if (!res.ok) {
+        return {
+          success: false,
+          verified: false,
+          status: 'FAILED',
+          message: data.error || 'Failed to record payment verification request.',
+          error: data.error,
+        };
       }
-    } catch {
-      // Fallback
-    }
 
-    return {
-      success: true,
-      message: `Payment request logged for Booking #${payment.bookingId}. Our Dhaka desk will confirm within 15 minutes.`,
-    };
+      return {
+        success: true,
+        verified: Boolean(data.verified),
+        status: data.status || 'PENDING_OFFICE_VERIFICATION',
+        message: data.message || `Manual payment inquiry logged for Booking #${payment.bookingId}. Status: Pending Verification.`,
+      };
+    } catch (err: any) {
+      return {
+        success: false,
+        verified: false,
+        status: 'NETWORK_ERROR',
+        message: err.message || 'Network error connecting to payment inquiry service.',
+        error: err.message,
+      };
+    }
   },
 };

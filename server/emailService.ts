@@ -491,6 +491,18 @@ export class EmailService {
     console.log(`[EmailService:Simulated] Email to: ${to} | Subject: "${subject}"`);
     console.log(`[EmailService:Simulated] Admin Configured Target: ${this.adminEmail}`);
 
+    const isProduction = process.env.NODE_ENV === 'production' || Boolean(process.env.VERCEL);
+    if (isProduction && !this.apiKey && !this.smtpTransporter) {
+      console.warn(`[EmailService] No live delivery provider (Resend or SMTP) configured in production environment.`);
+      return {
+        success: false,
+        status: 'FAILED',
+        provider: 'simulated_fallback',
+        error: 'No active email delivery provider configured on the server. Please set RESEND_API_KEY or SMTP credentials.',
+        sentAt,
+      };
+    }
+
     return {
       success: true,
       status: 'SENT',
@@ -498,6 +510,86 @@ export class EmailService {
       messageId: `sim_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       sentAt,
     };
+  }
+
+  /**
+   * Build the HTML template for Azraq Password Reset Email
+   */
+  private buildPasswordResetHtml(email: string, resetCode: string): string {
+    const appUrl = process.env.APP_URL || 'https://www.azraqtrips.com';
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Password Reset — Azraq Trips</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #0f172a;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width: 540px; background-color: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #071A33 0%, #0D6EFD 100%); padding: 28px 32px; text-align: left;">
+              <div style="font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                AZRAQ<span style="color: #38bdf8;">TRIPS</span>
+              </div>
+              <div style="font-size: 13px; color: #bae6fd; margin-top: 4px; font-weight: 500;">
+                Account Security & Password Recovery
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 32px;">
+              <h1 style="margin: 0 0 12px 0; font-size: 20px; font-weight: 700; color: #0f172a;">
+                Password Reset Request
+              </h1>
+              <p style="margin: 0 0 24px 0; font-size: 14px; color: #475569; line-height: 1.6;">
+                We received a request to reset the password for your account (<strong>${this.escapeHtml(email)}</strong>). Use the 6-digit code below to set a new password:
+              </p>
+              <div style="background-color: #f0f9ff; border: 1.5px dashed #0284c7; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
+                <div style="font-size: 12px; font-weight: 700; color: #0369a1; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">
+                  Password Reset Code
+                </div>
+                <div style="font-family: monospace; font-size: 36px; font-weight: 800; color: #0f172a; letter-spacing: 8px; margin: 4px 0;">
+                  ${this.escapeHtml(resetCode)}
+                </div>
+                <div style="font-size: 12px; color: #64748b; margin-top: 8px;">
+                  ⏱️ This code expires in <strong>15 minutes</strong>.
+                </div>
+              </div>
+              <p style="margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.5;">
+                If you did not request a password reset, please ignore this email or contact our support team immediately.
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `.trim();
+  }
+
+  /**
+   * Send Password Reset Email
+   */
+  public async sendPasswordResetEmail(email: string, resetCode: string): Promise<EmailSendResult> {
+    const normalizedEmail = (email || '').trim().toLowerCase();
+    if (!normalizedEmail || !normalizedEmail.includes('@')) {
+      return {
+        success: false,
+        status: 'FAILED',
+        provider: 'simulated_fallback',
+        sentAt: new Date().toISOString(),
+        error: 'No valid recipient email provided for password reset.',
+      };
+    }
+
+    const subject = `Azraq Trips - Password Reset Code: ${resetCode}`;
+    const html = this.buildPasswordResetHtml(normalizedEmail, resetCode);
+    return this.dispatchEmail(normalizedEmail, subject, html);
   }
 
   /**

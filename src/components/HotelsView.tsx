@@ -412,19 +412,24 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
 
   const handleSubmitHotelQuote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeHotelQuote) return;
+    if (!activeHotelQuote || isSubmittingQuote) return;
 
     if (!quoteForm.name.trim() || !quoteForm.phone.trim()) {
       showToast('Please provide your name and contact phone number.', 'error');
       return;
     }
 
+    if (quoteForm.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(quoteForm.email.trim())) {
+      showToast('Please enter a valid email address or leave blank for WhatsApp inquiry.', 'error');
+      return;
+    }
+
     setIsSubmittingQuote(true);
     try {
-      await hotelService.requestHotelQuote({
-        customerName: quoteForm.name,
-        email: quoteForm.email || 'traveler@azraqtrips.com',
-        phone: quoteForm.phone,
+      const res = await hotelService.requestHotelQuote({
+        customerName: quoteForm.name.trim(),
+        email: quoteForm.email.trim() || undefined,
+        phone: quoteForm.phone.trim(),
         destination: activeHotelQuote.destination,
         hotelName: activeHotelQuote.name,
         checkInDate,
@@ -435,10 +440,11 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
         specialRequests: quoteForm.specialNotes,
       });
 
-      showToast(`Hotel quote request for ${activeHotelQuote.name} submitted! Our Dhaka desk will contact you via WhatsApp.`, 'success');
+      const genuineId = res.id || res.quote?.id || 'SUBMITTED';
+      showToast(`Hotel quote request for ${activeHotelQuote.name} submitted! Reference ID: ${genuineId}. Our Dhaka desk will contact you via WhatsApp.`, 'success');
       setActiveHotelQuote(null);
-    } catch {
-      showToast('Could not submit quote. Please contact +880 1851-172032 directly.', 'error');
+    } catch (err: any) {
+      showToast(err.message || 'Could not submit quote. Please contact +880 1851-172032 directly.', 'error');
     } finally {
       setIsSubmittingQuote(false);
     }

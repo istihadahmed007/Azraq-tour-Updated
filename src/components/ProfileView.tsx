@@ -3,6 +3,7 @@ import { Destination, Itinerary, QuoteRequest, NavView } from '../types';
 import { ALL_DESTINATIONS } from '../data/destinationsData';
 import { useAuth } from '../context/AuthContext';
 import { useFeed } from '../context/FeedContext';
+import { authService } from '../services/authService';
 import {
   User as UserIcon,
   Sparkles,
@@ -96,8 +97,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     }
     setIsLoadingQuotes(true);
     try {
+      const token = authService.getSessionToken();
+      const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+
       // 1. Fetch user quotes
-      const res = await fetch(`/api/quotes/track?query=${encodeURIComponent(user.email)}`);
+      const res = await fetch('/api/users/me/quotes', { headers: authHeaders });
       const data = await res.json();
       if (res.ok && Array.isArray(data.quotes)) {
         setUserQuotes(data.quotes);
@@ -106,7 +110,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       }
 
       // 2. Fetch personalized step-by-step activity timeline
-      const timelineRes = await fetch(`/api/users/me/timeline?email=${encodeURIComponent(user.email)}`);
+      const timelineRes = await fetch('/api/users/me/timeline', { headers: authHeaders });
       if (timelineRes.ok) {
         const timelineData = await timelineRes.json();
         if (timelineData.success && Array.isArray(timelineData.timeline)) {

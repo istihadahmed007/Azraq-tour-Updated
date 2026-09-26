@@ -54,10 +54,11 @@ export const bookingService = {
   },
 
   // Get all bookings/quotes for a user
-  async getUserBookings(email: string): Promise<QuoteRequest[]> {
-    if (!email) return [];
+  async getUserBookings(email?: string): Promise<QuoteRequest[]> {
     try {
-      const res = await fetch(`/api/user/quotes?email=${encodeURIComponent(email.trim().toLowerCase())}`);
+      const token = localStorage.getItem('azraq_auth_session_token') || sessionStorage.getItem('azraq_auth_session_token');
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch('/api/users/me/quotes', { headers });
       if (!res.ok) return [];
       const data = await res.json();
       return Array.isArray(data.quotes) ? data.quotes : [];

@@ -46,8 +46,6 @@ export interface AuthResponse {
   token?: string;
   message?: string;
   error?: string;
-  demoEmailCode?: string;
-  demoPhoneOtp?: string;
 }
 
 const AUTH_TOKEN_KEY = 'azraq_auth_session_token';
@@ -133,8 +131,6 @@ export const authService = {
         user: data.user,
         token: data.token,
         message: data.message,
-        demoEmailCode: data.demoEmailCode,
-        demoPhoneOtp: data.demoPhoneOtp,
       };
     } catch (err: any) {
       return { success: false, error: err.message || 'Network error during registration.' };
@@ -248,7 +244,7 @@ export const authService = {
   },
 
   // Send Passwordless 6-Digit Email OTP
-  async sendEmailOtp(email: string): Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; isNewUser?: boolean }> {
+  async sendEmailOtp(email: string): Promise<{ success: boolean; message?: string; error?: string; isNewUser?: boolean }> {
     try {
       const res = await fetch('/api/auth/send-email-otp', {
         method: 'POST',
@@ -262,7 +258,6 @@ export const authService = {
       return {
         success: true,
         message: data.message,
-        demoOtp: data.demoOtp,
         isNewUser: data.isNewUser,
       };
     } catch (err: any) {

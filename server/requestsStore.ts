@@ -61,7 +61,8 @@ export interface UnifiedRequest {
   user_agent?: string;
 }
 
-const REQUESTS_DB_FILE = path.join(process.cwd(), '.requests_db.json');
+const DATA_DIR = process.env.DATA_DIR || (process.env.VERCEL ? '/tmp' : process.cwd());
+const REQUESTS_DB_FILE = path.join(DATA_DIR, '.requests_db.json');
 
 class RequestsStore {
   private requests: UnifiedRequest[] = [];
@@ -105,9 +106,15 @@ class RequestsStore {
 
   private saveToDisk() {
     try {
-      fs.writeFileSync(REQUESTS_DB_FILE, JSON.stringify(this.requests, null, 2), 'utf-8');
+      const tmpFile = `${REQUESTS_DB_FILE}.tmp.${Date.now()}`;
+      fs.writeFileSync(tmpFile, JSON.stringify(this.requests, null, 2), 'utf-8');
+      fs.renameSync(tmpFile, REQUESTS_DB_FILE);
     } catch (err) {
-      console.error('[RequestsStore] Failed to save requests to disk:', err);
+      try {
+        fs.writeFileSync(REQUESTS_DB_FILE, JSON.stringify(this.requests, null, 2), 'utf-8');
+      } catch (e) {
+        console.error('[RequestsStore] Failed to save requests to disk:', e);
+      }
     }
   }
 

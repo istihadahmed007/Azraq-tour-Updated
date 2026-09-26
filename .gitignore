@@ -18,6 +18,8 @@ coverage/
 .system_announcements.json
 .user_read_feeds.json
 *.local.json
-.*_db.json
+.*_db.json*
+*.tmp*
+*.tmp.*
 *.code-workspace
 

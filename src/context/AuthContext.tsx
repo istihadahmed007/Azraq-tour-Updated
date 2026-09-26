@@ -29,7 +29,7 @@ interface AuthContextType {
   setReturnTo: (pathOrView: string | null) => void;
   requireAuth: (action: PendingAction, onComplete?: () => void, returnTo?: string) => void;
   loginWithEmail: (email: string, pass: string, rememberMe?: boolean) => Promise<{ success: boolean; error?: string }>;
-  sendEmailOtp: (email: string) => Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; demoCode?: string; isNewUser?: boolean }>;
+  sendEmailOtp: (email: string) => Promise<{ success: boolean; message?: string; error?: string; isNewUser?: boolean }>;
   verifyEmailOtp: (email: string, otp: string) => Promise<{ success: boolean; user?: User; token?: string; isNewUser?: boolean; error?: string; message?: string }>;
   registerWithEmail: (
     fullName: string,
@@ -39,13 +39,9 @@ interface AuthContextType {
     pass: string,
     agreeTerms: boolean,
     photoURL?: string
-  ) => Promise<{ success: boolean; error?: string; unconfirmed?: boolean; demoEmailCode?: string }>;
-  loginWithGoogle: (
-    emailOverride?: string,
-    nameOverride?: string,
-    photoOverride?: string
-  ) => Promise<{ success: boolean; error?: string }>;
-  sendPasswordReset: (email: string) => Promise<{ success: boolean; message?: string; error?: string; demoResetCode?: string }>;
+  ) => Promise<{ success: boolean; error?: string; unconfirmed?: boolean }>;
+  loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+  sendPasswordReset: (email: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   verifyEmailWithCode: (code: string, targetEmail?: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   resendVerification: (targetEmail?: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   updateUserProfile: (details: Partial<User>) => Promise<{ success: boolean; message?: string; error?: string }>;
@@ -272,7 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 1a. Passwordless 6-Digit Email OTP Request
   const sendEmailOtp = async (
     email: string
-  ): Promise<{ success: boolean; message?: string; error?: string; demoOtp?: string; demoCode?: string; isNewUser?: boolean }> => {
+  ): Promise<{ success: boolean; message?: string; error?: string; isNewUser?: boolean }> => {
     try {
       setIsLoading(true);
       const cleanEmail = email.trim().toLowerCase();
@@ -286,8 +282,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return {
           success: true,
           message: res.data.message || `6-digit code sent to ${cleanEmail}`,
-          demoOtp: res.data.demoOtp,
-          demoCode: res.data.demoOtp,
           isNewUser: res.data.isNewUser,
         };
       }
@@ -356,107 +350,61 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // 1. Google Sign-In with robust fallback
-  const loginWithGoogle = async (
-    emailOverride?: string,
-    nameOverride?: string,
-    photoOverride?: string
-  ): Promise<{ success: boolean; error?: string }> => {
+  // 1. Genuine Google Sign-In with Server-Side ID Token Verification
+  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
     try {
       setIsLoading(true);
-      let googleEmail = (emailOverride || '').trim().toLowerCase();
-      let googleName = (nameOverride || '').trim();
-      let googlePhoto = (photoOverride || '').trim();
-      let googleUid = '';
+      let idToken = '';
 
-      // If no direct email override provided, attempt real Firebase Google popup
-      if (!googleEmail) {
-        try {
-          const result = await signInWithPopup(auth, googleProvider);
-          if (result?.user && result.user.email) {
-            googleEmail = result.user.email.toLowerCase();
-            googleName = result.user.displayName || '';
-            googlePhoto = result.user.photoURL || '';
-            googleUid = result.user.uid;
-          }
-        } catch (fbErr: any) {
-          console.warn('Firebase popup notice:', fbErr?.code || fbErr?.message || fbErr);
-          // If popup closed by user, notify them gracefully
-          if (
-            fbErr?.code === 'auth/popup-closed-by-user' ||
-            fbErr?.code === 'auth/cancelled-popup-request'
-          ) {
-            return {
-              success: false,
-              error: 'Google Sign-In popup was closed.',
-            };
-          }
-
-          // If blocked by iframe sandbox, unauthorized domain, or restricted network, open the Google verification prompt
-          setAuthModalView('google_prompt');
-          setAuthModalOpen(true);
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        if (!result?.user) {
           return {
             success: false,
-            error: 'Google popup restricted by browser. Please confirm your Google account to proceed.',
+            error: 'Google Sign-In was cancelled or incomplete.',
           };
         }
-      }
-
-      if (!googleEmail) {
-        setAuthModalView('google_prompt');
-        setAuthModalOpen(true);
+        idToken = await result.user.getIdToken();
+      } catch (fbErr: any) {
+        console.warn('Firebase popup notice:', fbErr?.code || fbErr?.message || fbErr);
+        if (
+          fbErr?.code === 'auth/popup-closed-by-user' ||
+          fbErr?.code === 'auth/cancelled-popup-request'
+        ) {
+          return {
+            success: false,
+            error: 'Google Sign-In popup was closed.',
+          };
+        }
         return {
           success: false,
-          error: 'Please enter or select your Google account email.',
+          error: 'Google Sign-In could not connect. Please try signing in with email or password.',
         };
       }
 
-      const verifiedName =
-        googleName || googleEmail.split('@')[0].replace(/[\._]/g, ' ');
-      const verifiedPhoto =
-        googlePhoto ||
-        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(googleEmail)}`;
-      const verifiedUid =
-        googleUid || `goog_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-
-      let finalUser: User = {
-        uid: verifiedUid,
-        fullName: verifiedName,
-        email: googleEmail,
-        phone: '',
-        photoURL: verifiedPhoto,
-        bio: `Hello! I am ${verifiedName}, a travel enthusiast at Azraq Tours.`,
-        languages: ['English'],
-        emailVerified: true,
-        phoneVerified: false,
-        provider: 'google',
-        createdAt: new Date().toISOString(),
-        role: isWebsiteOwner({ email: googleEmail } as any) ? 'admin' : 'user',
-        isAdmin: isWebsiteOwner({ email: googleEmail } as any),
-      };
-
-      let userToken = `token_${verifiedUid}_${Date.now()}`;
-
-      // Sync to backend API to retrieve official session token and stored data
-      try {
-        const apiRes = await safeFetchJson('/api/auth/google', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: googleEmail,
-            fullName: verifiedName,
-            photoURL: verifiedPhoto,
-          }),
-        });
-        if (apiRes?.data?.user) {
-          finalUser = { ...finalUser, ...apiRes.data.user };
-        }
-        if (apiRes?.data?.token) {
-          userToken = apiRes.data.token;
-        }
-      } catch (apiErr) {
-        console.warn('Backend Google Auth Sync Warning:', apiErr);
+      if (!idToken) {
+        return {
+          success: false,
+          error: 'Could not obtain genuine Google ID token.',
+        };
       }
+
+      // Cryptographic server-side verification: sends Genuine Google ID Token
+      const apiRes = await safeFetchJson('/api/auth/google', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!apiRes.ok || !apiRes.data?.user || !apiRes.data?.token) {
+        return {
+          success: false,
+          error: apiRes.data?.error || apiRes.error || 'Google authentication failed server verification.',
+        };
+      }
+
+      const finalUser: User = apiRes.data.user;
+      const userToken: string = apiRes.data.token;
 
       // Save to Firestore non-blockingly
       try {
@@ -643,12 +591,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         photoURL: photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanName)}`,
         bio: `Hello! I am ${cleanName}, excited to discover amazing travel destinations with Azraq Tours.`,
         languages: ['English', 'Bengali'],
-        emailVerified: true,
-        phoneVerified: true,
+        emailVerified: false,
+        phoneVerified: false,
         provider: 'email',
         createdAt: new Date().toISOString(),
-        role: isWebsiteOwner({ email: cleanEmail, fullName: cleanName } as any) ? 'admin' : 'user',
-        isAdmin: isWebsiteOwner({ email: cleanEmail, fullName: cleanName } as any),
+        role: 'user',
+        isAdmin: false,
       };
 
       // Save to Firestore non-blockingly
@@ -687,6 +635,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           };
         }
 
+        if (apiRes?.data?.user) {
+          Object.assign(newUser, apiRes.data.user);
+        }
         if (apiRes?.data?.token) {
           serverToken = apiRes.data.token;
         }
@@ -724,7 +675,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 4. Password Reset
   const sendPasswordReset = async (
     email: string
-  ): Promise<{ success: boolean; message?: string; error?: string; demoResetCode?: string }> => {
+  ): Promise<{ success: boolean; message?: string; error?: string }> => {
     try {
       setIsLoading(true);
       const cleanEmail = email.trim().toLowerCase();
@@ -735,22 +686,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Firebase password reset notice:', fbErr?.code || fbErr?.message);
       }
 
-      // Also call server API safely
-      safeFetchJson('/api/auth/forgot-password', {
+      // Dispatch via server API
+      const apiRes = await safeFetchJson('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail }),
-      }).catch(() => {});
+      });
+
+      if (!apiRes.ok && apiRes.error) {
+        return {
+          success: false,
+          error: apiRes.error,
+        };
+      }
 
       return {
         success: true,
-        message: 'পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে (Reset instructions sent).',
+        message: apiRes.data?.message || 'Password reset verification code sent to your email.',
       };
     } catch (error: any) {
       console.error('Password reset error:', error);
       return {
         success: false,
-        error: error?.message || 'পাসওয়ার্ড রিসেট করা যায়নি। আবার চেষ্টা করুন।',
+        error: error?.message || 'Failed to process password reset. Please try again.',
       };
     } finally {
       setIsLoading(false);
