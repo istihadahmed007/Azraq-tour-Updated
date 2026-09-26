@@ -1,12 +1,22 @@
 import React from 'react';
-import { Plane, Package, FileCheck2, Sparkles, ArrowRight, MapPin } from 'lucide-react';
+import { Plane, Package, FileCheck2, Sparkles, ArrowRight, MapPin, Smartphone, Car, Ticket } from 'lucide-react';
 
 interface ServiceGridProps {
   onNavigateToView?: (view: string) => void;
   onOpenLocationFinder?: () => void;
+  onScrollToSection?: (sectionId: string) => void;
 }
 
-export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOpenLocationFinder }) => {
+export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOpenLocationFinder, onScrollToSection }) => {
+
+  const scrollTo = (id: string) => {
+    if (onScrollToSection) {
+      onScrollToSection(id);
+    } else {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const services = [
     {
       id: 'flights',
@@ -63,6 +73,36 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
       border: 'hover:border-[#17BEBB]',
       action: () => onNavigateToView && onNavigateToView('planner'),
     },
+    {
+      id: 'things-to-do-shortcut',
+      icon: <Ticket className="w-6 h-6 text-amber-600" />,
+      title: 'Things to Do & Day Tours',
+      desc: 'Browse Klook-verified attraction tickets, island tours, and theme park passes — prices shown in BDT.',
+      cta: 'Explore Activities',
+      bg: 'bg-amber-50',
+      border: 'hover:border-amber-400',
+      action: () => scrollTo('things-to-do'),
+    },
+    {
+      id: 'travel-esim-shortcut',
+      icon: <Smartphone className="w-6 h-6 text-sky-600" />,
+      title: 'Travel eSIM & Global Data',
+      desc: 'Instant digital SIM cards from Airalo & Yesim — stay connected in 200+ countries without swapping your SIM.',
+      cta: 'Compare eSIMs',
+      bg: 'bg-sky-50',
+      border: 'hover:border-sky-400',
+      action: () => scrollTo('travel-esim'),
+    },
+    {
+      id: 'airport-transfers-shortcut',
+      icon: <Car className="w-6 h-6 text-blue-600" />,
+      title: 'Airport & Private Transfers',
+      desc: 'Pre-book fixed-fare airport pickups (Kiwitaxi) or compare private driver bids (GetTransfer) worldwide.',
+      cta: 'Book Transfer',
+      bg: 'bg-blue-50',
+      border: 'hover:border-blue-400',
+      action: () => scrollTo('airport-transfers'),
+    },
   ];
 
   return (
@@ -76,7 +116,7 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
         </h2>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {services.map((srv) => (
           <div
             key={srv.id}

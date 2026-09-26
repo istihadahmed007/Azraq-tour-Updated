@@ -125,6 +125,13 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         <ServiceGrid
           onNavigateToView={onNavigateToView}
           onOpenLocationFinder={onOpenLocationFinder}
+          onScrollToSection={(sectionId) => {
+            if (onNavigateToView) {
+              onNavigateToView('discover', { scrollToSection: sectionId });
+            } else {
+              document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }}
         />
       </div>
 

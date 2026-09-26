@@ -300,13 +300,33 @@ function AppContent() {
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
   const [voiceModalTranscript, setVoiceModalTranscript] = useState('');
 
-  // Handle browser back/forward buttons
+  // Handle browser back/forward buttons + hash-based anchor scrolling
   useEffect(() => {
     const handlePopState = () => {
       setRouteState(parseUrlToRoute());
+      // Honour hash on back/forward navigation
+      const hash = window.location.hash.slice(1);
+      if (hash) {
+        setTimeout(() => {
+          document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 200);
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // On initial load: if the URL contains a #hash AND we are on the home view, scroll to it
+  useEffect(() => {
+    const hash = window.location.hash.slice(1);
+    if (hash && currentView === 'discover') {
+      // Wait for the full homepage to mount before scrolling
+      const id = setTimeout(() => {
+        document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
+      return () => clearTimeout(id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Application State
@@ -394,12 +414,23 @@ function AppContent() {
 
     // Update browser URL without full page reload
     if (typeof window !== 'undefined' && window.history) {
-      const newUrl = getViewUrl(targetView, targetSlug);
+      const scrollToSection = extra?.scrollToSection as string | undefined;
+      const newUrl = getViewUrl(targetView, targetSlug) + (scrollToSection ? `#${scrollToSection}` : '');
       window.history.pushState({}, '', newUrl);
-    }
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
+      if (scrollToSection) {
+        // If we're already on discover, scroll immediately; otherwise wait for render
+        const delay = targetView === currentView && currentView === 'discover' ? 50 : 400;
+        setTimeout(() => {
+          document.getElementById(scrollToSection)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, delay);
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [currentView]);
 
   const handleSearchFlights = (params: FlightSearchParams) => {
     const redirectUrl = buildWhiteLabelUrlFromFlightParams(params);

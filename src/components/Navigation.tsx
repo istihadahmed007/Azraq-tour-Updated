@@ -26,6 +26,7 @@ import {
   Clock,
   Ticket,
   Percent,
+  Smartphone,
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -228,6 +229,13 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         icon: <Sparkles className="w-4 h-4" />,
         view: 'planner' as NavView,
         isActive: currentView === 'planner' || currentView === 'ai-planner',
+      },
+      {
+        id: 'essentials',
+        label: 'Travel Essentials',
+        icon: <Smartphone className="w-4 h-4" />,
+        onClick: () => handleNavigate('discover', { scrollToSection: 'travel-essentials' }),
+        isActive: false,
       },
     ];
 

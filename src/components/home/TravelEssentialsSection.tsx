@@ -7,7 +7,7 @@ export const TravelEssentialsSection: React.FC = () => {
     <section
       id="travel-essentials"
       aria-label="Travel Essentials"
-      className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-8"
+      className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-8 scroll-mt-20"
     >
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF7F8] border border-[#17BEBB]/40 text-[#086788] text-xs font-bold uppercase tracking-wider font-mono">
@@ -24,7 +24,7 @@ export const TravelEssentialsSection: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* 1. Tours & Tickets: Klook */}
-        <div className="p-6 rounded-2xl bg-white/70 hover:bg-white/90 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all flex flex-col justify-between space-y-5">
+        <div id="things-to-do" className="p-6 rounded-2xl bg-white/70 hover:bg-white/90 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all flex flex-col justify-between space-y-5 scroll-mt-20">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600">
@@ -69,7 +69,7 @@ export const TravelEssentialsSection: React.FC = () => {
         </div>
 
         {/* 2. Travel eSIM: Airalo & Yesim */}
-        <div className="p-6 rounded-2xl bg-white/70 hover:bg-white/90 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all flex flex-col justify-between space-y-5">
+        <div id="travel-esim" className="p-6 rounded-2xl bg-white/70 hover:bg-white/90 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all flex flex-col justify-between space-y-5 scroll-mt-20">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="w-12 h-12 rounded-xl bg-sky-50 flex items-center justify-center text-sky-600">
@@ -124,7 +124,7 @@ export const TravelEssentialsSection: React.FC = () => {
         </div>
 
         {/* 3. Transfers: Kiwitaxi & GetTransfer */}
-        <div className="p-6 rounded-2xl bg-white/70 hover:bg-white/90 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all flex flex-col justify-between space-y-5">
+        <div id="airport-transfers" className="p-6 rounded-2xl bg-white/70 hover:bg-white/90 backdrop-blur-xl border border-white/80 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all flex flex-col justify-between space-y-5 scroll-mt-20">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">

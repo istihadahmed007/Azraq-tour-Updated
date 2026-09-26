@@ -23,6 +23,16 @@ export const Footer: React.FC<FooterProps> = ({
     }
   };
 
+  const handleNavToSection = (view: NavView, sectionId: string) => {
+    if (onNavigate) {
+      onNavigate(view);
+      // Wait for the view to render before scrolling to the anchor
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 350);
+    }
+  };
+
   return (
     <>
       <footer className="w-full bg-[#071A33]/90 backdrop-blur-2xl border-t border-white/10 text-slate-300 pt-16 pb-28 md:pb-16 px-4 sm:px-6 lg:px-8 font-inter">
@@ -148,6 +158,14 @@ export const Footer: React.FC<FooterProps> = ({
                     className="hover:text-[#17BEBB] transition-colors cursor-pointer"
                   >
                     Visa Assistance Desk
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleNavToSection('discover', 'travel-essentials')}
+                    className="hover:text-[#17BEBB] transition-colors cursor-pointer text-left"
+                  >
+                    Travel Essentials
                   </button>
                 </li>
                 <li>
