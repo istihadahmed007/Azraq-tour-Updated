@@ -54,9 +54,11 @@ export const hotelService = {
     return await res.json();
   },
 
-  // Build verified booking partner search deep link (Agoda / Booking.com partner handoff)
+  // Build verified booking partner search deep link (Travelpayouts Booking.com partner handoff)
   buildHotelPartnerUrl(destination: string, checkIn?: string, checkOut?: string): string {
     const query = encodeURIComponent(destination);
-    return `https://www.booking.com/searchresults.html?ss=${query}&checkin=${checkIn || ''}&checkout=${checkOut || ''}&aid=765415`;
+    const bookingUrl = `https://www.booking.com/searchresults.html?ss=${query}&checkin=${checkIn || ''}&checkout=${checkOut || ''}`;
+    // Travelpayouts Booking.com campaign (p=4115) with official Azraq marker 765415 and TRS 565363
+    return `https://tp.media/r?marker=765415&trs=565363&p=4115&u=${encodeURIComponent(bookingUrl)}`;
   },
 };

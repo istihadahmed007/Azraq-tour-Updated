@@ -3,9 +3,12 @@
 ## Project Context
 - **Main Travel Platform**: `https://www.azraqtrips.com/` (Content, SEO, AI Planning, Destinations, Visa, Packages, Travel Buddies, Concierge)
 - **Flight Engine**: `https://flights.azraqtrips.com/` (Travelpayouts White Label Engine & Aviasales)
-- **Travelpayouts Configuration**:
-  - Affiliate Marker: `765415`
-  - TRS / Tracking ID: `565363`
+- **Travelpayouts Configuration & Project Reconciliation**:
+  - Global Affiliate Marker: `765415` (affiliate marker for all partner revenue attribution)
+  - Main Platform Domain (`azraqtrips.com`): TRS / Project ID `565363` (canonical script `https://tpembars.com/NTY1MzYz.js?t=565363`)
+  - Flight Engine Subdomain (`flights.azraqtrips.com`): White Label Project ID `565349` (injected via `[:embed_script:]`)
+  - Emerald / MoneyScript Widget: `566378` (domain verification retained)
+  - Deprecated Duplicate Script: `565709` (purged from active runtime loading)
   - Flight Engine Subdomain: `https://flights.azraqtrips.com/`
   - Direct Booking Gateway: `https://www.aviasales.com/`
 

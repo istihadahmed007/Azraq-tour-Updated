@@ -6,6 +6,36 @@ export const AZRAQ_AFFILIATE_LINKS = {
   airalo: 'https://airalo.tp.st/tsOiboPM',
 } as const;
 
+/**
+ * Builds destination-specific affiliate link for Klook activities
+ */
+export function buildPartnerActivityUrl(destinationOrActivity: string): string {
+  const q = encodeURIComponent(destinationOrActivity.trim());
+  return `https://klook.tp.st/aXDQ3uLD?url=${encodeURIComponent(`https://www.klook.com/en-US/search?query=${q}`)}`;
+}
+
+/**
+ * Builds destination-specific affiliate link for airport and intercity transfers
+ */
+export function buildPartnerTransferUrl(provider: 'kiwitaxi' | 'gettransfer', destination: string): string {
+  const dest = encodeURIComponent(destination.trim());
+  if (provider === 'gettransfer') {
+    return `https://gettransfer.tp.st/L24TtJvV?url=${encodeURIComponent(`https://gettransfer.com/en?destination=${dest}`)}`;
+  }
+  return `https://kiwitaxi.tp.st/hffw13VN?url=${encodeURIComponent(`https://kiwitaxi.com/search?from=${dest}`)}`;
+}
+
+/**
+ * Builds destination-specific affiliate link for international eSIM data packages
+ */
+export function buildPartnerEsimUrl(provider: 'yesim' | 'airalo', countryOrDestination: string): string {
+  const norm = encodeURIComponent(countryOrDestination.trim().toLowerCase());
+  if (provider === 'airalo') {
+    return `https://airalo.tp.st/tsOiboPM?url=${encodeURIComponent(`https://www.airalo.com/${norm}-esim`)}`;
+  }
+  return `https://yesim.tp.st/Y1ph3dlm?url=${encodeURIComponent(`https://yesim.app/country/${norm}/`)}`;
+}
+
 export interface AgencyConfig {
   agencyName: string;
   tagline: string;
@@ -25,6 +55,7 @@ export interface AgencyConfig {
   travelpayoutsPartnerId?: string;
   travelpayoutsMarker?: string;
   travelpayoutsTrsId?: string;
+  travelpayoutsWhiteLabelProjectId?: string;
   aviasalesAffiliateUrl: string;
   aviasalesBaseUrl: string;
   officialAffiliateDisclosure: string;
@@ -53,6 +84,7 @@ export const AZRAQ_AGENCY_CONFIG: AgencyConfig = {
   travelpayoutsPartnerId: '565363',
   travelpayoutsMarker: '765415',
   travelpayoutsTrsId: '565363',
+  travelpayoutsWhiteLabelProjectId: '565349',
   // Compatibility fields retained for existing components; the White Label subdomain owns the user journey.
   aviasalesAffiliateUrl: 'https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt',
   aviasalesBaseUrl: 'https://flights.azraqtrips.com/',

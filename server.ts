@@ -7,7 +7,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { INITIAL_TOUR_PACKAGES } from "./src/data/initialPackagesData";
 import { INITIAL_SOCIAL_PROOF_ACTIVITIES } from "./src/data/socialProofData";
 import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
-import { requestsStore, UnifiedRequestType, UnifiedRequestStatus, RequestPriority } from "./server/requestsStore";
+import { requestsStore, UnifiedRequest, UnifiedRequestType, UnifiedRequestStatus, RequestPriority } from "./server/requestsStore";
 import { emailService } from "./server/emailService";
 import { sessionStore } from "./server/sessionStore";
 
@@ -295,6 +295,7 @@ let systemSettings: SystemSettings = {
 // --- Persistent File-Backed Auth User Store ---
 interface ServerUser {
   uid: string;
+  id?: string;
   fullName: string;
   email: string;
   phone?: string;
@@ -1046,8 +1047,11 @@ app.post("/api/auth/google", async (req, res) => {
       return res.status(400).json({ error: "Genuine Google ID token is required. Raw email parameters are not accepted." });
     }
 
-    // Verify token directly with Google OAuth endpoint
-    const tokenInfoRes = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+    // Verify token directly with Google OAuth endpoint (with 5000ms explicit timeout)
+    const tokenInfoRes = await fetch(
+      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
+      { signal: AbortSignal.timeout(5000) }
+    );
     if (!tokenInfoRes.ok) {
       return res.status(401).json({ error: "Invalid or expired Google identity token." });
     }
@@ -4354,6 +4358,77 @@ app.post("/api/requests/create", async (req, res) => {
   }
 });
 
+// Privacy & Authorization Sanitization Helpers
+function sanitizeUnifiedRequestForViewer(uReq: UnifiedRequest, user: ServerUser | null) {
+  const isAdmin = !!(user && (user.role === 'admin' || user.role === 'owner' || user.isAdmin === true));
+  const isOwner = !!(
+    user && (
+      (uReq.customer_email && user.email.toLowerCase() === uReq.customer_email.toLowerCase()) ||
+      (uReq.user_id && (user.uid === uReq.user_id || user.id === uReq.user_id))
+    )
+  );
+
+  if (isAdmin) {
+    return uReq;
+  }
+
+  if (isOwner) {
+    const { admin_notes, client_ip, user_agent, ...ownerView } = uReq;
+    return ownerView;
+  }
+
+  // Unauthenticated or ordinary non-owner: minimal public status only
+  return {
+    id: uReq.id,
+    request_id: uReq.request_id,
+    request_type: uReq.request_type,
+    status: uReq.status,
+    created_at: uReq.created_at,
+    destination: uReq.destination,
+    origin: uReq.origin,
+    travel_date: uReq.travel_date,
+    return_date: uReq.return_date,
+    passengers: uReq.passengers,
+  };
+}
+
+function sanitizeQuoteForViewer(quote: any, user: ServerUser | null) {
+  const isAdmin = !!(user && (user.role === 'admin' || user.role === 'owner' || user.isAdmin === true));
+  const isOwner = !!(
+    user && (
+      (quote.email && user.email.toLowerCase() === quote.email.toLowerCase()) ||
+      (quote.userId && (user.uid === quote.userId || user.id === quote.userId))
+    )
+  );
+
+  if (isAdmin) {
+    return quote;
+  }
+
+  if (isOwner) {
+    const { internalNote, admin_notes, client_ip, user_agent, ...ownerView } = quote;
+    return ownerView;
+  }
+
+  // Unauthenticated or ordinary non-owner: minimal public status only
+  return {
+    id: quote.id,
+    type: quote.type || 'quote',
+    status: quote.status,
+    createdAt: quote.createdAt,
+    departureDate: quote.departureDate,
+    returnDate: quote.returnDate,
+    to: quote.to,
+    from: quote.from,
+    adults: quote.adults,
+    children: quote.children,
+    tripType: quote.tripType,
+    cabinClass: quote.cabinClass,
+    destinationCountry: quote.destinationCountry,
+    quotedPrice: quote.quotedPrice,
+  };
+}
+
 // 2. Track Request by Request ID or Email
 app.get("/api/requests/track", (req, res) => {
   try {
@@ -4380,9 +4455,8 @@ app.get("/api/requests/track", (req, res) => {
       return res.status(404).json({ success: false, error: `No request found matching '${query}'.` });
     }
 
-    // Strip internal admin notes and IP for privacy and security
-    const { admin_notes, client_ip, user_agent, ...safeReq } = singleReq;
-    res.json({ success: true, request: safeReq });
+    const authUser = getAuthenticatedUser(req);
+    res.json({ success: true, request: sanitizeUnifiedRequestForViewer(singleReq, authUser) });
   } catch (err: any) {
     console.error("[Track Request Error]:", err);
     res.status(500).json({ success: false, error: "Failed to track request." });
@@ -4452,15 +4526,16 @@ app.get("/api/admin/requests/:id", requireAdmin, (req, res) => {
 });
 
 // 6. Admin Update Request Status, Priority, Staff, & Internal Notes
-app.patch("/api/admin/requests/:id", (req, res) => {
+app.patch("/api/admin/requests/:id", requireAdmin, (req, res) => {
   try {
     const { id } = req.params;
-    const { status, priority, assignedTo, internalNote, performedBy, performedEmail } = req.body;
+    const { status, priority, assignedTo, internalNote } = req.body;
+    const currentUser = (req as any).user;
 
     const actor = {
-      name: performedBy || "Admin Specialist",
-      email: performedEmail || "admin@azraqtrips.com",
-      role: "Admin",
+      name: currentUser?.fullName || currentUser?.email || "Admin Specialist",
+      email: currentUser?.email || "admin@azraqtrips.com",
+      role: currentUser?.role || "Admin",
     };
 
     const updated = requestsStore.updateRequest(
@@ -4504,11 +4579,11 @@ app.patch("/api/admin/requests/:id", (req, res) => {
 app.post("/api/admin/requests/:id/resend-email", requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { performedBy, performedEmail } = req.body;
+    const currentUser = (req as any).user;
 
     const result = await requestsStore.resendEmailNotification(id, {
-      name: performedBy || "Admin Specialist",
-      email: performedEmail || "admin@azraqtrips.com",
+      name: currentUser?.fullName || currentUser?.email || "Admin Specialist",
+      email: currentUser?.email || "admin@azraqtrips.com",
     });
 
     res.json({
@@ -4986,33 +5061,16 @@ app.get("/api/quotes/track", (req, res) => {
     }
 
     const quote = quotesStore.find((q) => q.id.toLowerCase() === query);
+    const authUser = getAuthenticatedUser(req);
     if (!quote) {
       const uReq = requestsStore.getRequestById(query);
       if (!uReq) {
         return res.status(404).json({ error: "No quotation request found matching your Request ID." });
       }
-      const { admin_notes, client_ip, user_agent, ...safeReq } = uReq;
-      return res.json({ success: true, quotes: [safeReq] });
+      return res.json({ success: true, quotes: [sanitizeUnifiedRequestForViewer(uReq, authUser)] });
     }
 
-    const authUser = getAuthenticatedUser(req);
-    const isOwner = authUser && (authUser.email.toLowerCase() === quote.email.toLowerCase() || authUser.isAdmin || authUser.role === 'admin' || authUser.role === 'owner');
-
-    const safeQuote = isOwner ? quote : {
-      id: quote.id,
-      type: quote.type,
-      status: quote.status,
-      createdAt: quote.createdAt,
-      departureDate: quote.departureDate,
-      returnDate: quote.returnDate,
-      to: quote.to,
-      from: quote.from,
-      adults: quote.adults,
-      children: quote.children,
-      email: quote.email ? quote.email.replace(/^([^@]{1,2})[^@]*(@.*)$/, "$1***$2") : undefined,
-    };
-
-    res.json({ success: true, quotes: [safeQuote] });
+    res.json({ success: true, quotes: [sanitizeQuoteForViewer(quote, authUser)] });
   } catch (err: any) {
     console.error("Track Quote Error:", err);
     res.status(500).json({ error: "Failed to track quotation." });
@@ -5445,7 +5503,7 @@ app.post("/api/feed/read", requireAuth, (req, res) => {
 // AZRAQ TRIPS — TRAVEL BUDDIES SOCIAL SYSTEM (Convex/Real Database Endpoints)
 // ============================================================================
 
-const BUDDY_DB_FILE = path.join(process.cwd(), ".travel_buddies_db.json");
+const BUDDY_DB_FILE = path.join(DATA_DIR, ".travel_buddies_db.json");
 
 interface TravelBuddiesDbSchema {
   buddyProfiles: Record<string, any>;
@@ -6948,7 +7006,7 @@ app.get("/api/admin/activity-logs", requireAdmin, (req, res) => {
 });
 
 // --- Tour Package Management Database ---
-const PACKAGES_DB_FILE = path.join(process.cwd(), ".packages_db.json");
+const PACKAGES_DB_FILE = path.join(DATA_DIR, ".packages_db.json");
 
 interface ServerTourPackage {
   id: string;
@@ -7254,36 +7312,16 @@ app.get("/api/quotes/:id", (req, res) => {
     const cleanId = (id || "").trim().toLowerCase();
 
     const quote = quotesStore.find((q) => q.id.toLowerCase() === cleanId);
+    const authUser = getAuthenticatedUser(req);
     if (!quote) {
       const uReq = requestsStore.getRequestById(id);
       if (!uReq) {
         return res.status(404).json({ success: false, error: `Quotation #${id} not found.` });
       }
-      return res.json({ success: true, quote: uReq });
+      return res.json({ success: true, quote: sanitizeUnifiedRequestForViewer(uReq, authUser) });
     }
 
-    const authUser = getAuthenticatedUser(req);
-    const isOwner = authUser && (authUser.email.toLowerCase() === quote.email.toLowerCase() || authUser.isAdmin || authUser.role === 'admin' || authUser.role === 'owner');
-
-    if (!isOwner) {
-      // Redact sensitive contact details for guest tracking
-      const safeQuote = {
-        id: quote.id,
-        type: quote.type,
-        status: quote.status,
-        createdAt: quote.createdAt,
-        departureDate: quote.departureDate,
-        returnDate: quote.returnDate,
-        to: quote.to,
-        from: quote.from,
-        adults: quote.adults,
-        children: quote.children,
-        email: quote.email ? quote.email.replace(/^([^@]{1,2})[^@]*(@.*)$/, "$1***$2") : undefined,
-      };
-      return res.json({ success: true, quote: safeQuote });
-    }
-
-    res.json({ success: true, quote });
+    res.json({ success: true, quote: sanitizeQuoteForViewer(quote, authUser) });
   } catch (err: any) {
     console.error("Get Single Quote Error:", err);
     res.status(500).json({ success: false, error: "Failed to retrieve quotation details." });
@@ -7795,7 +7833,7 @@ app.post("/api/cloudinary/sign", requireAdmin, (req, res) => {
 // ========================================================
 // --- Travel Inspiration & Stories Blog DB & Endpoints ---
 // ========================================================
-const BLOG_DB_FILE = path.join(process.cwd(), ".blog_posts_db.json");
+const BLOG_DB_FILE = path.join(DATA_DIR, ".blog_posts_db.json");
 
 function loadBlogPostsFromDisk() {
   try {
@@ -8782,4 +8820,4 @@ if (process.env.NODE_ENV !== "test" && !process.env.VERCEL) {
 }
 
 export default app;
-export { app };
+export { app, usersStore, requestsStore, quotesStore };

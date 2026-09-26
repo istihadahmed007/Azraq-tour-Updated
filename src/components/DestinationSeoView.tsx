@@ -30,7 +30,12 @@ import {
 } from 'lucide-react';
 import { TRAVEL_GUIDES } from '../data/travelGuidesData';
 import { CURATED_ITINERARIES } from '../data/itinerariesData';
-import { AZRAQ_AFFILIATE_LINKS } from '../data/agencyConfig';
+import {
+  AZRAQ_AFFILIATE_LINKS,
+  buildPartnerActivityUrl,
+  buildPartnerTransferUrl,
+  buildPartnerEsimUrl,
+} from '../data/agencyConfig';
 
 interface DestinationSeoViewProps {
   destination: Destination;
@@ -264,7 +269,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                   <span>Top Attractions & Things to Do in {destination.name}</span>
                 </h2>
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  href={buildPartnerActivityUrl(destination.name)}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-bold transition shadow-2xs self-start sm:self-auto"
@@ -298,7 +303,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                   <p className="text-xs text-slate-600 mt-0.5">Explore skip-the-line passes, museum admissions, and excursion deals in {destination.name}.</p>
                 </div>
                 <a
-                  href={AZRAQ_AFFILIATE_LINKS.klook}
+                  href={buildPartnerActivityUrl(destination.name)}
                   target="_blank"
                   rel="noopener noreferrer sponsored"
                   className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition shrink-0 flex items-center justify-center gap-1.5"
@@ -330,7 +335,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={AZRAQ_AFFILIATE_LINKS.kiwitaxi}
+                    href={buildPartnerTransferUrl('kiwitaxi', destination.name)}
                     target="_blank"
                     rel="noopener noreferrer sponsored"
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
@@ -351,7 +356,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={AZRAQ_AFFILIATE_LINKS.gettransfer}
+                    href={buildPartnerTransferUrl('gettransfer', destination.name)}
                     target="_blank"
                     rel="noopener noreferrer sponsored"
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
@@ -388,7 +393,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={AZRAQ_AFFILIATE_LINKS.yesim}
+                    href={buildPartnerEsimUrl('yesim', destination.country || destination.name)}
                     target="_blank"
                     rel="noopener noreferrer sponsored"
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5"
@@ -413,7 +418,7 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
                     </p>
                   </div>
                   <a
-                    href={AZRAQ_AFFILIATE_LINKS.airalo}
+                    href={buildPartnerEsimUrl('airalo', destination.country || destination.name)}
                     target="_blank"
                     rel="noopener noreferrer sponsored"
                     className="mt-4 w-full py-2 px-3 rounded-lg bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold text-xs transition flex items-center justify-center gap-1.5"

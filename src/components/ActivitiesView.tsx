@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { SEOHead } from './SEOHead';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SITE_URL, getBreadcrumbSchema } from '../lib/seo';
-import { AZRAQ_AFFILIATE_LINKS, AZRAQ_AGENCY_CONFIG } from '../data/agencyConfig';
+import { AZRAQ_AFFILIATE_LINKS, AZRAQ_AGENCY_CONFIG, buildPartnerActivityUrl } from '../data/agencyConfig';
 import {
   Compass,
   Ticket,
@@ -59,7 +59,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?auto=format&fit=crop&w=800&q=80',
     highlights: ['Maya Bay Beach Entry', 'Snorkeling Gear & Life Jacket Included', 'Halal Buffet Lunch on Phi Phi Don', 'National Park Fee Guidance'],
     instantConfirmation: true,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Phi Phi Island Speedboat Tour Phuket'),
   },
   {
     id: 'act-gardens-by-the-bay',
@@ -77,7 +77,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1525625293386-3f8f99389edd?auto=format&fit=crop&w=800&q=80',
     highlights: ['Flower Dome & Cloud Forest Access', 'Direct QR Code Entry at Gate', 'Supertree Grove Evening Light Show', 'Wheelchair & Stroller Accessible'],
     instantConfirmation: true,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Gardens by the Bay Singapore Entry Pass'),
   },
   {
     id: 'act-genting-skyworlds',
@@ -95,7 +95,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?auto=format&fit=crop&w=800&q=80',
     highlights: ['26 World-Class Rides and Attractions', 'Roundtrip Awana Glass-Floor Gondola', 'Virtual Queue Photo Pass', 'Direct Bus Connection from KL Sentral'],
     instantConfirmation: true,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Genting SkyWorlds Outdoor Theme Park Malaysia'),
   },
   {
     id: 'act-bali-atv-waterfall',
@@ -113,7 +113,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80',
     highlights: ['250cc All-Terrain Jungle Track', '10km Ayung River Rapids with Safety Marshal', 'Indonesian Buffet Lunch Included', 'Hotel Pickup & Drop from Kuta/Seminyak'],
     instantConfirmation: true,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Ubud Jungle ATV Quad Bike Ayung River Rafting Bali'),
   },
   {
     id: 'act-burj-khalifa-top',
@@ -131,7 +131,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80',
     highlights: ['World Fastest Double-Deck Elevators', '360° Arabian Gulf & Desert Views', 'Dubai Mall & Fountain Show Synchronized', 'High-Powered Telescopes Included'],
     instantConfirmation: true,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Burj Khalifa Observation Deck Tickets Dubai'),
   },
   {
     id: 'act-uss-singapore',
@@ -149,7 +149,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1506012787146-f92b2d7d6d96?auto=format&fit=crop&w=800&q=80',
     highlights: ['Battlestar Galactica Rollercoasters', 'Transformers 3D Ultimate Battle Ride', 'Minion Land & Ancient Egypt Zones', 'Direct Sentosa Express Monorail Access'],
     instantConfirmation: true,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Universal Studios Singapore Entry Pass'),
   },
   {
     id: 'act-sundarban-cruise',
@@ -167,7 +167,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80',
     highlights: ['Royal Bengal Tiger Habitat Navigation', 'Armed Forest Guard Escort', 'Fresh Seafood & Bengali Delicacies Onboard', 'Kotka Watchtower & Jamtola Beach Trek'],
     instantConfirmation: false,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Sundarbans Wildlife Tour Bangladesh'),
   },
   {
     id: 'act-nong-nooch-pattaya',
@@ -185,7 +185,7 @@ export const ALL_ACTIVITIES: ActivityDetail[] = [
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
     highlights: ['500-Acre French & Dinosaur Valley Gardens', 'Thai Martial Arts & Traditional Dancing Show', 'Tram Sightseeing Tour Included', 'Halal Indian Buffet Options'],
     instantConfirmation: true,
-    klookUrl: AZRAQ_AFFILIATE_LINKS.klook,
+    klookUrl: buildPartnerActivityUrl('Nong Nooch Tropical Botanical Garden Pattaya'),
   },
 ];
 

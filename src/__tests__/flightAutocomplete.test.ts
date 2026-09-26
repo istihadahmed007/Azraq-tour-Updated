@@ -201,7 +201,7 @@ describe('Aviasales Affiliate Search Key & URL', () => {
       adults: 2,
       cabin: 'Business',
     });
-    expect(bkkDacRound).toBe('https://flights.azraqtrips.com/?flightSearch=BKK3108DAC0709200c');
+    expect(bkkDacRound).toBe('https://flights.azraqtrips.com/?flightSearch=BKK3108DAC0709c200');
 
     // 3. DAC -> BKK Round-trip 3 adults, 1 child, 1 infant First Class
     const multiPax = buildAviasalesSearchUrl({
@@ -215,6 +215,6 @@ describe('Aviasales Affiliate Search Key & URL', () => {
       infants: 1,
       cabin: 'First',
     });
-    expect(multiPax).toBe('https://flights.azraqtrips.com/?flightSearch=DAC1509BKK2209311f');
+    expect(multiPax).toBe('https://flights.azraqtrips.com/?flightSearch=DAC1509BKK2209f311');
   });
 });

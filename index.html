@@ -3,50 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
-      (function () {
-          var script = document.createElement("script");
-          script.async = 1;
-          script.setAttribute("data-cmp-ab","2");
-          script.src = 'https://tpembars.com/NTY2Mzc4.js?t=566378';
-          document.head.appendChild(script);
-      })();
-    </script>
-    <script>
-      (function() {
-        var isPartnerUrlError = function(str) {
-          if (!str) return false;
-          var s = String(str).toLowerCase();
-          return s.includes('partner url') || s.includes('partner urls') || s.includes('tpembars') || s.includes('tpwidg') || s.includes('travelpayouts');
-        };
-
-        var origError = console.error;
-        console.error = function() {
-          var args = Array.prototype.slice.call(arguments);
-          var joined = args.map(function(a) { return String(a && a.message ? a.message : a); }).join(' ');
-          if (isPartnerUrlError(joined)) {
-            console.warn('[Handled external partner network notice]:', joined);
-            return;
-          }
-          origError.apply(console, arguments);
-        };
-
-        window.addEventListener('unhandledrejection', function(event) {
-          var reasonStr = String(event && event.reason && event.reason.message ? event.reason.message : event && event.reason ? event.reason : '');
-          if (isPartnerUrlError(reasonStr)) {
-            event.preventDefault();
-            console.warn('[Handled external partner network notice]:', reasonStr);
-          }
-        });
-
-        window.addEventListener('error', function(event) {
-          var msg = String(event && event.message ? event.message : '');
-          if (isPartnerUrlError(msg)) {
-            event.preventDefault();
-          }
-        });
-      })();
-    </script>
     <title>Azraq Trips</title>
     <meta
       name="description"
@@ -178,16 +134,6 @@
     <meta name="tp-verification" content="565709" />
     <meta name="tp:token" content="4952772dc70587f75fad10b25d26bf4d" />
     <script src="https://tpembars.com/NTY1MzYz.js?t=565363" async data-cmp-ab="2"></script>
-    <!-- Travelpayouts Drive installation for project 565709 -->
-    <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
-      (function () {
-          var script = document.createElement("script");
-          script.async = 1;
-          script.setAttribute("data-cmp-ab","2");
-          script.src = 'https://tpembars.com/NTY1NzA5.js?t=565709';
-          document.head.appendChild(script);
-      })();
-    </script>
   </head>
   <body class="sky-natural-bg text-[#f0f9ff] font-sans antialiased text-base font-normal selection:bg-[#0284c7] selection:text-white">
     <div id="root"></div>

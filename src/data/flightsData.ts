@@ -1072,7 +1072,7 @@ export interface AviasalesSearchParams {
   adults?: number;
   children?: number;
   infants?: number;
-  cabin?: 'Economy' | 'Premium Economy' | 'Business' | 'First';
+  cabin?: 'Economy' | 'Premium Economy' | 'Business' | 'First' | 'Comfort';
   tripType?: 'round' | 'oneway' | 'multi';
   source?: string;
 }
@@ -1088,6 +1088,7 @@ export function buildWhiteLabelSearchUrl(params: AviasalesSearchParams = {}): st
 
 /**
  * Computes the exact Aviasales live search query key (e.g. "DAC3108CGP1" for DAC to CGP on 31-Aug for 1 adult).
+ * Cabin letter precedes passenger digits (e.g. "c321" for Business 3 adults, 2 children, 1 infant).
  */
 export function getAviasalesSearchKey(params: AviasalesSearchParams = {}): string {
   const originCode = (params.origin || 'DAC').toUpperCase();
@@ -1116,15 +1117,21 @@ export function getAviasalesSearchKey(params: AviasalesSearchParams = {}): strin
     return '3108';
   };
 
-  const cabinSuffix =
-    params.cabin === 'Business' ? 'c' : params.cabin === 'First' ? 'f' : params.cabin === 'Premium Economy' ? 'w' : '';
+  let cabinPrefix = '';
+  if (params.cabin) {
+    const norm = params.cabin.trim().toLowerCase();
+    if (norm === 'business' || norm === 'c') cabinPrefix = 'c';
+    else if (norm === 'first' || norm === 'f') cabinPrefix = 'f';
+    else if (norm === 'premium economy' || norm === 'comfort' || norm === 'premium' || norm === 'w') cabinPrefix = 'w';
+    else if (norm === 'y') cabinPrefix = 'y';
+  }
 
   const depFormatted = formatDateForAviasales(params.departDate);
   const retFormatted = params.tripType === 'round' ? formatDateForAviasales(params.returnDate) : '';
 
   let paxSuffix = `${adults}`;
-  if (children > 0 || infants > 0 || cabinSuffix) {
-    paxSuffix = `${adults}${children || 0}${infants || 0}${cabinSuffix}`;
+  if (children > 0 || infants > 0 || cabinPrefix) {
+    paxSuffix = `${cabinPrefix}${adults}${children || 0}${infants || 0}`;
   }
 
   return `${originCode}${depFormatted}${destCode}${retFormatted}${paxSuffix}`;
