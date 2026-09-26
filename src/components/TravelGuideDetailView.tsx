@@ -3,6 +3,7 @@ import { TravelGuide } from '../data/travelGuidesData';
 import { CURATED_ITINERARIES } from '../data/itinerariesData';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SEOHead } from './SEOHead';
+import { PartnerQuickLinks } from './PartnerQuickLinks';
 import {
   getArticleSchema,
   getBreadcrumbSchema,
@@ -148,6 +149,7 @@ export const TravelGuideDetailView: React.FC<TravelGuideDetailViewProps> = ({
 
       {/* Main Article Content & Side Panels */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 gap-8">
+        <PartnerQuickLinks placement="guide_top" title={`Travel essentials for your ${guide.country} trip`} />
         {/* Intro */}
         <div className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60 prose prose-slate max-w-none text-slate-700 leading-relaxed text-sm sm:text-base">
           <p className="text-base sm:text-lg font-medium text-slate-900 leading-relaxed">

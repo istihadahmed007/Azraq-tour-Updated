@@ -2,6 +2,7 @@ import React from 'react';
 import { Destination } from '../types';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SEOHead } from './SEOHead';
+import { PartnerQuickLinks } from './PartnerQuickLinks';
 import {
   getTouristDestinationSchema,
   getBreadcrumbSchema,
@@ -181,6 +182,10 @@ export const DestinationSeoView: React.FC<DestinationSeoViewProps> = ({
           </div>
         </div>
       </section>
+
+      <div className="mx-auto max-w-7xl px-4 pt-6 pb-14 sm:px-6 lg:px-8">
+        <PartnerQuickLinks placement="destination_top" title={`Plan your visit to ${destination.name}`} />
+      </div>
 
       {/* Main Content Body */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-10">

@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { getOptimizedUnsplashUrl } from '../utils/imageOptimization';
 import { usePackages } from '../context/PackageContext';
+import { PartnerQuickLinks } from './PartnerQuickLinks';
 
 interface PackageDetailModalProps {
   pkg: TourPackage | null;
@@ -201,6 +202,10 @@ export const PackageDetailModal: React.FC<PackageDetailModalProps> = ({
                   </h3>
                   <p className="text-sm sm:text-base text-slate-200 leading-relaxed">{pkg.description}</p>
                 </div>
+
+                <PartnerQuickLinks placement="package_overview" title="Optional extras for your trip" dark
+                  description="Check your package inclusions before booking extras. These partner services are booked and paid for separately."
+                />
 
                 {/* Pricing Tiers Table */}
                 {pkg.pricing_tiers && pkg.pricing_tiers.length > 0 && (

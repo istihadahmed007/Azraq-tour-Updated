@@ -3,6 +3,7 @@ import { CuratedItinerary } from '../data/itinerariesData';
 import { TRAVEL_GUIDES } from '../data/travelGuidesData';
 import { Breadcrumbs } from './Breadcrumbs';
 import { SEOHead } from './SEOHead';
+import { PartnerQuickLinks } from './PartnerQuickLinks';
 import {
   getBreadcrumbSchema,
   SITE_URL,
@@ -140,6 +141,7 @@ export const ItineraryDetailView: React.FC<ItineraryDetailViewProps> = ({
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 space-y-8">
+        <PartnerQuickLinks placement="itinerary_top" title="Get ready for this itinerary" />
         {/* Overview Card */}
         <section className="bg-white/75 backdrop-blur-xl rounded-2xl p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)] border border-white/60">
           <h2 className="text-lg font-bold text-slate-900 mb-2">Trip Overview</h2>
