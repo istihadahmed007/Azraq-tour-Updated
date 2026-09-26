@@ -3,6 +3,7 @@ import { MapPin, Phone, Mail, MessageSquare, ArrowRight, ShieldCheck, X, Externa
 import { NavView } from '../types';
 import { AZRAQ_AGENCY_CONFIG } from '../data/agencyConfig';
 import { AzraqLogo } from './AzraqLogo';
+import { PartnerQuickLinks } from './PartnerQuickLinks';
 
 interface FooterProps {
   onNavigate?: (view: NavView) => void;
@@ -256,6 +257,8 @@ export const Footer: React.FC<FooterProps> = ({
               </ul>
             </div>
           </div>
+
+          <PartnerQuickLinks placement="footer" title="Travel partner links" dark showFlightAlternative />
 
           {/* Compliance & Partner Transparency */}
           <div className="text-[11px] text-slate-400 leading-relaxed space-y-2 border-b border-white/10 pb-8">

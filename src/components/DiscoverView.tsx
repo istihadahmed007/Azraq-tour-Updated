@@ -6,6 +6,7 @@ import { FlightSearchParams } from './AzraqTripFinder';
 import { VoiceTripModal, StructuredVoiceTripData } from './VoiceTripModal';
 import { SEOHead } from './SEOHead';
 import { getOrganizationSchema } from '../lib/seo';
+import { PartnerQuickLinks } from './PartnerQuickLinks';
 
 // Composed Home Section Components
 import { HomeHero } from './home/HomeHero';
@@ -102,6 +103,10 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
           onOpenQuote={onOpenQuote}
           onOpenVoiceModal={handleOpenVoicePlanner}
         />
+      </div>
+
+      <div className="mx-auto w-full max-w-7xl px-4 pb-6 sm:px-6 lg:px-8">
+        <PartnerQuickLinks placement="home_top" title="Travel essentials, one click away" />
       </div>
 
       {/* Trust Strip - Glassy Floating Bar */}

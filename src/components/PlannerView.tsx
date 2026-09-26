@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { BudgetTracker } from './BudgetTracker';
 import { InteractiveAsiaMap } from './InteractiveAsiaMap';
 import { SEOHead } from './SEOHead';
+import { PartnerQuickLinks } from './PartnerQuickLinks';
 import {
   MapPin,
   Calendar,
@@ -766,6 +767,8 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
             </button>
           </div>
 
+          <PartnerQuickLinks placement="planner_quick_links" title="Find services for your trip" dark className="mb-6" />
+
           {/* Conditional Content Rendering */}
           {activeTab === 'map' ? (
             /* TAB 2: INTERACTIVE ASIA & ROUTE MAP VIEW */
@@ -1063,4 +1066,3 @@ export const PlannerView: React.FC<PlannerViewProps> = ({
     </div>
   );
 };
-
