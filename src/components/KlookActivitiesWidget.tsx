@@ -24,6 +24,34 @@ export const KLOOK_WIDGET_SCRIPT_SRC =
 
 export const KLOOK_FALLBACK_URL = 'https://klook.tp.st/aXDQ3uLD';
 
+export const KlookWidgetFallbackCard: React.FC<{ className?: string }> = ({ className = '' }) => (
+  <div
+    className={`w-full py-10 px-5 sm:px-8 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-4 ${className}`}
+    data-testid="klook-widget-fallback"
+  >
+    <div className="w-12 h-12 rounded-2xl bg-[#0759B8]/10 text-[#0759B8] flex items-center justify-center mx-auto">
+      <Compass className="w-6 h-6" />
+    </div>
+    <div className="max-w-md mx-auto space-y-1.5">
+      <h3 className="text-base font-bold text-[#071A33]">Explore activities with Klook</h3>
+      <p className="text-xs text-slate-500 leading-relaxed font-inter">
+        Interactive partner offers could not load (commonly due to an ad blocker or privacy extension). You can still browse and book all verified activities directly on Klook.
+      </p>
+    </div>
+    <div>
+      <a
+        href={KLOOK_FALLBACK_URL}
+        target="_blank"
+        rel="sponsored nofollow noopener noreferrer"
+        className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#071A33] hover:bg-[#073B4C] text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
+      >
+        <span>Browse Klook offers</span>
+        <ExternalLink className="w-3.5 h-3.5 text-[#5BC7F4]" />
+      </a>
+    </div>
+  </div>
+);
+
 export const KlookActivitiesWidget: React.FC<KlookActivitiesWidgetProps> = ({ className = '' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
@@ -34,7 +62,9 @@ export const KlookActivitiesWidget: React.FC<KlookActivitiesWidgetProps> = ({ cl
     if (!currentContainer) return;
 
     // Reset container contents to prevent duplicate visible widgets on re-mount or StrictMode
-    currentContainer.innerHTML = '';
+    try {
+      currentContainer.innerHTML = '';
+    } catch {}
     setStatus('loading');
 
     // 1. Create script element with exact URL and attributes
@@ -50,47 +80,50 @@ export const KlookActivitiesWidget: React.FC<KlookActivitiesWidgetProps> = ({ cl
       }
     };
 
-    // 3. Verification of actual rendered content (checking for mounted iframe)
+    // 3. Verification of actual rendered content (checking for mounted iframe safely without cross-origin property reads)
     const checkWidgetRendered = (): boolean => {
-      if (isCancelled || !currentContainer) return false;
-      const iframe = currentContainer.querySelector('iframe');
-      if (iframe) {
-        if (iframe.offsetHeight > 40 || iframe.getAttribute('src')) {
+      try {
+        if (isCancelled || !currentContainer) return false;
+        const iframe = currentContainer.querySelector('iframe');
+        if (iframe) {
           setStatus('ready');
           return true;
         }
-        iframe.addEventListener(
-          'load',
-          () => {
-            if (!isCancelled) setStatus('ready');
-          },
-          { once: true }
-        );
+        return false;
+      } catch {
+        return false;
       }
-      return false;
     };
 
     // 4. Observe DOM mutations in container
-    const observer = new MutationObserver(() => {
-      checkWidgetRendered();
-    });
-
-    observer.observe(currentContainer, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-    });
+    let observer: MutationObserver | null = null;
+    try {
+      observer = new MutationObserver(() => {
+        checkWidgetRendered();
+      });
+      observer.observe(currentContainer, {
+        childList: true,
+        subtree: true,
+      });
+    } catch (obsErr) {
+      console.warn('[MutationObserver notice]:', obsErr);
+    }
 
     // 5. Append script to container after mounting (per React integration requirement)
-    currentContainer.appendChild(script);
+    try {
+      currentContainer.appendChild(script);
 
-    // If Klook runner is already in memory from a prior session, trigger it safely
-    if (typeof (window as any).klookaff_auto_dynamic_widget?.run === 'function') {
-      try {
-        (window as any).klookaff_auto_dynamic_widget.run();
-      } catch (err) {
-        console.warn('[Klook Widget Runner Notice]:', err);
+      // If Klook runner is already in memory from a prior session, trigger it safely
+      if (typeof (window as any).klookaff_auto_dynamic_widget?.run === 'function') {
+        try {
+          (window as any).klookaff_auto_dynamic_widget.run();
+        } catch (err) {
+          console.warn('[Klook Widget Runner Notice]:', err);
+        }
       }
+    } catch (appendErr) {
+      console.warn('[Script append notice]:', appendErr);
+      setStatus('failed');
     }
 
     // 6. Polling verification with 6.5s timeout for ad-blockers / slow networks
@@ -103,7 +136,6 @@ export const KlookActivitiesWidget: React.FC<KlookActivitiesWidgetProps> = ({ cl
       } else if (elapsed >= 6500) {
         clearInterval(pollInterval);
         if (!isCancelled) {
-          // If no iframe content rendered after 6.5s, display fallback state
           setStatus((current) => (current === 'ready' ? 'ready' : 'failed'));
         }
       }
@@ -113,10 +145,14 @@ export const KlookActivitiesWidget: React.FC<KlookActivitiesWidgetProps> = ({ cl
     return () => {
       isCancelled = true;
       clearInterval(pollInterval);
-      observer.disconnect();
-      if (currentContainer) {
-        currentContainer.innerHTML = '';
+      if (observer) {
+        observer.disconnect();
       }
+      try {
+        if (currentContainer) {
+          currentContainer.innerHTML = '';
+        }
+      } catch {}
     };
   }, []);
 
@@ -172,33 +208,7 @@ export const KlookActivitiesWidget: React.FC<KlookActivitiesWidgetProps> = ({ cl
         )}
 
         {/* Fallback State (Shown if script is blocked or unavailable) */}
-        {status === 'failed' && (
-          <div
-            className="w-full py-10 px-5 sm:px-8 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-4"
-            data-testid="klook-widget-fallback"
-          >
-            <div className="w-12 h-12 rounded-2xl bg-[#0759B8]/10 text-[#0759B8] flex items-center justify-center mx-auto">
-              <Compass className="w-6 h-6" />
-            </div>
-            <div className="max-w-md mx-auto space-y-1.5">
-              <h3 className="text-base font-bold text-[#071A33]">Explore activities with Klook</h3>
-              <p className="text-xs text-slate-500 leading-relaxed font-inter">
-                Interactive partner offers could not load (commonly due to an ad blocker or privacy extension). You can still browse and book all verified activities directly on Klook.
-              </p>
-            </div>
-            <div>
-              <a
-                href={KLOOK_FALLBACK_URL}
-                target="_blank"
-                rel="sponsored nofollow noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#071A33] hover:bg-[#073B4C] text-white text-xs sm:text-sm font-bold shadow-md hover:shadow-lg transition-all cursor-pointer"
-              >
-                <span>Browse Klook offers</span>
-                <ExternalLink className="w-3.5 h-3.5 text-[#5BC7F4]" />
-              </a>
-            </div>
-          </div>
-        )}
+        {status === 'failed' && <KlookWidgetFallbackCard />}
 
         {/* Container where the Travelpayouts / Klook script injects the iframe */}
         <div

@@ -867,6 +867,102 @@ export function renderSeoPage(pathname: string, htmlTemplate: string): SeoRender
     };
   }
 
+  // 15. Hotels & Resorts Page
+  if (cleanPath === '/hotels' || cleanPath === '/hotel' || cleanPath === '/resorts') {
+    const title = 'Hotels & Resorts for Bangladeshi Travelers – AzraqTrips';
+    const description =
+      'Book verified 4-star and 5-star hotels in Bangkok, Kuala Lumpur, Singapore, Bali, Dubai, and Cox\'s Bazar. Transparent BDT pricing, halal dining options, and instant room hold.';
+    const canonical = `${SITE_URL}/hotels`;
+
+    return {
+      statusCode: 200,
+      html: injectSeo(htmlTemplate, {
+        title,
+        description,
+        canonical,
+        ogImage: DEFAULT_OG_IMAGE,
+        ogType: 'website',
+        schemas: [
+          getOrganizationSchema(),
+          getBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Hotels & Resorts', url: '/hotels' },
+          ]),
+        ],
+        bodySnippet: `
+          <main class="min-h-screen bg-slate-900 text-white p-6 md:p-12 max-w-6xl mx-auto">
+            <h1 class="text-3xl sm:text-5xl font-black text-white mb-4">Hotels & Resorts Curated for You</h1>
+            <p class="text-slate-200 text-lg leading-relaxed mb-6">${escapeHtml(description)}</p>
+          </main>
+        `,
+      }),
+    };
+  }
+
+  // 16. Holiday Packages Page
+  if (cleanPath === '/packages' || cleanPath === '/package' || cleanPath === '/tours' || cleanPath === '/tour') {
+    const title = 'Curated Holiday Packages from Bangladesh – AzraqTrips';
+    const description =
+      'Explore all-inclusive Asian holiday packages departing from Dhaka. Verified itineraries for Thailand, Malaysia, Singapore, Bali, Dubai, and Vietnam with flights, hotels, and tours.';
+    const canonical = `${SITE_URL}/packages`;
+
+    return {
+      statusCode: 200,
+      html: injectSeo(htmlTemplate, {
+        title,
+        description,
+        canonical,
+        ogImage: DEFAULT_OG_IMAGE,
+        ogType: 'website',
+        schemas: [
+          getOrganizationSchema(),
+          getBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Holiday Packages', url: '/packages' },
+          ]),
+        ],
+        bodySnippet: `
+          <main class="min-h-screen bg-slate-900 text-white p-6 md:p-12 max-w-6xl mx-auto">
+            <h1 class="text-3xl sm:text-5xl font-black text-white mb-4">Curated Holiday Packages</h1>
+            <p class="text-slate-200 text-lg leading-relaxed mb-6">${escapeHtml(description)}</p>
+          </main>
+        `,
+      }),
+    };
+  }
+
+  // 17. Activities Page
+  if (cleanPath === '/activities' || cleanPath === '/activity' || cleanPath === '/tours-activities' || cleanPath === '/experiences') {
+    const title = 'Tours & Activities for Bangladeshi Travelers – AzraqTrips';
+    const description =
+      'Discover and book handpicked Asian tours, theme park tickets, island excursions, and cultural experiences verified for Bangladeshi travelers.';
+    const canonical = `${SITE_URL}/activities`;
+
+    return {
+      statusCode: 200,
+      html: injectSeo(htmlTemplate, {
+        title,
+        description,
+        canonical,
+        ogImage: DEFAULT_OG_IMAGE,
+        ogType: 'website',
+        schemas: [
+          getOrganizationSchema(),
+          getBreadcrumbSchema([
+            { name: 'Home', url: '/' },
+            { name: 'Activities & Experiences', url: '/activities' },
+          ]),
+        ],
+        bodySnippet: `
+          <main class="min-h-screen bg-slate-900 text-white p-6 md:p-12 max-w-6xl mx-auto">
+            <h1 class="text-3xl sm:text-5xl font-black text-white mb-4">Tours & Activities</h1>
+            <p class="text-slate-200 text-lg leading-relaxed mb-6">${escapeHtml(description)}</p>
+          </main>
+        `,
+      }),
+    };
+  }
+
   // Fallback 404 for unknown public URLs
   return render404Page(cleanPath, htmlTemplate);
 }
