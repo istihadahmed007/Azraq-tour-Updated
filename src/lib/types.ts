@@ -76,6 +76,7 @@ export interface Comment {
   id: string;
   post_id: string;
   user_id: string;
+  parentId?: string | null;
   content: string;
   created_at: string;
   profile?: Profile;

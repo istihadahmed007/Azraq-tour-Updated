@@ -21,5 +21,6 @@ coverage/
 .*_db.json*
 *.tmp*
 *.tmp.*
-*.code-workspace
-
+# User uploaded content
+public/uploads/*
+!public/uploads/.gitkeep

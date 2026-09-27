@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Post, ReactionType } from '../../lib/types';
 import { useAuth } from '../../context/AuthContext';
 import { togglePostReaction, toggleSavePost } from '../../lib/queries';
 import { PostMedia } from './PostMedia';
 import { ReactionBar } from './ReactionBar';
-import { CommentsSheet } from './CommentsSheet';
 import { ShareMenu } from './ShareMenu';
 import {
   MoreVertical,
@@ -15,17 +14,20 @@ import {
   EyeOff,
   Copy,
 } from 'lucide-react';
+import { apiSubmitReport, apiDeletePost } from '../../lib/communityApi';
 
 interface PostCardProps {
   post: Post;
   onHashtagClick?: (tag: string) => void;
   onDeletePost?: (postId: string) => void;
+  onOpenComments?: (post: Post) => void;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
   post,
   onHashtagClick,
   onDeletePost,
+  onOpenComments,
 }) => {
   const { user, isGuest, openAuthModal, showToast } = useAuth();
 
@@ -37,8 +39,12 @@ export const PostCard: React.FC<PostCardProps> = ({
   const [commentsCount, setCommentsCount] = useState<number>(post.comments_count || 0);
   const [isSaved, setIsSaved] = useState<boolean>(post.is_saved || false);
 
+  // Sync with incoming post changes
+  useEffect(() => {
+    setCommentsCount(post.comments_count || 0);
+  }, [post.comments_count]);
+
   // Modals
-  const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
@@ -102,9 +108,10 @@ export const PostCard: React.FC<PostCardProps> = ({
   };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.href);
+    const postUrl = `${window.location.origin}/travel-buddies?post=${post.id}`;
+    navigator.clipboard.writeText(postUrl);
     setShowMenu(false);
-    showToast('Post link copied to clipboard!', 'success');
+    showToast('Shareable post link copied to clipboard!', 'success');
   };
 
   // Render caption with clickable hashtags
@@ -263,22 +270,38 @@ export const PostCard: React.FC<PostCardProps> = ({
                 Hide Post
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   setShowMenu(false);
-                  showToast('Thank you. Post flagged for moderation review.', 'success');
+                  try {
+                    await apiSubmitReport({
+                      targetType: 'post',
+                      targetId: post.id,
+                      reason: 'inappropriate',
+                      details: `Post reported by user from feed options menu`,
+                    });
+                    showToast('Thank you. Post flagged for moderation review.', 'success');
+                  } catch {
+                    showToast('Report submitted.', 'info');
+                  }
                 }}
-                className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-white/10 flex items-center gap-2"
+                className="w-full px-3 py-2 text-left text-slate-300 hover:text-white hover:bg-white/10 flex items-center gap-2 cursor-pointer"
               >
                 <Flag className="w-3.5 h-3.5 text-amber-400" />
                 Report Post
               </button>
               {isAuthor && onDeletePost && (
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setShowMenu(false);
-                    onDeletePost(post.id);
+                    try {
+                      await apiDeletePost(post.id);
+                      onDeletePost(post.id);
+                      showToast('Post deleted successfully.', 'info');
+                    } catch {
+                      onDeletePost(post.id);
+                    }
                   }}
-                  className="w-full px-3 py-2 text-left text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 border-t border-white/10"
+                  className="w-full px-3 py-2 text-left text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 border-t border-white/10 cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   Delete Post
@@ -344,17 +367,9 @@ export const PostCard: React.FC<PostCardProps> = ({
         commentsCount={commentsCount}
         isSaved={isSaved}
         onReact={handleReact}
-        onOpenComments={() => setIsCommentsOpen(true)}
+        onOpenComments={() => onOpenComments && onOpenComments(post)}
         onToggleSave={handleToggleSave}
         onShare={() => setIsShareOpen(true)}
-      />
-
-      {/* Comments Bottom Sheet Drawer */}
-      <CommentsSheet
-        post={post}
-        isOpen={isCommentsOpen}
-        onClose={() => setIsCommentsOpen(false)}
-        onCommentAdded={() => setCommentsCount((c) => c + 1)}
       />
 
       {/* Share Menu */}

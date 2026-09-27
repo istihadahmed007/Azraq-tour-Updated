@@ -22,214 +22,9 @@ const LOCAL_STORAGE_POSTS_KEY = 'azraq_travel_buddies_posts';
 const LOCAL_STORAGE_SAVED_KEY = 'azraq_travel_buddies_saved';
 const LOCAL_STORAGE_STORIES_KEY = 'azraq_travel_buddies_stories';
 
-// Seed initial authentic Azraq Tour traveler community stories & posts if empty
-export const INITIAL_COMMUNITY_STORIES: Story[] = [
-  {
-    id: 'story_azraq_official',
-    user_id: 'azraq_official_id',
-    media_url: 'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=75',
-    media_type: 'image',
-    caption: '🌴 Floating over the azure crystal lagoons in Maldives with Azraq VIP group!',
-    location: 'Maldives • Azraq Tour Official',
-    created_at: new Date(Date.now() - 2 * 3600000).toISOString(),
-    expires_at: new Date(Date.now() + 22 * 3600000).toISOString(),
-    profile: {
-      id: 'azraq_official_id',
-      username: 'azraq_official',
-      full_name: 'Azraq Tour Official',
-      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=70',
-      bio: 'Leading Travel & Tourism Concierge in Bangladesh',
-      created_at: '2024-01-01',
-      is_verified: true,
-      role: 'admin',
-    },
-    seen: false,
-  },
-  {
-    id: 'story_tanvir_sajek',
-    user_id: 'user_tanvir',
-    media_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=75',
-    media_type: 'image',
-    caption: 'Morning sea of clouds above Sajek Valley ☁️ Helipad sunrise was unreal.',
-    location: 'Sajek Valley, Bangladesh',
-    created_at: new Date(Date.now() - 5 * 3600000).toISOString(),
-    expires_at: new Date(Date.now() + 19 * 3600000).toISOString(),
-    profile: {
-      id: 'user_tanvir',
-      username: 'tanvir_explorer',
-      full_name: 'Tanvir Ahmed',
-      avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=70',
-      bio: 'Dhaka ➡️ Everywhere ✈️',
-      created_at: '2024-03-10',
-      is_verified: false,
-    },
-    seen: false,
-  },
-  {
-    id: 'story_sadia_bali',
-    user_id: 'user_sadia',
-    media_url: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=75',
-    media_type: 'image',
-    caption: 'Hidden waterfalls in Ubud! Booked smoothly via Azraq Tour visa & flight assistance ✨',
-    location: 'Ubud, Bali',
-    created_at: new Date(Date.now() - 8 * 3600000).toISOString(),
-    expires_at: new Date(Date.now() + 16 * 3600000).toISOString(),
-    profile: {
-      id: 'user_sadia',
-      username: 'sadia_travels',
-      full_name: 'Sadia Rahman',
-      avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=70',
-      bio: 'Solo female traveler exploring SE Asia',
-      created_at: '2024-02-15',
-      is_verified: true,
-    },
-    seen: false,
-  },
-  {
-    id: 'story_rahim_cox',
-    user_id: 'user_rahim',
-    media_url: 'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=800&q=75',
-    media_type: 'image',
-    caption: 'Longest natural sea beach in the world. Cox’s Bazar sunset glow 🌅',
-    location: 'Inani Beach, Cox’s Bazar',
-    created_at: new Date(Date.now() - 11 * 3600000).toISOString(),
-    expires_at: new Date(Date.now() + 13 * 3600000).toISOString(),
-    profile: {
-      id: 'user_rahim',
-      username: 'rahim_lens',
-      full_name: 'Rahim Chowdhury',
-      avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=70',
-      bio: 'Landscape & Travel Photographer',
-      created_at: '2024-04-01',
-      is_verified: false,
-    },
-    seen: false,
-  },
-];
-
-export const INITIAL_COMMUNITY_POSTS: Post[] = [
-  {
-    id: 'post_1',
-    user_id: 'azraq_official_id',
-    location: 'Maafushi & Male, Maldives',
-    caption: 'Crystal turquoise waters and private sandbank picnic on our 5D4N luxury Maldives package. Our travelers experienced manta ray snorkeling and sunset dolphin cruises! 🐬✨ #AzraqDiaries #MaldivesTravel #LuxuryTravel #TravelBuddies',
-    media_urls: [
-      'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=75',
-      'https://images.unsplash.com/photo-1544644181-1484b3fdfc62?auto=format&fit=crop&w=800&q=75',
-      'https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=800&q=75',
-    ],
-    created_at: new Date(Date.now() - 3 * 3600000).toISOString(),
-    likes_count: 42,
-    comments_count: 9,
-    is_approved: true,
-    hashtags: ['#AzraqDiaries', '#MaldivesTravel', '#LuxuryTravel', '#TravelBuddies'],
-    profile: {
-      id: 'azraq_official_id',
-      username: 'azraq_official',
-      full_name: 'Azraq Tour Official',
-      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=70',
-      bio: 'Authorized Travel Agency in Dhaka. Curated Group & VIP Tours.',
-      created_at: '2024-01-01',
-      is_verified: true,
-      role: 'admin',
-    },
-    reaction_counts: {
-      love: 28,
-      fire: 10,
-      wow: 4,
-      like: 0,
-    },
-  },
-  {
-    id: 'post_2',
-    user_id: 'user_sadia',
-    location: 'Tegalalang Rice Terrace, Ubud, Bali',
-    caption: 'Waking up to this breathtaking green serenity in Ubud. Huge shoutout to Azraq Tour for processing my Indonesia Visa on Arrival documentation in just 48 hours without any hassle! 🌿🛵 #BaliDiaries #AzraqDiaries #SoutheastAsia #TravelBuddies',
-    media_urls: [
-      'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=75',
-      'https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=800&q=75',
-    ],
-    created_at: new Date(Date.now() - 7 * 3600000).toISOString(),
-    likes_count: 31,
-    comments_count: 6,
-    is_approved: true,
-    hashtags: ['#BaliDiaries', '#AzraqDiaries', '#SoutheastAsia', '#TravelBuddies'],
-    profile: {
-      id: 'user_sadia',
-      username: 'sadia_travels',
-      full_name: 'Sadia Rahman',
-      avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=70',
-      bio: 'Solo female traveler & travel blogger',
-      created_at: '2024-02-15',
-      is_verified: true,
-    },
-    reaction_counts: {
-      love: 19,
-      fire: 8,
-      wow: 4,
-      like: 0,
-    },
-  },
-  {
-    id: 'post_3',
-    user_id: 'user_tanvir',
-    location: 'Cox’s Bazar Marine Drive, Bangladesh',
-    caption: 'Cruising the scenic Marine Drive road between the rolling lush green hills on the left and roaring Bay of Bengal on the right! Pure magic during golden hour 🌅 #ExploreBangladesh #CoxsBazar #AzraqTours #BangladeshTravel',
-    media_urls: [
-      'https://images.unsplash.com/photo-1584551246679-0daf3d275d0f?auto=format&fit=crop&w=800&q=75',
-      'https://images.unsplash.com/photo-1518509562904-e7ef99cdcc86?auto=format&fit=crop&w=800&q=75',
-    ],
-    created_at: new Date(Date.now() - 14 * 3600000).toISOString(),
-    likes_count: 54,
-    comments_count: 12,
-    is_approved: true,
-    hashtags: ['#ExploreBangladesh', '#CoxsBazar', '#AzraqTours', '#BangladeshTravel'],
-    profile: {
-      id: 'user_tanvir',
-      username: 'tanvir_explorer',
-      full_name: 'Tanvir Ahmed',
-      avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=70',
-      bio: 'Traveler & Drone Pilot',
-      created_at: '2024-03-10',
-      is_verified: false,
-    },
-    reaction_counts: {
-      love: 30,
-      fire: 18,
-      wow: 6,
-      like: 0,
-    },
-  },
-  {
-    id: 'post_4',
-    user_id: 'user_rahim',
-    location: 'Petronas Twin Towers, Kuala Lumpur, Malaysia',
-    caption: 'Night view of the iconic Petronas Towers from the KLCC Park sky bridge. Street food at Jalan Alor right after was phenomenal 🍜🇲🇾 #MalaysiaTrulyAsia #KualaLumpur #AzraqDiaries #TravelBuddies',
-    media_urls: [
-      'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?auto=format&fit=crop&w=800&q=75',
-    ],
-    created_at: new Date(Date.now() - 22 * 3600000).toISOString(),
-    likes_count: 27,
-    comments_count: 4,
-    is_approved: true,
-    hashtags: ['#MalaysiaTrulyAsia', '#KualaLumpur', '#AzraqDiaries', '#TravelBuddies'],
-    profile: {
-      id: 'user_rahim',
-      username: 'rahim_lens',
-      full_name: 'Rahim Chowdhury',
-      avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=70',
-      bio: 'Photographer & wanderer',
-      created_at: '2024-04-01',
-      is_verified: false,
-    },
-    reaction_counts: {
-      love: 12,
-      fire: 11,
-      wow: 4,
-      like: 0,
-    },
-  },
-];
+// Authentic community posts & stories (real user data only, zero fake demo accounts)
+export const INITIAL_COMMUNITY_STORIES: Story[] = [];
+export const INITIAL_COMMUNITY_POSTS: Post[] = [];
 
 // Helper to extract hashtags from caption
 export function extractHashtags(caption: string): string[] {
@@ -245,11 +40,13 @@ export async function getPostsPage({
   cursorCreatedAt,
   filterHashtag,
   userId,
+  feedType,
 }: {
   limitCount?: number;
   cursorCreatedAt?: string;
   filterHashtag?: string;
   userId?: string;
+  feedType?: 'explore' | 'following';
 } = {}): Promise<{ posts: Post[]; nextCursor?: string }> {
   // 1. Try Supabase if configured
   if (isSupabaseConfigured) {
@@ -307,37 +104,58 @@ export async function getPostsPage({
     }
   }
 
-  // 2. Fallback to Firestore / Local Storage Cache
+  // 2. Fetch genuine posts from Azraq Trips backend API
   try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_POSTS_KEY);
-    let allPosts: Post[] = saved ? JSON.parse(saved) : INITIAL_COMMUNITY_POSTS;
+    const q = new URLSearchParams();
+    q.set('limit', String(limitCount));
+    if (cursorCreatedAt) q.set('cursor', cursorCreatedAt);
+    if (userId) q.set('authorId', userId);
+    if (feedType) q.set('feed', feedType);
+    const token = typeof localStorage !== 'undefined' ? (localStorage.getItem('azraq_tours_session_token') || localStorage.getItem('azraq_auth_token')) : null;
+    const res = await fetch(`/api/travel-buddies/posts?${q.toString()}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.posts)) {
+        let posts: Post[] = json.posts.map((p: any) => ({
+          id: p.id,
+          user_id: p.authorId,
+          location: p.destination || 'Global Explorer',
+          caption: p.caption,
+          media_urls: p.mediaUrls || [],
+          created_at: p.createdAt,
+          likes_count: p.likesCount || 0,
+          comments_count: p.commentsCount || 0,
+          is_approved: true,
+          is_saved: p.isSaved,
+          user_reaction: p.isLiked ? 'like' : null,
+          profile: p.author ? {
+            id: p.author.userId,
+            username: p.author.username,
+            full_name: p.author.displayName,
+            avatar_url: p.author.avatarUrl,
+            bio: p.author.bio,
+            created_at: p.author.createdAt,
+            is_verified: false,
+          } : undefined,
+          hashtags: extractHashtags(p.caption || ''),
+        }));
 
-    if (!saved) {
-      localStorage.setItem(LOCAL_STORAGE_POSTS_KEY, JSON.stringify(INITIAL_COMMUNITY_POSTS));
+        if (filterHashtag) {
+          posts = posts.filter((p) =>
+            p.caption.toLowerCase().includes(filterHashtag.toLowerCase())
+          );
+        }
+
+        return { posts, nextCursor: json.nextCursor };
+      }
     }
-
-    if (filterHashtag) {
-      allPosts = allPosts.filter((p) =>
-        p.caption.toLowerCase().includes(filterHashtag.toLowerCase())
-      );
-    }
-
-    const approvedOnly = allPosts.filter((p) => p.is_approved);
-    approvedOnly.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-    let startIndex = 0;
-    if (cursorCreatedAt) {
-      const idx = approvedOnly.findIndex((p) => p.created_at === cursorCreatedAt);
-      if (idx !== -1) startIndex = idx + 1;
-    }
-
-    const sliced = approvedOnly.slice(startIndex, startIndex + limitCount);
-    const nextCursor = sliced.length === limitCount ? sliced[sliced.length - 1].created_at : undefined;
-
-    return { posts: sliced, nextCursor };
   } catch (e) {
-    return { posts: INITIAL_COMMUNITY_POSTS };
+    console.warn('API posts fetch error:', e);
   }
+
+  return { posts: [] };
 }
 
 /**
@@ -470,17 +288,25 @@ export async function createPost({
 
   // 2. Asynchronously background sync to server REST API
   try {
+    const token = typeof localStorage !== 'undefined' ? (localStorage.getItem('azraq_tours_session_token') || localStorage.getItem('azraq_auth_token')) : null;
     fetch('/api/travel-buddies/posts', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
       body: JSON.stringify({
-        userId,
         caption: newPost.caption,
-        location: newPost.location,
+        destination: newPost.location,
         mediaUrls: newPost.media_urls,
-        postType,
-        tripDetails,
       }),
+    }).then(async (res) => {
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.post) {
+          newPost.id = json.post.id;
+        }
+      }
     }).catch(() => {});
   } catch {}
 
@@ -578,6 +404,17 @@ export async function togglePostReaction({
     }
   }
 
+  // Sync to Express backend store
+  try {
+    const token = typeof localStorage !== 'undefined' ? (localStorage.getItem('azraq_tours_session_token') || localStorage.getItem('azraq_auth_token')) : null;
+    if (token) {
+      fetch(`/api/travel-buddies/posts/${postId}/like`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+  } catch {}
+
   return { newReaction, likesDelta };
 }
 
@@ -606,41 +443,35 @@ export async function getComments(postId: string): Promise<Comment[]> {
     } catch (e) {}
   }
 
-  // Fallback initial comments
-  return [
-    {
-      id: `comm_${postId}_1`,
-      post_id: postId,
-      user_id: 'user_sadia',
-      content: 'This looks stunning! How many days in advance should we book with Azraq Tour?',
-      created_at: new Date(Date.now() - 3600000).toISOString(),
-      profile: {
-        id: 'user_sadia',
-        username: 'sadia_travels',
-        full_name: 'Sadia Rahman',
-        avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=70',
-        bio: 'Solo traveler',
-        created_at: '2024-02-15',
-        is_verified: true,
-      },
-    },
-    {
-      id: `comm_${postId}_2`,
-      post_id: postId,
-      user_id: 'azraq_official_id',
-      content: 'Hello Sadia! For Maldives and Bali, 10–14 days in advance is ideal for the best flight & resort rates.',
-      created_at: new Date(Date.now() - 1800000).toISOString(),
-      profile: {
-        id: 'azraq_official_id',
-        username: 'azraq_official',
-        full_name: 'Azraq Tour Official',
-        avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=70',
-        bio: 'Official Support',
-        created_at: '2024-01-01',
-        is_verified: true,
-      },
-    },
-  ];
+  // 2. Fetch genuine comments from Azraq Trips backend API
+  try {
+    const res = await fetch(`/api/travel-buddies/posts/${postId}/comments`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.comments)) {
+        return json.comments.map((c: any) => ({
+          id: c.id,
+          post_id: c.postId,
+          user_id: c.authorId,
+          content: c.text,
+          created_at: c.createdAt,
+          profile: c.author ? {
+            id: c.author.userId,
+            username: c.author.username,
+            full_name: c.author.displayName,
+            avatar_url: c.author.avatarUrl,
+            bio: c.author.bio,
+            created_at: c.author.createdAt,
+            is_verified: false,
+          } : undefined,
+        }));
+      }
+    }
+  } catch (e) {
+    console.warn('API comments fetch error:', e);
+  }
+
+  return [];
 }
 
 /**
@@ -651,16 +482,19 @@ export async function createComment({
   userId,
   userProfile,
   content,
+  parentId,
 }: {
   postId: string;
   userId: string;
   userProfile: Profile;
   content: string;
+  parentId?: string | null;
 }): Promise<Comment> {
   const newComment: Comment = {
     id: `comm_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
     post_id: postId,
     user_id: userId,
+    parentId: parentId || null,
     content: content.trim(),
     created_at: new Date().toISOString(),
     profile: userProfile,
@@ -679,6 +513,21 @@ export async function createComment({
       ]);
     } catch (e) {}
   }
+
+  // Sync comment to Express backend store
+  try {
+    const token = typeof localStorage !== 'undefined' ? (localStorage.getItem('azraq_tours_session_token') || localStorage.getItem('azraq_auth_token')) : null;
+    if (token) {
+      fetch(`/api/travel-buddies/posts/${postId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ text: content.trim(), parentId }),
+      }).catch(() => {});
+    }
+  } catch {}
 
   return newComment;
 }
@@ -706,6 +555,17 @@ export async function toggleSavePost({
       }
     } catch (e) {}
   }
+
+  // Sync bookmark to Express backend store
+  try {
+    const token = typeof localStorage !== 'undefined' ? (localStorage.getItem('azraq_tours_session_token') || localStorage.getItem('azraq_auth_token')) : null;
+    if (token) {
+      fetch(`/api/travel-buddies/posts/${postId}/save`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
+    }
+  } catch {}
 
   return newSavedState;
 }

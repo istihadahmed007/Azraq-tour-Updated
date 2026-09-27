@@ -10,6 +10,9 @@ import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
 import { requestsStore, UnifiedRequest, UnifiedRequestType, UnifiedRequestStatus, RequestPriority } from "./server/requestsStore";
 import { emailService } from "./server/emailService";
 import { sessionStore } from "./server/sessionStore";
+import sharp from "sharp";
+import { travelBuddiesStore } from "./server/travelBuddiesStore";
+import { createTravelBuddiesRouter } from "./server/travelBuddiesRoutes";
 
 const INITIAL_BLOG_POSTS: any[] = [];
 
@@ -50,14 +53,18 @@ function checkAuthRateLimit(identifier: string, cooldownMs: number = 60000): { a
 
 const PORT = 3000;
 
-// Ensure public/uploads directory exists for permanent media storage
+// Ensure public/uploads and public/uploads/posts directories exist for permanent media storage
 const uploadsDir = path.join(process.cwd(), "public", "uploads");
+const postUploadsDir = path.join(process.cwd(), "public", "uploads", "posts");
 try {
   if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
   }
+  if (!fs.existsSync(postUploadsDir)) {
+    fs.mkdirSync(postUploadsDir, { recursive: true });
+  }
 } catch (e) {
-  console.warn("Could not create public/uploads folder:", e);
+  console.warn("Could not create uploads folders:", e);
 }
 
 app.use(express.json({ limit: "50mb" }));
@@ -5540,6 +5547,20 @@ app.post("/api/feed/read", requireAuth, (req, res) => {
     res.status(500).json({ error: "Failed to update read state." });
   }
 });
+
+// Travel Buddies Social Community API (Canonical Store & Handlers)
+const travelBuddiesRouter = createTravelBuddiesRouter({
+  findUserById: (uid: string) => {
+    for (const u of usersStore.values()) {
+      if (u.uid === uid) return u;
+    }
+    return undefined;
+  },
+  findUserByEmail: (email: string) => {
+    return usersStore.get(email.toLowerCase());
+  },
+});
+app.use("/api/travel-buddies", travelBuddiesRouter);
 
 // ============================================================================
 // AZRAQ TRIPS — TRAVEL BUDDIES SOCIAL SYSTEM (Convex/Real Database Endpoints)

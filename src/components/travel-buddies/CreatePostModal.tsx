@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { createPost } from '../../lib/queries';
-import { uploadToCloudinary } from '../../lib/cloudinary';
-import { Profile, SocialPostType } from '../../lib/types';
+import { apiUploadPostMedia, apiCreatePost } from '../../lib/communityApi';
+import { SocialPostType } from '../../lib/types';
 import {
   X,
   UploadCloud,
@@ -153,60 +152,41 @@ export const CreatePostModal: React.FC<CreatePostModalProps> = ({
       if (selectedFiles.length > 0) {
         for (let i = 0; i < selectedFiles.length; i++) {
           const file = selectedFiles[i];
-          const uploadRes = await uploadToCloudinary(file, (p) => {
-            const step = Math.round(((i + p / 100) / selectedFiles.length) * 70) + 15;
-            setUploadProgress(Math.min(88, step));
+          const dataUrl = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
           });
-          mediaUrls.push(uploadRes.secure_url);
+
+          const uploadRes = await apiUploadPostMedia(dataUrl);
+          if (uploadRes.success && uploadRes.url) {
+            mediaUrls.push(uploadRes.url);
+          }
+          const step = Math.round(((i + 1) / selectedFiles.length) * 70) + 15;
+          setUploadProgress(Math.min(88, step));
         }
       }
 
       setUploadProgress(90);
 
-      const userProfile: Profile = {
-        id: user.uid,
-        username: (user.fullName || user.email || 'traveler').replace(/\s+/g, '_').toLowerCase(),
-        full_name: user.fullName || 'Traveler',
-        avatar_url:
-          user.photoURL ||
-          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.fullName || 'User')}`,
-        created_at: new Date().toISOString(),
-        is_verified: user.isAdmin || false,
-        role: user.isAdmin ? 'admin' : 'user',
-      };
-
-      const tripDetails =
-        postType === 'trip_plan' || postType === 'buddy_request'
-          ? {
-              destination: location || 'Travel Destination',
-              start_date: startDate || undefined,
-              end_date: endDate || undefined,
-              estimated_budget: estimatedBudget || undefined,
-              spots_available: spotsAvailable || undefined,
-            }
-          : undefined;
-
-      await createPost({
-        userId: user.uid,
-        userProfile,
-        location: location.trim() || 'Global Explorer',
+      const res = await apiCreatePost({
         caption: caption.trim(),
         mediaUrls,
-        postType,
-        tripDetails,
-        isAdmin: user.isAdmin,
+        destination: location.trim() || undefined,
       });
 
+      if (!res.success) {
+        throw new Error(res.error || 'Failed to create post');
+      }
+
       setUploadProgress(100);
-      showToast('Post published successfully! ✨', 'success');
+      showToast('Travel story published successfully! ✨', 'success');
       setShowModerationSuccess(true);
       onPostCreated();
     } catch (err: any) {
-      console.warn('Post creation notice:', err);
-      setUploadProgress(100);
-      showToast('Post published to travel feed!', 'success');
-      setShowModerationSuccess(true);
-      onPostCreated();
+      console.warn('Post creation error:', err);
+      showToast(err.message || 'Failed to publish post', 'error');
     } finally {
       setIsUploading(false);
     }

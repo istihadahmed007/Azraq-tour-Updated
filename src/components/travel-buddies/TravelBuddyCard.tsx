@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Send,
   Languages,
+  Compass,
 } from 'lucide-react';
 import { MatchedTravelBuddy } from '../../types';
 
@@ -26,27 +27,6 @@ export const TravelBuddyCard: React.FC<TravelBuddyCardProps> = ({
   onConnectClick,
   onEditProfileClick,
 }) => {
-  const getMatchScoreBadge = (score: number) => {
-    if (score >= 85) {
-      return {
-        bg: 'bg-emerald-500/10 text-emerald-700 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-700/50',
-        label: `${score}% Match`,
-      };
-    }
-    if (score >= 70) {
-      return {
-        bg: 'bg-teal-500/10 text-teal-700 border-teal-300 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-700/50',
-        label: `${score}% Match`,
-      };
-    }
-    return {
-      bg: 'bg-blue-500/10 text-blue-700 border-blue-300 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-700/50',
-      label: `${score}% Compatible`,
-    };
-  };
-
-  const badgeStyle = getMatchScoreBadge(buddy.matchScore);
-
   const formatDates = () => {
     if (buddy.travelStart && buddy.travelEnd) {
       const start = new Date(buddy.travelStart).toLocaleDateString('en-US', {
@@ -76,12 +56,12 @@ export const TravelBuddyCard: React.FC<TravelBuddyCardProps> = ({
       className="group relative flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
     >
       <div>
-        {/* Header: Avatar, Name, Home City, and Match Score */}
+        {/* Header: Avatar, Name, Home City */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-full border-2 border-white shadow-sm ring-2 ring-slate-100 dark:border-slate-800 dark:ring-slate-800">
               <img
-                src={buddy.avatarUrl || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
+                src={buddy.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(buddy.displayName)}&background=0047BA&color=fff`}
                 alt={buddy.displayName}
                 className="h-full w-full object-cover"
                 loading="lazy"
@@ -92,9 +72,6 @@ export const TravelBuddyCard: React.FC<TravelBuddyCardProps> = ({
                 <h3 className="font-semibold text-slate-900 dark:text-white text-base">
                   {buddy.displayName}
                 </h3>
-                <span className="inline-flex items-center rounded-md bg-sky-500/10 px-1.5 py-0.5 text-[10px] font-medium text-sky-700 dark:text-sky-400 border border-sky-300/60 dark:border-sky-700/50">
-                  <ShieldCheck className="mr-0.5 h-2.5 w-2.5" /> Verified
-                </span>
               </div>
               <p className="flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 <MapPin className="h-3 w-3 shrink-0 text-slate-400" />
@@ -103,13 +80,13 @@ export const TravelBuddyCard: React.FC<TravelBuddyCardProps> = ({
             </div>
           </div>
 
-          {/* Match Score Badge */}
-          <div
-            className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold shadow-xs ${badgeStyle.bg}`}
-          >
-            <Sparkles className="h-3 w-3" />
-            {badgeStyle.label}
-          </div>
+          {/* Self-reported travel style tag */}
+          {buddy.travelStyles && buddy.travelStyles.length > 0 && (
+            <div className="inline-flex shrink-0 items-center gap-1 rounded-full border border-sky-400/30 bg-sky-500/10 px-2.5 py-1 text-xs font-semibold text-sky-400">
+              <Compass className="h-3 w-3 text-[#17BEBB]" />
+              <span>{buddy.travelStyles[0]}</span>
+            </div>
+          )}
         </div>
 
         {/* Match Reasons Tags */}
