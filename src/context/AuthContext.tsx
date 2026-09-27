@@ -548,9 +548,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
           }
 
+          // Prioritize Google Identity Services (GIS) fallback if Firebase Auth domain authorization is pending
+          if (typeof window !== 'undefined' && (window as any).google?.accounts?.id && oAuthClientId) {
+            try {
+              const gisCredential = await promptGoogleIdentityServices(oAuthClientId);
+              if (gisCredential) {
+                return await loginWithGoogleCredential(gisCredential);
+              }
+            } catch (gisErr) {
+              console.warn('GIS fallback notice on unauthorized-domain:', gisErr);
+            }
+          }
+
           return {
             success: false,
-            error: `Domain '${currentHost}' is not yet authorized in Firebase Console (Authorized Domains). Please add it in Firebase Console -> Authentication -> Settings -> Authorized Domains, or sign in using instant Email OTP below.`,
+            error: `Domain '${currentHost}' is not yet authorized in Firebase Console (Authorized Domains). Please add '${currentHost}' and 'azraqtrips.com' in Firebase Console -> Authentication -> Settings -> Authorized Domains, or sign in using instant Email OTP below.`,
           };
         }
 
