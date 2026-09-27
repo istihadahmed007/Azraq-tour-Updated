@@ -4,6 +4,7 @@ import { Breadcrumbs } from './Breadcrumbs';
 import { SITE_URL, getBreadcrumbSchema } from '../lib/seo';
 import { hotelService, HotelQuoteRequest } from '../services/hotelService';
 import { useAuth } from '../context/AuthContext';
+import { KlookActivitiesWidget } from './KlookActivitiesWidget';
 import {
   Building2,
   Search,
@@ -666,6 +667,9 @@ export const HotelsView: React.FC<HotelsViewProps> = ({ onNavigateToView }) => {
 
       {/* Main Content & Listings */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-6">
+        {/* Travelpayouts / Klook Activities Showcase Widget */}
+        <KlookActivitiesWidget />
+
         {/* Controls Bar: Sort and View Mode */}
         <div className="bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-3">
