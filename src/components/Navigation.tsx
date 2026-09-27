@@ -26,7 +26,6 @@ import {
   Clock,
   Ticket,
   Percent,
-  ChevronDown,
 } from 'lucide-react';
 
 interface NavigationProps {
@@ -65,7 +64,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
     const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
-    const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
     // Initial realistic notification list
     const [notifications, setNotifications] = useState<TravelNotification[]>([
@@ -105,7 +103,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
 
     const notifRef = useRef<HTMLDivElement>(null);
     const userMenuRef = useRef<HTMLDivElement>(null);
-    const moreMenuRef = useRef<HTMLDivElement>(null);
 
     // Handle scroll state for transparent-to-solid transition
     useEffect(() => {
@@ -128,9 +125,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         }
         if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
           setUserDropdownOpen(false);
-        }
-        if (moreMenuRef.current && !moreMenuRef.current.contains(event.target as Node)) {
-          setMoreMenuOpen(false);
         }
       };
 
@@ -157,7 +151,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
       setMobileMenuOpen(false);
       setUserDropdownOpen(false);
       setNotifDropdownOpen(false);
-      setMoreMenuOpen(false);
 
       if (extra?.scrollToSection) {
         setTimeout(() => {
@@ -229,10 +222,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         view: 'planner' as NavView,
         isActive: currentView === 'planner' || currentView === 'ai-planner',
       },
-    ];
-
-    // Overflow nav items shown in the "More" dropdown
-    const overflowNavItems: DesktopNavItem[] = [
       {
         id: 'buddies',
         label: 'Travel Buddies',
@@ -243,7 +232,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
     ];
 
     // All items for the mobile drawer
-    const allNavItems = [...desktopNavItems, ...overflowNavItems];
+    const allNavItems = desktopNavItems;
 
     // Mobile Bottom Navigation Items (5 items)
     const mobileBottomTabs = [
@@ -390,63 +379,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                     </button>
                   );
                 })}
-
-                {/* MORE ▾ DROPDOWN */}
-                <div className="relative" ref={moreMenuRef}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMoreMenuOpen(!moreMenuOpen);
-                      setNotifDropdownOpen(false);
-                      setUserDropdownOpen(false);
-                    }}
-                    className={`group flex items-center gap-1 px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-xl text-[11px] 2xl:text-xs font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer ${
-                      overflowNavItems.some((i) => i.isActive)
-                        ? 'bg-[#071A33]/5 text-[#071A33] font-bold'
-                        : 'text-slate-700 hover:text-[#071A33] hover:bg-slate-100/90'
-                    }`}
-                    aria-label="More navigation options"
-                  >
-                    <span className="text-slate-400 group-hover:text-[#17BEBB] transition-colors">
-                      <Compass className="w-4 h-4" />
-                    </span>
-                    <span>More</span>
-                    <ChevronDown
-                      className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${
-                        moreMenuOpen ? 'rotate-180' : ''
-                      }`}
-                    />
-                  </button>
-
-                  {moreMenuOpen && (
-                    <div className="absolute top-full left-0 mt-1.5 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 py-1.5 z-50 animate-fadeIn">
-                      {overflowNavItems.map((item) => (
-                        <button
-                          key={item.id}
-                          type="button"
-                          onClick={() => {
-                            if (item.onClick) {
-                              item.onClick();
-                            } else if (item.view) {
-                              handleNavigate(item.view);
-                            }
-                            setMoreMenuOpen(false);
-                          }}
-                          className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-medium transition-colors text-left ${
-                            item.isActive
-                              ? 'bg-[#EAF7F8] text-[#073B4C] font-bold'
-                              : 'text-slate-700 hover:bg-slate-50 hover:text-[#073B4C]'
-                          }`}
-                        >
-                          <span className={item.isActive ? 'text-[#17BEBB]' : 'text-slate-400'}>
-                            {item.icon}
-                          </span>
-                          <span>{item.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </nav>
 
               {/* RIGHT SIDE UTILITIES */}
