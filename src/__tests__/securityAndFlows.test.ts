@@ -43,6 +43,33 @@ describe('Security & Business Flow Regression Suite', () => {
         );
       }
 
+      if (urlStr.includes('identitytoolkit.googleapis.com/v1/accounts:lookup')) {
+        let body: any = {};
+        try {
+          body = typeof init?.body === 'string' ? JSON.parse(init.body) : {};
+        } catch {}
+        if (body.idToken === 'valid_mock_firebase_google_token') {
+          return new Response(
+            JSON.stringify({
+              users: [
+                {
+                  localId: 'goog_user_123',
+                  email: 'firebase_google_traveler@example.com',
+                  emailVerified: true,
+                  displayName: 'Firebase Google Traveler',
+                  photoUrl: 'https://example.com/avatar.jpg',
+                },
+              ],
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(
+          JSON.stringify({ error: { message: 'INVALID_ID_TOKEN' } }),
+          { status: 400, headers: { 'Content-Type': 'application/json' } }
+        );
+      }
+
       return originalFetch(input, init);
     };
 
@@ -277,6 +304,20 @@ describe('Security & Business Flow Regression Suite', () => {
       expect(data.success).toBe(true);
       expect(data.token).toHaveLength(64);
       expect(data.user.email).toBe('google_verified_traveler@example.com');
+    });
+
+    it('authenticates verified Firebase Auth Google token via fallback lookup with 200', async () => {
+      const res = await fetch(`${baseUrl}/api/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken: 'valid_mock_firebase_google_token' }),
+      });
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data.success).toBe(true);
+      expect(data.token).toHaveLength(64);
+      expect(data.user.email).toBe('firebase_google_traveler@example.com');
+      expect(data.user.fullName).toBe('Firebase Google Traveler');
     });
   });
 

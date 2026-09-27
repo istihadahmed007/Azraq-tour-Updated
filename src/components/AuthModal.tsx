@@ -295,22 +295,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // 5. Google Sign-In
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = () => {
     setErrorMessage('');
-    try {
-      setIsGoogleProcessing(true);
-      const res = await loginWithGoogle();
-      if (res.success) {
-        resetRateLimitOnSuccess();
-        handleFinalSuccessRedirect();
-      } else {
-        setErrorMessage(res.error || 'Google sign-in could not be completed.');
-      }
-    } catch (err: any) {
-      setErrorMessage(err?.message || 'Google sign-in encountered an error.');
-    } finally {
-      setIsGoogleProcessing(false);
-    }
+    setIsGoogleProcessing(true);
+    loginWithGoogle()
+      .then((res) => {
+        if (res.success) {
+          resetRateLimitOnSuccess();
+          handleFinalSuccessRedirect();
+        } else {
+          setErrorMessage(res.error || 'Google sign-in could not be completed.');
+        }
+      })
+      .catch((err: any) => {
+        setErrorMessage(err?.message || 'Google sign-in encountered an error.');
+      })
+      .finally(() => {
+        setIsGoogleProcessing(false);
+      });
   };
 
   // 6. Traditional Password Login
@@ -582,15 +584,34 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
             {/* Alert Banners */}
             {errorMessage && (
-              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                <div className="flex-1 leading-relaxed font-medium">{errorMessage}</div>
-                <button
-                  onClick={() => setErrorMessage('')}
-                  className="text-rose-500 hover:text-rose-800 cursor-pointer"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex flex-col gap-2 shadow-xs">
+                <div className="flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="flex-1 leading-relaxed font-medium">{errorMessage}</div>
+                  <button
+                    onClick={() => setErrorMessage('')}
+                    className="text-rose-500 hover:text-rose-800 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {(errorMessage.toLowerCase().includes('google') ||
+                  errorMessage.toLowerCase().includes('otp') ||
+                  errorMessage.toLowerCase().includes('connect') ||
+                  errorMessage.toLowerCase().includes('authorized')) &&
+                  internalView !== 'email_otp' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setErrorMessage('');
+                        setInternalView('email_otp');
+                      }}
+                      className="self-start text-[11px] font-semibold text-[#0284c7] hover:text-[#0369a1] underline flex items-center gap-1.5 cursor-pointer ml-6"
+                    >
+                      <span>Try instant passwordless 6-Digit Email OTP instead</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  )}
               </div>
             )}
 

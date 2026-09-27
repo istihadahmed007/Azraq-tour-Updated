@@ -60,7 +60,9 @@ googleProvider.addScope('email');
 googleProvider.addScope('profile');
 googleProvider.addScope('openid');
 
-export const oAuthClientId = (rawFirebaseConfig as { oAuthClientId?: string }).oAuthClientId || '';
+export const oAuthClientId =
+  (rawFirebaseConfig as { oAuthClientId?: string }).oAuthClientId ||
+  '147626677042-45rbqobtfag2cv0mjapknbanh7ojj4r8.apps.googleusercontent.com';
 
 // Initialize Firestore with robust auto-detect long-polling for iframe & web sandbox compatibility
 export const db: Firestore = initializeFirestore(

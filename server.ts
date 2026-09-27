@@ -1047,22 +1047,64 @@ app.post("/api/auth/google", async (req, res) => {
       return res.status(400).json({ error: "Genuine Google ID token is required. Raw email parameters are not accepted." });
     }
 
-    // Verify token directly with Google OAuth endpoint (with 5000ms explicit timeout)
-    const tokenInfoRes = await fetch(
-      `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
-      { signal: AbortSignal.timeout(5000) }
-    );
-    if (!tokenInfoRes.ok) {
+    let tokenEmail = "";
+    let tokenName = "";
+    let tokenPicture = "";
+    let tokenEmailVerified = false;
+
+    // 1. Verify token directly with Google OAuth endpoint (with 5000ms explicit timeout)
+    try {
+      const tokenInfoRes = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`,
+        { signal: AbortSignal.timeout(5000) }
+      );
+      if (tokenInfoRes.ok) {
+        const tokenInfo: any = await tokenInfoRes.json();
+        if (tokenInfo.email && (tokenInfo.email_verified === "true" || tokenInfo.email_verified === true)) {
+          tokenEmail = tokenInfo.email.trim().toLowerCase();
+          tokenName = tokenInfo.name || tokenEmail.split("@")[0].replace(/[._]/g, " ");
+          tokenPicture = tokenInfo.picture || "";
+          tokenEmailVerified = true;
+        }
+      }
+    } catch (e) {
+      console.warn("Google tokeninfo probe notice:", e);
+    }
+
+    // 2. If tokeninfo did not verify (e.g. Firebase Auth ID token from popup/redirect), verify via Firebase Identity Toolkit
+    if (!tokenEmail || !tokenEmailVerified) {
+      try {
+        const fbApiKey = process.env.VITE_FIREBASE_API_KEY || "AIzaSyCfXU8PkQUjVwZ0GhgB1xcp1v7OSi3uXk4";
+        const fbLookupRes = await fetch(
+          `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${fbApiKey}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken }),
+            signal: AbortSignal.timeout(5000),
+          }
+        );
+        if (fbLookupRes.ok) {
+          const fbData: any = await fbLookupRes.json();
+          const fbUser = fbData.users?.[0];
+          if (fbUser && fbUser.email && (fbUser.emailVerified === true || fbUser.emailVerified === "true")) {
+            tokenEmail = fbUser.email.trim().toLowerCase();
+            tokenName = fbUser.displayName || tokenEmail.split("@")[0].replace(/[._]/g, " ");
+            tokenPicture = fbUser.photoUrl || "";
+            tokenEmailVerified = true;
+          }
+        }
+      } catch (fbErr) {
+        console.warn("Firebase lookup probe notice:", fbErr);
+      }
+    }
+
+    if (!tokenEmail || !tokenEmailVerified) {
       return res.status(401).json({ error: "Invalid or expired Google identity token." });
     }
 
-    const tokenInfo: any = await tokenInfoRes.json();
-    if (!tokenInfo.email || (tokenInfo.email_verified !== "true" && tokenInfo.email_verified !== true)) {
-      return res.status(401).json({ error: "Google account email is missing or unverified by Google." });
-    }
-
-    const normalizedEmail = tokenInfo.email.trim().toLowerCase();
-    const userName = tokenInfo.name || normalizedEmail.split("@")[0].replace(/[._]/g, " ");
+    const normalizedEmail = tokenEmail;
+    const userName = tokenName;
 
     let existingUser = usersStore.get(normalizedEmail);
 
@@ -1073,7 +1115,7 @@ app.post("/api/auth/google", async (req, res) => {
         email: normalizedEmail,
         phone: "",
         country: "Bangladesh",
-        photoURL: tokenInfo.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(normalizedEmail)}`,
+        photoURL: tokenPicture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(normalizedEmail)}`,
         bio: `Hello! I am ${userName}, a travel enthusiast at Azraq Trips.`,
         languages: ["English"],
         emailVerified: true, // Google accounts verified by identity provider

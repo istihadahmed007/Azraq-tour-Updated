@@ -1,8 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { User, AuthModalView, PendingAction, ToastNotification, isWebsiteOwner } from '../types';
-import { auth, googleProvider, db, isFirebaseConfigured } from '../lib/firebase';
+import { auth, googleProvider, db, isFirebaseConfigured, oAuthClientId } from '../lib/firebase';
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  GoogleAuthProvider,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
@@ -41,6 +44,7 @@ interface AuthContextType {
     photoURL?: string
   ) => Promise<{ success: boolean; error?: string; unconfirmed?: boolean }>;
   loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
+  loginWithGoogleCredential: (credential: string) => Promise<{ success: boolean; error?: string }>;
   sendPasswordReset: (email: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   verifyEmailWithCode: (code: string, targetEmail?: string) => Promise<{ success: boolean; message?: string; error?: string }>;
   resendVerification: (targetEmail?: string) => Promise<{ success: boolean; message?: string; error?: string }>;
@@ -60,7 +64,7 @@ const LOCAL_USERS_KEY = 'azraq_tours_registered_users_cache';
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Safe helper to call API with a timeout without throwing JSON syntax errors on HTML responses
-async function safeFetchJson(url: string, options?: RequestInit, timeoutMs = 3000): Promise<{ ok: boolean; data?: any; error?: string }> {
+async function safeFetchJson(url: string, options?: RequestInit, timeoutMs = 15000): Promise<{ ok: boolean; data?: any; error?: string }> {
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -92,6 +96,37 @@ function withTimeout<T>(promise: Promise<T>, ms: number, timeoutMsg = 'Operation
         clearTimeout(timer);
         reject(err);
       });
+  });
+}
+
+// Helper to invoke Google Identity Services (GIS) One Tap / OAuth Prompt safely
+function promptGoogleIdentityServices(clientId: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    try {
+      const google = typeof window !== 'undefined' ? (window as any).google : null;
+      if (!google?.accounts?.id) {
+        return reject(new Error('Google Identity Services library is not loaded'));
+      }
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: (response: any) => {
+          if (response?.credential) {
+            resolve(response.credential);
+          } else {
+            reject(new Error('No Google credential returned in response.'));
+          }
+        },
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+      google.accounts.id.prompt((notification: any) => {
+        if (notification && (notification.isNotDisplayed?.() || notification.isSkippedMoment?.())) {
+          reject(new Error(notification.getNotDisplayedReason?.() || notification.getSkippedReason?.() || 'GIS prompt dismissed'));
+        }
+      });
+    } catch (e) {
+      reject(e);
+    }
   });
 }
 
@@ -219,7 +254,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           }
 
-          saveUserSession(profile);
+          // Exchange ID token for genuine server session token
+          let serverToken = localStorage.getItem(TOKEN_STORAGE_KEY) || undefined;
+          try {
+            const idToken = await fbUser.getIdToken();
+            const apiRes = await safeFetchJson(
+              '/api/auth/google',
+              {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken }),
+              },
+              10000
+            );
+            if (apiRes.ok && apiRes.data?.token) {
+              serverToken = apiRes.data.token;
+              if (apiRes.data.user) {
+                profile = apiRes.data.user;
+              }
+            }
+          } catch (syncErr) {
+            console.warn('Backend session token exchange notice:', syncErr);
+          }
+
+          saveUserSession(profile, serverToken);
         }
       });
     } catch (err) {
@@ -350,84 +408,186 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // 1. Genuine Google Sign-In with Server-Side ID Token Verification
-  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
-    try {
-      setIsLoading(true);
-      let idToken = '';
-
+  // 1a. Server-Side ID Token Verification & Session Establishment
+  const loginWithGoogleCredential = useCallback(
+    async (credentialToken: string): Promise<{ success: boolean; error?: string }> => {
       try {
-        const result = await signInWithPopup(auth, googleProvider);
-        if (!result?.user) {
+        setIsLoading(true);
+        const apiRes = await safeFetchJson('/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken: credentialToken, credential: credentialToken }),
+        });
+
+        if (!apiRes.ok || !apiRes.data?.user || !apiRes.data?.token) {
           return {
             success: false,
-            error: 'Google Sign-In was cancelled or incomplete.',
+            error: apiRes.data?.error || apiRes.error || 'Google authentication failed server verification.',
           };
         }
-        idToken = await result.user.getIdToken();
-      } catch (fbErr: any) {
+
+        const finalUser: User = apiRes.data.user;
+        const userToken: string = apiRes.data.token;
+
+        // Save to Firestore non-blockingly
+        try {
+          setDoc(doc(db, 'users', finalUser.uid), finalUser, { merge: true }).catch(() => {});
+        } catch {}
+
+        saveUserSession(finalUser, userToken);
+        closeAuthModal();
+        showToast(
+          `Welcome, ${finalUser.fullName ? finalUser.fullName.split(' ')[0] : 'Traveler'}! Signed in with Google. 🎉`,
+          'success'
+        );
+
+        if (pendingAction?.onExecute) {
+          try {
+            pendingAction.onExecute();
+          } catch (e) {
+            console.warn('Pending action error:', e);
+          }
+          setPendingAction(null);
+        }
+
+        return { success: true };
+      } catch (error: any) {
+        console.error('Google Credential Sign-In Error:', error);
+        return {
+          success: false,
+          error: error?.message || 'Google Sign-In failed server verification.',
+        };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [closeAuthModal, pendingAction, saveUserSession]
+  );
+
+  // 1b. Handle return from signInWithRedirect seamlessly on page load
+  useEffect(() => {
+    let isMounted = true;
+    getRedirectResult(auth)
+      .then(async (result) => {
+        if (!isMounted || !result?.user) return;
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const tokenToVerify = credential?.idToken || (await result.user.getIdToken());
+        if (tokenToVerify) {
+          await loginWithGoogleCredential(tokenToVerify);
+        }
+      })
+      .catch((err) => {
+        if (err && err.code !== 'auth/null-user') {
+          console.warn('Firebase getRedirectResult notice:', err?.message || err);
+        }
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, [loginWithGoogleCredential]);
+
+  // 1c. Genuine Google Sign-In with Multi-Strategy Resilience
+  const loginWithGoogle = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      let googleIdToken = '';
+
+      // Primary Strategy: Firebase Auth signInWithPopup (executed synchronously in click event stack to prevent popup blocking)
+      try {
+        const popupPromise = signInWithPopup(auth, googleProvider);
+        setIsLoading(true);
+      const result = await popupPromise;
+      if (result?.user) {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        // Prefer genuine Google OAuth ID Token if available, else Firebase ID token
+        googleIdToken = credential?.idToken || (await result.user.getIdToken());
+      }
+    } catch (fbErr: any) {
+      setIsLoading(false);
         console.warn('Firebase popup notice:', fbErr?.code || fbErr?.message || fbErr);
+        const errCode = fbErr?.code || '';
+
+        // 1. User intentionally closed popup
         if (
-          fbErr?.code === 'auth/popup-closed-by-user' ||
-          fbErr?.code === 'auth/cancelled-popup-request'
+          errCode === 'auth/popup-closed-by-user' ||
+          errCode === 'auth/cancelled-popup-request'
         ) {
           return {
             success: false,
             error: 'Google Sign-In popup was closed.',
           };
         }
-        return {
-          success: false,
-          error: 'Google Sign-In could not connect. Please try signing in with email or password.',
-        };
-      }
 
-      if (!idToken) {
-        return {
-          success: false,
-          error: 'Could not obtain genuine Google ID token.',
-        };
-      }
-
-      // Cryptographic server-side verification: sends Genuine Google ID Token
-      const apiRes = await safeFetchJson('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!apiRes.ok || !apiRes.data?.user || !apiRes.data?.token) {
-        return {
-          success: false,
-          error: apiRes.data?.error || apiRes.error || 'Google authentication failed server verification.',
-        };
-      }
-
-      const finalUser: User = apiRes.data.user;
-      const userToken: string = apiRes.data.token;
-
-      // Save to Firestore non-blockingly
-      try {
-        setDoc(doc(db, 'users', finalUser.uid), finalUser, { merge: true }).catch(() => {});
-      } catch {}
-
-      saveUserSession(finalUser, userToken);
-      closeAuthModal();
-      showToast(
-        `Welcome, ${finalUser.fullName.split(' ')[0]}! Signed in with Google.`,
-        'success'
-      );
-
-      if (pendingAction?.onExecute) {
-        try {
-          pendingAction.onExecute();
-        } catch (e) {
-          console.warn('Pending action error:', e);
+        // 2. Browser popup blocker intervened: try GIS fallback, then explain clearly
+        if (errCode === 'auth/popup-blocked') {
+          if (typeof window !== 'undefined' && (window as any).google?.accounts?.id && oAuthClientId) {
+            try {
+              const gisCredential = await promptGoogleIdentityServices(oAuthClientId);
+              if (gisCredential) {
+                return await loginWithGoogleCredential(gisCredential);
+              }
+            } catch (gisErr) {
+              console.warn('GIS fallback notice:', gisErr);
+            }
+          }
+          return {
+            success: false,
+            error: 'Your browser blocked the Google Sign-In popup window. Please allow popups for this site, or sign in using our instant 6-Digit Email OTP below.',
+          };
         }
-        setPendingAction(null);
+
+        // 3. Domain authorization error (e.g. running on 127.0.0.1 or unauthorized custom host)
+        if (errCode === 'auth/unauthorized-domain') {
+          const currentHost = typeof window !== 'undefined' ? window.location.hostname : '';
+          const currentPort = typeof window !== 'undefined' ? window.location.port : '3000';
+          const isIpAddress = currentHost === '127.0.0.1' || /^\d+\.\d+\.\d+\.\d+$/.test(currentHost);
+
+          if (isIpAddress) {
+            return {
+              success: false,
+              error: `Google OAuth restricts IP access (${currentHost}). Please open http://localhost:${currentPort} instead, or sign in using our instant 6-Digit Email OTP below.`,
+            };
+          }
+
+          return {
+            success: false,
+            error: `Domain '${currentHost}' is not yet authorized in Firebase Console (Authorized Domains). Please add it in Firebase Console -> Authentication -> Settings -> Authorized Domains, or sign in using instant Email OTP below.`,
+          };
+        }
+
+        // 4. Secondary Strategy: Try Google Identity Services (GIS) One Tap / OAuth Prompt
+        if (typeof window !== 'undefined' && (window as any).google?.accounts?.id && oAuthClientId) {
+          try {
+            const gisCredential = await promptGoogleIdentityServices(oAuthClientId);
+            if (gisCredential) {
+              return await loginWithGoogleCredential(gisCredential);
+            }
+          } catch (gisErr) {
+            console.warn('GIS fallback notice:', gisErr);
+          }
+        }
+
+        // 5. Operation not allowed / configuration missing
+        if (errCode === 'auth/operation-not-allowed' || errCode === 'auth/configuration-not-found') {
+          return {
+            success: false,
+            error: 'Google Sign-In is not enabled in Firebase project settings. Please sign in using our instant 6-Digit Email OTP below.',
+          };
+        }
+
+        return {
+          success: false,
+          error: `Google Sign-In could not connect (${errCode || fbErr?.message || 'Network/Storage restriction'}). Please sign in using our instant 6-Digit Email OTP below.`,
+        };
       }
 
-      return { success: true };
+      if (!googleIdToken) {
+        return {
+          success: false,
+          error: 'Could not obtain valid Google authentication credentials.',
+        };
+      }
+
+      return await loginWithGoogleCredential(googleIdToken);
     } catch (error: any) {
       console.error('Google Sign-In Error:', error);
       return {
@@ -830,6 +990,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         loginWithEmail,
         registerWithEmail,
         loginWithGoogle,
+        loginWithGoogleCredential,
         sendPasswordReset,
         verifyEmailWithCode,
         resendVerification,
