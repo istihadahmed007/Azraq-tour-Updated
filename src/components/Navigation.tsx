@@ -26,7 +26,6 @@ import {
   Clock,
   Ticket,
   Percent,
-  Smartphone,
   ChevronDown,
 } from 'lucide-react';
 
@@ -240,13 +239,6 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
         icon: <Users className="w-4 h-4" />,
         view: 'feed' as NavView,
         isActive: currentView === 'feed',
-      },
-      {
-        id: 'essentials',
-        label: 'Travel Essentials',
-        icon: <Smartphone className="w-4 h-4" />,
-        onClick: () => handleNavigate('discover', { scrollToSection: 'travel-essentials' }),
-        isActive: false,
       },
     ];
 
