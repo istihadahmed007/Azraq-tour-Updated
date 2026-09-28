@@ -241,7 +241,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               uid: fbUser.uid,
               fullName: fbUser.displayName || userEmail.split('@')[0].replace('.', ' '),
               email: userEmail,
-              photoURL: fbUser.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(userEmail)}`,
+              photoURL: fbUser.photoURL || '',
               bio: `Hello! Excited to discover amazing travel destinations with Azraq Tours.`,
               languages: ['English'],
               emailVerified: fbUser.emailVerified || true,
@@ -669,7 +669,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 fullName: userCred.user.displayName || cleanEmail.split('@')[0].replace('.', ' '),
                 email: cleanEmail,
                 phone: '',
-                photoURL: userCred.user.photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanEmail)}`,
+                photoURL: userCred.user.photoURL || '',
                 bio: `Travel enthusiast at Azraq Tours.`,
                 languages: ['English'],
                 emailVerified: true,
@@ -746,7 +746,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           createdUid = userCred.user.uid;
           updateProfile(userCred.user, {
             displayName: cleanName,
-            photoURL: photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanName)}`,
+            photoURL: photoURL || '',
           }).catch(() => {});
         }
       } catch (fbErr: any) {
@@ -765,7 +765,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         email: cleanEmail,
         phone: phone.trim() || '+880',
         country: country.trim() || 'Bangladesh',
-        photoURL: photoURL || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(cleanName)}`,
+        photoURL: photoURL || '',
         bio: `Hello! I am ${cleanName}, excited to discover amazing travel destinations with Azraq Tours.`,
         languages: ['English', 'Bengali'],
         emailVerified: false,

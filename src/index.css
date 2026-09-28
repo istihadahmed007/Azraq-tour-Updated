@@ -2,14 +2,27 @@
 
 @layer base {
   :root {
-    --font-primary: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-primary: 'Inter', 'Manrope', 'Hind Siliguri', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     --font-manrope: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-serif-display: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-display: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-serif: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-sans: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-inter: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-poppins: 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif-display: 'Inter', 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Inter', 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-serif: 'Inter', 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-sans: 'Inter', 'Manrope', 'Hind Siliguri', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-poppins: 'Inter', 'Manrope', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+    /* Azraq Profile Design Tokens */
+    --profile-bg: #071426;
+    --profile-surface: rgba(15, 35, 57, 0.92);
+    --profile-surface-solid: #0F2339;
+    --profile-text-main: #F8FAFC;
+    --profile-text-secondary: #CBD5E1;
+    --profile-btn-primary: #2563EB;
+    --profile-btn-primary-hover: #1D4ED8;
+    --profile-teal-accent: #2DD4BF;
+    --profile-form-light: #FFFFFF;
+    --profile-text-on-light: #0F172A;
+    --profile-text-on-light-sec: #475569;
 
     /* Luxury Travel Editorial Color System */
     --color-midnight: #071A33;
@@ -483,3 +496,60 @@
   font-family: var(--font-primary) !important;
   background-color: #073B4C !important;
 }
+
+/* Azraq Trips Profile Token Classes */
+.profile-page-bg {
+  background-color: #071426;
+}
+
+.profile-card {
+  background-color: #0F2339;
+  background-color: rgba(15, 35, 57, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+}
+
+.profile-card-subtle {
+  background-color: #0B1C2E;
+  background-color: rgba(11, 28, 46, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.875rem;
+}
+
+.profile-btn-primary {
+  background-color: #2563EB;
+  color: #FFFFFF;
+  border-radius: 0.875rem;
+  font-weight: 700;
+  transition: all 0.2s ease-in-out;
+}
+.profile-btn-primary:hover:not(:disabled) {
+  background-color: #1D4ED8;
+}
+
+.profile-btn-secondary {
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #F8FAFC;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 0.875rem;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+.profile-btn-secondary:hover:not(:disabled) {
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #FFFFFF;
+}
+
+.profile-teal-badge {
+  background-color: rgba(45, 212, 191, 0.12);
+  color: #2DD4BF;
+  border: 1px solid rgba(45, 212, 191, 0.3);
+}
+
+.profile-tab-active {
+  background-color: #2563EB !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+}
+

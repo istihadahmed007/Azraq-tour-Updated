@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavView } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { AzraqLogo } from './AzraqLogo';
+import { UserAvatar } from './UserAvatar';
 import {
   Plane,
   Building2,
@@ -558,15 +559,12 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                       }`}
                       title="User Account"
                     >
-                      <img
-                        src={
-                          user?.photoURL ||
-                          `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                            user?.fullName || user?.email || 'traveler'
-                          )}`
-                        }
-                        alt={user?.fullName || 'Traveler'}
-                        className="w-7 h-7 rounded-lg object-cover border border-white/40 shrink-0 shadow-xs"
+                      <UserAvatar
+                        photoURL={user?.photoURL}
+                        name={user?.fullName}
+                        email={user?.email}
+                        size="sm"
+                        className="rounded-lg border border-white/40 shadow-xs"
                       />
                       <span className="text-xs font-bold max-w-[90px] sm:max-w-[120px] truncate hidden sm:inline">
                         {user?.fullName?.split(' ')[0] || 'Traveler'}

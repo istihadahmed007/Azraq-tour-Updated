@@ -7706,12 +7706,14 @@ app.post("/api/upload/avatar", requireAuth, async (req, res) => {
       return res.status(400).json({ success: false, error: "Missing image payload." });
     }
 
-    // Size limit check (approx 15MB base64 is ~20MB string)
-    if (mediaSource.length > 20 * 1024 * 1024) {
-      return res.status(400).json({ success: false, error: "Avatar image exceeds maximum allowed size of 15MB." });
+    const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
+
+    // Preliminary size check on string payload
+    if (mediaSource.length > 8 * 1024 * 1024) {
+      return res.status(400).json({ success: false, error: "Avatar image exceeds maximum allowed size of 5 MB." });
     }
 
-    // Process image buffer using sharp for face/center crop and privacy metadata stripping
+    // Process image buffer
     let imageBuffer: Buffer;
     if (mediaSource.startsWith("data:")) {
       const matches = mediaSource.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
@@ -7723,6 +7725,38 @@ app.post("/api/upload/avatar", requireAuth, async (req, res) => {
       imageBuffer = Buffer.from(mediaSource, "base64");
     }
 
+    if (imageBuffer.length > MAX_AVATAR_BYTES) {
+      return res.status(400).json({ success: false, error: "Avatar image exceeds maximum allowed size of 5 MB." });
+    }
+
+    // Validate image format and content using sharp
+    let metadata: sharp.Metadata;
+    try {
+      metadata = await sharp(imageBuffer).metadata();
+    } catch {
+      return res.status(400).json({
+        success: false,
+        error: "The uploaded file could not be decoded as an image. Please provide a valid JPEG, PNG, or WebP file.",
+      });
+    }
+
+    const format = (metadata.format || "").toLowerCase();
+    if (format === "heif" || format === "heic") {
+      return res.status(400).json({
+        success: false,
+        error: "HEIC/HEIF images are not directly supported. Please convert your photo to JPEG, PNG, or WebP before uploading.",
+      });
+    }
+
+    const allowedFormats = ["jpeg", "jpg", "png", "webp"];
+    if (!allowedFormats.includes(format)) {
+      return res.status(400).json({
+        success: false,
+        error: `Unsupported image format (${format || "unknown"}). Only JPEG, PNG, and WebP are supported.`,
+      });
+    }
+
+    // Process image buffer using sharp for face/center crop and privacy metadata stripping
     let optimizedBuffer: Buffer;
     try {
       optimizedBuffer = await sharp(imageBuffer)
@@ -7732,7 +7766,10 @@ app.post("/api/upload/avatar", requireAuth, async (req, res) => {
         .toBuffer();
     } catch (sharpErr) {
       console.warn("[Avatar Sharp Notice]:", sharpErr);
-      optimizedBuffer = imageBuffer;
+      return res.status(400).json({
+        success: false,
+        error: "Image processing failed. Please ensure the file is not corrupted.",
+      });
     }
 
     let finalUrl = "";
@@ -7777,6 +7814,19 @@ app.post("/api/upload/avatar", requireAuth, async (req, res) => {
     // 3. PERSIST to usersStore & save to disk
     const userRecord = usersStore.get(authUser.email.toLowerCase());
     if (userRecord) {
+      const oldPhotoUrl = userRecord.photoURL;
+      // Clean up previous local avatar file if it belonged to this authenticated user
+      if (oldPhotoUrl && oldPhotoUrl.startsWith(`/uploads/avatar_${authUser.uid}_`)) {
+        try {
+          const oldFilePath = path.join(uploadsDir, path.basename(oldPhotoUrl));
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlinkSync(oldFilePath);
+          }
+        } catch (cleanupErr) {
+          console.warn("[Avatar Upload] Cleanup old file notice:", cleanupErr);
+        }
+      }
+
       userRecord.photoURL = finalUrl;
       userRecord.updatedAt = new Date().toISOString();
       usersStore.set(userRecord.email.toLowerCase(), userRecord);
@@ -7816,6 +7866,16 @@ app.delete("/api/upload/avatar", requireAuth, (req, res) => {
     const authUser = (req as any).user as ServerUser;
     const userRecord = usersStore.get(authUser.email.toLowerCase());
     if (userRecord) {
+      const oldPhotoUrl = userRecord.photoURL;
+      if (oldPhotoUrl && oldPhotoUrl.startsWith(`/uploads/avatar_${authUser.uid}_`)) {
+        try {
+          const oldFilePath = path.join(uploadsDir, path.basename(oldPhotoUrl));
+          if (fs.existsSync(oldFilePath)) {
+            fs.unlinkSync(oldFilePath);
+          }
+        } catch {}
+      }
+
       userRecord.photoURL = "";
       userRecord.updatedAt = new Date().toISOString();
       usersStore.set(userRecord.email.toLowerCase(), userRecord);

@@ -6,7 +6,6 @@ import { useFeed } from '../context/FeedContext';
 import { authService } from '../services/authService';
 import {
   User as UserIcon,
-  Sparkles,
   Compass,
   Heart,
   Calendar,
@@ -19,18 +18,14 @@ import {
   BookOpen,
   MessageCircle,
   Camera,
-  Crown,
   CheckCircle2,
-  Lock,
-  ChevronRight,
-  RefreshCw,
   Globe,
   Sliders,
-  DollarSign,
-  Share2,
+  Sparkles,
 } from 'lucide-react';
 import { SEOHead } from './SEOHead';
 import { ProfilePictureModal } from './ProfilePictureModal';
+import { UserAvatar } from './UserAvatar';
 import { PersonalizedOverview } from './dashboard/PersonalizedOverview';
 import { ProfileDetailsTab } from './dashboard/ProfileDetailsTab';
 import { TravelPreferencesTab } from './dashboard/TravelPreferencesTab';
@@ -71,7 +66,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onOpenVisaQuote,
   onNavigate,
 }) => {
-  const { user, isGuest, isLoading, openAuthModal, logout, updateUserProfile, showToast } = useAuth();
+  const { user, openAuthModal, updateUserProfile, showToast } = useAuth();
   const { userPosts, bookmarkedPosts } = useFeed();
 
   // Active Dashboard Sub-Tab
@@ -88,7 +83,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   // Saved Destinations from User State
   const [savedDestinations, setSavedDestinations] = useState<Destination[]>([]);
 
-  // Load User Quotes & Personalized Activity Timeline from API
+  // Load User Quotes & Activity Timeline
   const loadUserQuotes = async () => {
     if (!user?.email) {
       setUserQuotes([]);
@@ -109,7 +104,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         setUserQuotes([]);
       }
 
-      // 2. Fetch personalized step-by-step activity timeline
+      // 2. Fetch personalized activity timeline
       const timelineRes = await fetch('/api/users/me/timeline', { headers: authHeaders });
       if (timelineRes.ok) {
         const timelineData = await timelineRes.json();
@@ -157,22 +152,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950/70 backdrop-blur-xl text-slate-100 pb-24 pt-20">
+    <div className="min-h-screen bg-[#071426] text-[#F8FAFC] pb-32 pt-20">
       <SEOHead
-        title="User Dashboard & Travel Hub | Azraq Trips"
-        description="Access your personalized Azraq Trips travel dashboard. Manage saved itineraries, track live flight & visa quotes, update travel preferences, and connect with Travel Buddies."
+        title="User Dashboard & Travel Profile | Azraq Trips"
+        description="Access your personalized Azraq Trips travel account. Manage saved itineraries, track live flight & visa quotes, and update traveler preferences."
         url="/profile"
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* ========================================================================= */}
         {/* TOP PLATFORM QUICK NAVIGATION TABS (Destinations, Packages, Visa, etc.)  */}
         {/* ========================================================================= */}
-        <div className="glass-card rounded-2xl p-2.5 sm:p-3 border border-white/10 bg-slate-900/80 shadow-lg flex items-center justify-between overflow-x-auto hide-scrollbar gap-2">
+        <nav
+          aria-label="Platform exploration"
+          className="rounded-2xl p-2.5 sm:p-3 border border-white/10 bg-[#0F2339]/95 shadow-md flex items-center justify-between overflow-x-auto hide-scrollbar gap-2"
+        >
           <div className="flex items-center gap-1.5 min-w-max">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 px-2 flex items-center gap-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#2DD4BF] px-2 flex items-center gap-1">
               <Globe className="w-3.5 h-3.5" />
-              <span>Explore Azraq:</span>
+              <span>Explore:</span>
             </span>
 
             {onNavigate && (
@@ -180,7 +178,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('destinations')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
                   <Globe className="w-3.5 h-3.5 text-sky-400" />
                   <span>Destinations</span>
@@ -189,25 +187,25 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('packages')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
-                  <Package className="w-3.5 h-3.5 text-purple-400" />
+                  <Package className="w-3.5 h-3.5 text-indigo-400" />
                   <span>Packages</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('visa')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
-                  <Stamp className="w-3.5 h-3.5 text-teal-400" />
+                  <Stamp className="w-3.5 h-3.5 text-[#2DD4BF]" />
                   <span>Visa</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('guides')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
                   <BookOpen className="w-3.5 h-3.5 text-amber-400" />
                   <span>Guides</span>
@@ -216,7 +214,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('flights')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
                   <Plane className="w-3.5 h-3.5 text-sky-400" />
                   <span>Flights</span>
@@ -225,18 +223,18 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <button
                   type="button"
                   onClick={() => onNavigate('feed')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
-                  <Users className="w-3.5 h-3.5 text-indigo-400" />
+                  <Users className="w-3.5 h-3.5 text-teal-400" />
                   <span>Community</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('planner')}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white transition-colors flex items-center gap-1.5 cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
-                  <Compass className="w-3.5 h-3.5 text-amber-400" />
+                  <Compass className="w-3.5 h-3.5 text-[#2DD4BF]" />
                   <span>Planner</span>
                 </button>
               </>
@@ -244,89 +242,84 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <span className="px-3 py-1 rounded-xl text-xs font-extrabold bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1">
-              <Crown className="w-3.5 h-3.5" />
-              <span>User Dashboard</span>
+            <span className="px-3 py-1 rounded-xl text-xs font-bold bg-[#2563EB]/15 text-[#2DD4BF] border border-[#2DD4BF]/30 flex items-center gap-1">
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>Travel Profile</span>
             </span>
           </div>
-        </div>
+        </nav>
 
         {/* ========================================================================= */}
-        {/* GUEST VIEW / AUTHENTICATION PROMPT                                        */}
+        {/* SIGNED-OUT VISITOR EXPERIENCE: Compact, High-Contrast Welcome Panel      */}
         {/* ========================================================================= */}
         {!user ? (
-          <div className="space-y-8 animate-fade-in">
-            {/* Guest Banner */}
-            <div className="glass-card rounded-3xl p-8 sm:p-12 border border-amber-400/30 bg-gradient-to-r from-slate-950 via-slate-900 to-[#0a192f] shadow-2xl text-center space-y-6 max-w-3xl mx-auto">
-              <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-400 to-emerald-400 text-slate-950 flex items-center justify-center mx-auto shadow-2xl">
-                <Crown className="w-10 h-10" />
+          <div className="space-y-6 animate-fade-in">
+            {/* Welcome Card */}
+            <div className="rounded-2xl p-6 sm:p-10 border border-white/15 bg-[#0F2339]/95 shadow-xl text-center space-y-5 max-w-2xl mx-auto">
+              <div className="w-14 h-14 rounded-2xl bg-[#2563EB]/20 border border-[#2563EB]/40 text-[#2DD4BF] flex items-center justify-center mx-auto shadow-md">
+                <UserIcon className="w-7 h-7" />
               </div>
 
               <div className="space-y-2">
-                <h1 className="text-2xl sm:text-4xl font-serif-display font-black text-white">
-                  Welcome to Azraq Trips VIP Hub
+                <h1 className="text-xl sm:text-3xl font-bold text-white tracking-tight">
+                  Welcome to Your Azraq Trips Account
                 </h1>
-                <p className="text-xs sm:text-sm text-sky-200/80 max-w-xl mx-auto leading-relaxed">
-                  Sign in with your email or OTP to unlock real-time flight and visa quote tracking, save multi-day AI itineraries, customize travel preferences, and access the 24/7 WhatsApp concierge.
+                <p className="text-sm sm:text-base text-[#CBD5E1] max-w-lg mx-auto leading-relaxed">
+                  Sign in to view real-time flight quotes, track visa applications, save custom multi-day itineraries, and manage travel preferences.
                 </p>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+              {/* Action Buttons: Sign In primary, Create Account secondary */}
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => openAuthModal('otp_entry', '/profile')}
-                  className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-emerald-400 hover:brightness-110 text-slate-950 font-extrabold text-sm shadow-xl transition-all flex items-center gap-2 cursor-pointer min-h-[48px]"
+                  className="px-6 py-3 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-sm shadow-md transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]"
                 >
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-4 h-4 text-[#2DD4BF]" />
                   <span>Sign In with OTP / Email</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => openAuthModal('register', '/profile')}
-                  className="px-8 py-3.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-sm border border-white/20 transition-all flex items-center gap-2 cursor-pointer min-h-[48px]"
+                  className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-[#F8FAFC] font-semibold text-sm border border-white/20 transition-all flex items-center gap-2 cursor-pointer min-h-[44px] focus:outline-none focus:ring-2 focus:ring-white/40"
                 >
-                  <UserIcon className="w-4 h-4" />
+                  <UserIcon className="w-4 h-4 text-[#CBD5E1]" />
                   <span>Create Free Account</span>
                 </button>
               </div>
             </div>
 
-            {/* Platform Feature Highlights */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="glass-card rounded-3xl p-6 border border-white/10 bg-slate-900/80 space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-sky-500/20 text-sky-300 flex items-center justify-center">
-                  <Plane className="w-6 h-6" />
+            {/* Platform Feature Highlights (Working Features Only) */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
+              <div className="rounded-2xl p-5 sm:p-6 border border-white/10 bg-[#0F2339]/80 space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/15 text-sky-400 flex items-center justify-center">
+                  <Plane className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-white font-serif-display">
-                  Live Quotation Tracking
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Track flight fare holds and visa assessments with real-time status updates and official pricing in Bangladeshi Taka (BDT ৳).
+                <h3 className="text-sm sm:text-base font-bold text-white">Live Fare & Quote Tracking</h3>
+                <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed">
+                  Monitor flight holds and visa assessment statuses with verified pricing in Bangladeshi Taka (BDT ৳).
                 </p>
               </div>
 
-              <div className="glass-card rounded-3xl p-6 border border-white/10 bg-slate-900/80 space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-300 flex items-center justify-center">
-                  <Compass className="w-6 h-6" />
+              <div className="rounded-2xl p-5 sm:p-6 border border-white/10 bg-[#0F2339]/80 space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-teal-500/15 text-[#2DD4BF] flex items-center justify-center">
+                  <Compass className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-white font-serif-display">
-                  Saved AI Itineraries
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Store custom day-by-day travel schedules for Bali, Thailand, Kashmir, Dubai, and beyond with offline export capabilities.
+                <h3 className="text-sm sm:text-base font-bold text-white">Saved AI Itineraries</h3>
+                <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed">
+                  Save multi-day travel schedules for Bali, Thailand, Kashmir, Dubai, and more with day-by-day activity plans.
                 </p>
               </div>
 
-              <div className="glass-card rounded-3xl p-6 border border-white/10 bg-slate-900/80 space-y-3">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center">
-                  <MessageCircle className="w-6 h-6" />
+              <div className="rounded-2xl p-5 sm:p-6 border border-white/10 bg-[#0F2339]/80 space-y-2.5">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center">
+                  <MessageCircle className="w-5 h-5" />
                 </div>
-                <h3 className="text-base font-bold text-white font-serif-display">
-                  24/7 Dedicated Concierge
-                </h3>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Direct WhatsApp access to our Dhaka operations desk (+880 1851-172032) for instant booking verification and amendments.
+                <h3 className="text-sm sm:text-base font-bold text-white">24/7 Operations Desk</h3>
+                <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed">
+                  Direct WhatsApp access to our Dhaka operations desk (+880 1851-172032) for booking verification and itinerary amendments.
                 </p>
               </div>
             </div>
@@ -335,65 +328,75 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           /* ========================================================================= */
           /* AUTHENTICATED USER DASHBOARD                                              */
           /* ========================================================================= */
-          <div className="space-y-8 animate-fade-in">
+          <div className="space-y-6 animate-fade-in">
             {/* Authenticated Top Profile Header Bar */}
-            <div className="glass-card rounded-3xl p-6 sm:p-8 border border-white/15 bg-gradient-to-r from-slate-950 via-slate-900 to-[#0a192f] shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+            <div className="rounded-2xl p-6 sm:p-8 border border-white/12 bg-[#0F2339]/95 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
               <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 text-center sm:text-left z-10">
-                {/* Avatar with quick edit trigger */}
+                {/* Avatar with Initials Fallback & Obvious Change Photo Button */}
                 <div className="relative group shrink-0">
                   <button
                     type="button"
                     onClick={() => setIsProfilePictureModalOpen(true)}
-                    className="relative block rounded-full overflow-hidden focus:outline-none focus:ring-4 focus:ring-amber-400/40 cursor-pointer group"
-                    title="Click to update avatar"
+                    className="relative block rounded-full overflow-hidden focus:outline-none focus:ring-4 focus:ring-[#2563EB]/50 cursor-pointer group"
+                    title="Change profile photo"
+                    aria-label="Change profile photo"
                   >
-                    <img
-                      src={
-                        user.photoURL ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-                          user.fullName || user.email || 'traveler'
-                        )}`
-                      }
-                      alt={user.fullName || 'Traveler'}
-                      className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-amber-400/60 shadow-2xl group-hover:brightness-90 transition-all"
+                    <UserAvatar
+                      photoURL={user.photoURL}
+                      name={user.fullName}
+                      email={user.email}
+                      size="xl"
+                      className="border-3 border-white/20 group-hover:brightness-90 transition-all"
                     />
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex flex-col items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
-                      <Camera className="w-5 h-5 text-amber-300 mb-0.5" />
-                      <span className="text-[9px] font-bold text-amber-200 uppercase">Change</span>
+                      <Camera className="w-5 h-5 text-[#2DD4BF] mb-0.5" />
+                      <span className="text-[10px] font-bold text-white uppercase tracking-wider">Change</span>
                     </div>
                   </button>
-                  <div
-                    className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-gradient-to-tr from-amber-500 to-amber-300 border-2 border-slate-950 flex items-center justify-center text-slate-950 text-xs font-black shadow-lg"
-                    title="Azraq VIP Member"
+
+                  <button
+                    type="button"
+                    onClick={() => setIsProfilePictureModalOpen(true)}
+                    className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[#2563EB] hover:bg-[#1D4ED8] text-white flex items-center justify-center text-xs shadow-md border-2 border-[#0F2339] cursor-pointer"
+                    title="Change photo"
+                    aria-label="Change profile picture"
                   >
-                    👑
-                  </div>
+                    <Camera className="w-3.5 h-3.5" />
+                  </button>
                 </div>
 
                 <div className="space-y-1.5">
                   <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                    <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-gradient-to-r from-amber-400 to-amber-300 text-slate-950 shadow-sm">
-                      Azraq VIP Member
+                    <span className="px-3 py-0.5 rounded-full text-xs font-bold bg-[#2563EB]/20 text-sky-200 border border-[#2563EB]/40">
+                      Traveler Account
                     </span>
                     {user.emailVerified && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 flex items-center gap-1">
                         <CheckCircle2 className="w-3 h-3" />
-                        <span>Verified</span>
+                        <span>Verified Email</span>
                       </span>
                     )}
                   </div>
 
-                  <h1 className="text-2xl sm:text-3xl font-serif-display font-black text-white">
-                    {user.fullName || 'Distinguished Traveler'}
+                  <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
+                    {user.fullName || 'Valued Traveler'}
                   </h1>
 
-                  <p className="text-xs text-sky-200/80 flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                  <div className="text-xs sm:text-sm text-[#CBD5E1] flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
                     <span>{user.email}</span>
-                    <span>•</span>
-                    <span>{user.phone || '+880 1851-172032'}</span>
-                    <span>•</span>
-                    <span>{user.homeLocation || user.country || 'Dhaka, Bangladesh'}</span>
-                  </p>
+                    {user.phone && (
+                      <>
+                        <span className="text-slate-500">•</span>
+                        <span>{user.phone}</span>
+                      </>
+                    )}
+                    {(user.homeLocation || user.country) && (
+                      <>
+                        <span className="text-slate-500">•</span>
+                        <span>{user.homeLocation || user.country}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -401,20 +404,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <div className="flex flex-wrap items-center justify-center md:justify-end gap-3 z-10">
                 <button
                   type="button"
-                  onClick={() => setActiveTab('profile')}
-                  className="px-5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 text-white font-bold text-xs transition-colors flex items-center gap-2 cursor-pointer min-h-[44px]"
+                  onClick={() => setIsProfilePictureModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-[#F8FAFC] font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer border border-white/15 min-h-[44px] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
                 >
-                  <UserIcon className="w-4 h-4 text-amber-400" />
-                  <span>View Full Profile</span>
+                  <Camera className="w-4 h-4 text-[#2DD4BF]" />
+                  <span>Change Photo</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setActiveTab('preferences')}
-                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-emerald-400 hover:brightness-110 text-slate-950 font-extrabold text-xs shadow-xl transition-all flex items-center gap-2 cursor-pointer min-h-[44px]"
+                  onClick={() => setActiveTab('profile')}
+                  className="px-4 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs shadow-md transition-colors flex items-center gap-2 cursor-pointer min-h-[44px] focus:outline-none focus:ring-2 focus:ring-[#2DD4BF]"
                 >
-                  <Sliders className="w-4 h-4" />
-                  <span>Travel Preferences</span>
+                  <UserIcon className="w-4 h-4" />
+                  <span>Edit Profile</span>
                 </button>
               </div>
             </div>
@@ -422,29 +425,37 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {/* ========================================================================= */}
             {/* DASHBOARD PRINCIPAL NAVIGATION TABS                                       */}
             {/* ========================================================================= */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/10 hide-scrollbar">
+            <div
+              role="tablist"
+              aria-label="Dashboard views"
+              className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-white/10 hide-scrollbar"
+            >
               {/* Tab 1: Overview */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'overview'}
                 onClick={() => setActiveTab('overview')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'overview'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
-                <Sparkles className="w-4 h-4" />
+                <Compass className="w-4 h-4" />
                 <span>Overview</span>
               </button>
 
               {/* Tab 2: Profile */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'profile'}
                 onClick={() => setActiveTab('profile')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'profile'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
                 <UserIcon className="w-4 h-4" />
@@ -454,11 +465,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               {/* Tab 3: Saved Itineraries */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'itineraries'}
                 onClick={() => setActiveTab('itineraries')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'itineraries'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
                 <Calendar className="w-4 h-4" />
@@ -468,67 +481,77 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               {/* Tab 4: Travel Activity */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'travel_activity'}
                 onClick={() => setActiveTab('travel_activity')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'travel_activity'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
                 <Activity className="w-4 h-4" />
-                <span>Travel Activity ({userQuotes.length})</span>
+                <span>Travel Quotes ({userQuotes.length})</span>
               </button>
 
               {/* Tab 5: Community Activity */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'community_activity'}
                 onClick={() => setActiveTab('community_activity')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'community_activity'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
                 <Users className="w-4 h-4" />
-                <span>Community Activity ({userPosts.length + bookmarkedPosts.length})</span>
+                <span>Community ({userPosts.length + bookmarkedPosts.length})</span>
               </button>
 
               {/* Tab 6: Travel Preferences */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'preferences'}
                 onClick={() => setActiveTab('preferences')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'preferences'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
                 <Sliders className="w-4 h-4" />
-                <span>Travel Preferences</span>
+                <span>Preferences</span>
               </button>
 
               {/* Tab 7: Saved Wishlist */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'saved_destinations'}
                 onClick={() => setActiveTab('saved_destinations')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'saved_destinations'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
                 <Heart className="w-4 h-4" />
-                <span>Saved Wishlist ({savedDestinations.length})</span>
+                <span>Wishlist ({savedDestinations.length})</span>
               </button>
 
               {/* Tab 8: Settings */}
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === 'settings'}
                 onClick={() => setActiveTab('settings')}
-                className={`px-4 py-2.5 rounded-2xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 ${
+                className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer min-h-[44px] shrink-0 focus:outline-none focus:ring-2 focus:ring-[#2DD4BF] ${
                   activeTab === 'settings'
-                    ? 'bg-amber-400 text-slate-950 shadow-md'
-                    : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-white/10'
+                    ? 'bg-[#2563EB] text-white font-bold shadow-md'
+                    : 'bg-[#0F2339]/80 hover:bg-[#0F2339] text-[#CBD5E1] border border-white/10'
                 }`}
               >
                 <Settings className="w-4 h-4" />
