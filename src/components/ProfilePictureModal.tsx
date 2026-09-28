@@ -26,6 +26,7 @@ interface ProfilePictureModalProps {
 }
 
 const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
+const CONTAINER_SIZE = 210; // Pixel dimension of the square crop preview
 
 export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
   isOpen,
@@ -62,13 +63,16 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
       setZoom(1);
       setOffset({ x: 0, y: 0 });
       setUploadError(null);
+      setImgNaturalSize({ width: 0, height: 0 });
     }
   }, [isOpen]);
 
   // Load raw image element to get natural dimensions
   const handleImageLoaded = (e: React.SyntheticEvent<HTMLImageElement>) => {
     const img = e.currentTarget;
-    setImgNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+    if (img.naturalWidth && img.naturalHeight) {
+      setImgNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+    }
   };
 
   // Keyboard navigation / escape to close
@@ -92,7 +96,32 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
+  // Calculate pan boundaries based on current zoom and image aspect ratio
+  const getPanBounds = useCallback((currentZoom: number) => {
+    if (!imgNaturalSize.width || !imgNaturalSize.height) {
+      return { maxX: 0, maxY: 0 };
+    }
+    const baseScale = Math.max(
+      CONTAINER_SIZE / imgNaturalSize.width,
+      CONTAINER_SIZE / imgNaturalSize.height
+    );
+    const renderedW = imgNaturalSize.width * baseScale * currentZoom;
+    const renderedH = imgNaturalSize.height * baseScale * currentZoom;
+    const maxX = Math.max(0, (renderedW - CONTAINER_SIZE) / 2);
+    const maxY = Math.max(0, (renderedH - CONTAINER_SIZE) / 2);
+    return { maxX, maxY };
+  }, [imgNaturalSize]);
+
+  // Safely update zoom while keeping the image clamped within the viewport
+  const updateZoom = useCallback((newZoom: number) => {
+    const clampedZoom = Math.max(1, Math.min(3, newZoom));
+    setZoom(clampedZoom);
+    const { maxX, maxY } = getPanBounds(clampedZoom);
+    setOffset((prev) => ({
+      x: Math.max(-maxX, Math.min(maxX, prev.x)),
+      y: Math.max(-maxY, Math.min(maxY, prev.y)),
+    }));
+  }, [getPanBounds]);
 
   const validateAndProcessFile = (file: File) => {
     setUploadError(null);
@@ -130,16 +159,28 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
       return;
     }
 
-    // Read as Data URL for interactive client-side crop preview
+    // Read as Data URL and precalculate dimensions
     const reader = new FileReader();
     reader.onerror = () => {
       setUploadError('Failed to read image file. Please try another photo.');
     };
     reader.onload = () => {
-      setSelectedFile(file);
-      setRawImageSrc(reader.result as string);
-      setZoom(1);
-      setOffset({ x: 0, y: 0 });
+      const src = reader.result as string;
+      const img = new Image();
+      img.onload = () => {
+        setImgNaturalSize({ width: img.naturalWidth, height: img.naturalHeight });
+        setSelectedFile(file);
+        setRawImageSrc(src);
+        setZoom(1);
+        setOffset({ x: 0, y: 0 });
+      };
+      img.onerror = () => {
+        setSelectedFile(file);
+        setRawImageSrc(src);
+        setZoom(1);
+        setOffset({ x: 0, y: 0 });
+      };
+      img.src = src;
     };
     reader.readAsDataURL(file);
   };
@@ -168,7 +209,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
     }
   };
 
-  // Mouse / Touch Pan Handlers
+  // Mouse / Touch Pan Handlers with boundary clamping
   const handlePointerDown = (clientX: number, clientY: number) => {
     setIsDragging(true);
     setDragStart({ x: clientX - offset.x, y: clientY - offset.y });
@@ -176,15 +217,24 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
 
   const handlePointerMove = (clientX: number, clientY: number) => {
     if (!isDragging) return;
-    // Bound the dragging offset slightly
-    const maxOffset = 150 * zoom;
-    const nextX = Math.max(-maxOffset, Math.min(maxOffset, clientX - dragStart.x));
-    const nextY = Math.max(-maxOffset, Math.min(maxOffset, clientY - dragStart.y));
-    setOffset({ x: nextX, y: nextY });
+    const { maxX, maxY } = getPanBounds(zoom);
+    const rawX = clientX - dragStart.x;
+    const rawY = clientY - dragStart.y;
+    setOffset({
+      x: Math.max(-maxX, Math.min(maxX, rawX)),
+      y: Math.max(-maxY, Math.min(maxY, rawY)),
+    });
   };
 
   const handlePointerUp = () => {
     setIsDragging(false);
+  };
+
+  // Mouse wheel zoom
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.15 : -0.15;
+    updateZoom(+(zoom + delta).toFixed(2));
   };
 
   // Render cropped image to Canvas and generate optimized square JPEG
@@ -205,44 +255,57 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
           const ctx = canvas.getContext('2d');
           if (!ctx) return reject(new Error('Canvas 2D context unavailable.'));
 
-          // Calculate center crop with scale and offset
-          const containerSize = 220; // Size of the crop preview box in px
-          const baseScale = Math.max(containerSize / img.naturalWidth, containerSize / img.naturalHeight);
-          const currentScale = baseScale * zoom;
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
 
-          const renderedWidth = img.naturalWidth * currentScale;
-          const renderedHeight = img.naturalHeight * currentScale;
+          // Base cover scale as displayed in preview
+          const baseScale = Math.max(
+            CONTAINER_SIZE / img.naturalWidth,
+            CONTAINER_SIZE / img.naturalHeight
+          );
+          const renderedWidth = img.naturalWidth * baseScale * zoom;
+          const renderedHeight = img.naturalHeight * baseScale * zoom;
 
-          // The center of the container corresponds to (containerSize/2, containerSize/2)
-          // With offset:
-          const imgCenterInContainerX = containerSize / 2 + offset.x;
-          const imgCenterInContainerY = containerSize / 2 + offset.y;
+          // Center of the rendered image in container coordinates
+          const centerX = CONTAINER_SIZE / 2 + offset.x;
+          const centerY = CONTAINER_SIZE / 2 + offset.y;
 
-          // Compute top-left of image relative to container
-          const imgLeft = imgCenterInContainerX - renderedWidth / 2;
-          const imgTop = imgCenterInContainerY - renderedHeight / 2;
+          // Top-left of rendered image relative to the container
+          const imgLeft = centerX - renderedWidth / 2;
+          const imgTop = centerY - renderedHeight / 2;
 
-          // The container viewport is (0, 0) to (containerSize, containerSize)
-          // Map this square into image source coordinates:
-          const sourceX = Math.max(0, -imgLeft / currentScale);
-          const sourceY = Math.max(0, -imgTop / currentScale);
-          const sourceSize = containerSize / currentScale;
+          // Viewport [0, 0, CONTAINER_SIZE, CONTAINER_SIZE] in rendered image space
+          const viewportLeftInRendered = -imgLeft;
+          const viewportTopInRendered = -imgTop;
 
-          // Draw onto 400x400 target canvas
+          // Convert to natural image pixel coordinates
+          const scaleFactor = img.naturalWidth / renderedWidth;
+          const sourceX = viewportLeftInRendered * scaleFactor;
+          const sourceY = viewportTopInRendered * scaleFactor;
+          const sourceWidth = CONTAINER_SIZE * scaleFactor;
+          const sourceHeight = CONTAINER_SIZE * scaleFactor;
+
+          // Clamp safe boundaries
+          const safeSourceX = Math.max(0, Math.min(img.naturalWidth - 1, sourceX));
+          const safeSourceY = Math.max(0, Math.min(img.naturalHeight - 1, sourceY));
+          const safeSourceW = Math.max(1, Math.min(sourceWidth, img.naturalWidth - safeSourceX));
+          const safeSourceH = Math.max(1, Math.min(sourceHeight, img.naturalHeight - safeSourceY));
+
+          // Draw directly to 400x400 canvas
           ctx.drawImage(
             img,
-            sourceX,
-            sourceY,
-            Math.min(sourceSize, img.naturalWidth - sourceX),
-            Math.min(sourceSize, img.naturalHeight - sourceY),
+            safeSourceX,
+            safeSourceY,
+            safeSourceW,
+            safeSourceH,
             0,
             0,
             TARGET_SIZE,
             TARGET_SIZE
           );
 
-          // Strip metadata and export high-quality progressive JPEG
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+          // Export high-quality progressive JPEG
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.90);
           resolve(dataUrl);
         } catch (err) {
           reject(err);
@@ -388,25 +451,35 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
     }
   };
 
+  if (!isOpen) return null;
+
+  // Calculate base image display dimensions to cover the crop container
+  const baseScale =
+    imgNaturalSize.width && imgNaturalSize.height
+      ? Math.max(CONTAINER_SIZE / imgNaturalSize.width, CONTAINER_SIZE / imgNaturalSize.height)
+      : 1;
+  const baseW = imgNaturalSize.width ? Math.round(imgNaturalSize.width * baseScale) : CONTAINER_SIZE;
+  const baseH = imgNaturalSize.height ? Math.round(imgNaturalSize.height * baseScale) : CONTAINER_SIZE;
+
   return (
     <div
       id="profile-picture-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div className="absolute inset-0" onClick={handleAttemptClose} />
 
-      <div className="relative w-full max-w-lg bg-[#0F2339] border border-white/15 rounded-2xl shadow-2xl z-10 overflow-hidden flex flex-col text-[#F8FAFC]">
+      <div className="relative w-full max-w-md bg-[#0F2339] border border-white/15 rounded-2xl shadow-2xl z-10 overflow-hidden flex flex-col text-[#F8FAFC] max-h-[92vh] sm:max-h-[88vh]">
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-[#071426]">
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-white/10 flex items-center justify-between bg-[#071426] shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#2563EB]/20 border border-[#2563EB]/30 flex items-center justify-center text-[#2DD4BF] shadow-xs">
-              <Camera className="w-5 h-5" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#2563EB]/20 border border-[#2563EB]/30 flex items-center justify-center text-[#2DD4BF] shadow-xs shrink-0">
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <div>
-              <h3 id="modal-title" className="text-sm sm:text-base font-bold text-white">
+              <h3 id="modal-title" className="text-sm sm:text-base font-bold text-white leading-tight">
                 Update Profile Photo
               </h3>
               <p className="text-xs text-[#CBD5E1]">Supported: JPEG, PNG, WebP • Max 5 MB</p>
@@ -422,11 +495,11 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Body */}
-        <div className="p-5 sm:p-6 flex flex-col items-center gap-5 overflow-y-auto max-h-[80vh]">
+        {/* Modal Body - Sleek, compact & scrollbar-free */}
+        <div className="p-4 sm:p-5 flex flex-col items-center gap-3.5 overflow-y-auto hide-scrollbar flex-1">
           {/* Error Banner with Retry */}
           {uploadError && (
-            <div className="w-full p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5">
+            <div className="w-full p-3 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-200 text-xs flex items-start gap-2.5 shrink-0">
               <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
               <div className="flex-1 space-y-1">
                 <p>{uploadError}</p>
@@ -445,7 +518,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
 
           {/* VIEW A: No Image Selected yet -> Current Avatar & Picker */}
           {!rawImageSrc ? (
-            <div className="w-full flex flex-col items-center gap-5">
+            <div className="w-full flex flex-col items-center gap-4 py-1">
               {/* Current Avatar Display */}
               <div className="relative group">
                 <UserAvatar
@@ -457,7 +530,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                 />
               </div>
 
-              <p className="text-xs text-[#CBD5E1] text-center max-w-sm">
+              <p className="text-xs text-[#CBD5E1] text-center max-w-sm leading-relaxed">
                 {user?.photoURL
                   ? 'Click below or drag in a new image to replace your current profile photo.'
                   : 'No custom photo uploaded yet. Your initials are currently displayed across Azraq Trips.'}
@@ -479,7 +552,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                 tabIndex={0}
                 role="button"
                 aria-label="Upload photo. Click to choose a file or drag and drop here."
-                className={`w-full border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-[#2563EB] ${
+                className={`w-full border-2 border-dashed rounded-xl p-5 sm:p-6 text-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-[#2563EB] ${
                   dragActive
                     ? 'border-[#2DD4BF] bg-[#2DD4BF]/10'
                     : 'border-white/20 hover:border-[#2563EB] bg-[#071426]/60'
@@ -494,8 +567,8 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                   onChange={(e) => handleFileSelect(e.target.files)}
                 />
                 <div className="flex flex-col items-center gap-2">
-                  <div className="w-12 h-12 rounded-xl bg-[#2563EB]/15 text-[#2DD4BF] flex items-center justify-center">
-                    <UploadCloud className="w-6 h-6" />
+                  <div className="w-11 h-11 rounded-xl bg-[#2563EB]/15 text-[#2DD4BF] flex items-center justify-center">
+                    <UploadCloud className="w-5 h-5" />
                   </div>
                   <p className="text-sm font-bold text-white">Choose a photo or drag & drop here</p>
                   <p className="text-xs text-[#CBD5E1]">JPEG, PNG, or WebP up to 5 MB</p>
@@ -504,22 +577,23 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
             </div>
           ) : (
             /* VIEW B: Image Selected -> Interactive Square Crop & Reposition Preview */
-            <div className="w-full flex flex-col items-center gap-4">
+            <div className="w-full flex flex-col items-center gap-3">
               <div className="text-center space-y-0.5">
-                <span className="text-xs font-bold text-[#2DD4BF] uppercase tracking-wider flex items-center justify-center gap-1">
+                <span className="text-xs font-bold text-[#2DD4BF] uppercase tracking-wider flex items-center justify-center gap-1.5">
                   <Move className="w-3.5 h-3.5" />
                   <span>Reposition & Zoom</span>
                 </span>
                 <p className="text-xs text-[#CBD5E1]">Drag photo to center face, or use slider to adjust zoom</p>
               </div>
 
-              {/* Square Crop Viewport */}
+              {/* Square Crop Viewport with Pro Circular Cutout Mask */}
               <div
                 ref={cropContainerRef}
                 onMouseDown={(e) => handlePointerDown(e.clientX, e.clientY)}
                 onMouseMove={(e) => handlePointerMove(e.clientX, e.clientY)}
                 onMouseUp={handlePointerUp}
                 onMouseLeave={handlePointerUp}
+                onWheel={handleWheel}
                 onTouchStart={(e) => {
                   if (e.touches[0]) handlePointerDown(e.touches[0].clientX, e.touches[0].clientY);
                 }}
@@ -527,43 +601,53 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                   if (e.touches[0]) handlePointerMove(e.touches[0].clientX, e.touches[0].clientY);
                 }}
                 onTouchEnd={handlePointerUp}
-                className="relative w-[220px] h-[220px] rounded-2xl overflow-hidden border-2 border-[#2DD4BF] bg-black cursor-grab active:cursor-grabbing shadow-2xl select-none flex items-center justify-center"
-                title="Drag to reposition photo"
+                style={{ width: `${CONTAINER_SIZE}px`, height: `${CONTAINER_SIZE}px` }}
+                className="relative rounded-2xl overflow-hidden bg-[#071426] cursor-grab active:cursor-grabbing select-none flex items-center justify-center touch-none border border-white/20 shadow-2xl"
+                title="Drag to reposition photo (Scroll to zoom)"
               >
-                {/* Visual circular guide overlay */}
-                <div className="absolute inset-0 rounded-full border border-white/30 pointer-events-none z-10" />
-
+                {/* Scaled & Pinned Image */}
                 <img
                   src={rawImageSrc}
                   alt="Crop preview"
                   onLoad={handleImageLoaded}
                   draggable={false}
                   style={{
-                    transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                    width: `${baseW}px`,
+                    height: `${baseH}px`,
+                    minWidth: `${baseW}px`,
+                    minHeight: `${baseH}px`,
                     maxWidth: 'none',
                     maxHeight: 'none',
+                    transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                    transformOrigin: 'center center',
                     transition: isDragging ? 'none' : 'transform 0.1s ease-out',
                   }}
                   className="pointer-events-none select-none max-w-none max-h-none object-contain"
                 />
+
+                {/* Circular Mask Guide: Highlights circular avatar cut-out while dimming outer corners */}
+                <div
+                  className="absolute inset-0 rounded-full border-2 border-[#2DD4BF] shadow-[0_0_0_999px_rgba(7,20,38,0.7)] pointer-events-none z-10"
+                  aria-hidden="true"
+                />
               </div>
 
               {/* Zoom & Reset Controls */}
-              <div className="w-full max-w-xs space-y-2">
+              <div className="w-full max-w-xs space-y-1.5 pt-0.5">
                 <div className="flex items-center justify-between text-xs text-[#CBD5E1]">
                   <span className="flex items-center gap-1">
                     <ZoomOut className="w-3.5 h-3.5" />
                     <span>Zoom</span>
                   </span>
-                  <span className="font-mono font-bold text-white">{zoom.toFixed(1)}x</span>
+                  <span className="font-mono font-bold text-white text-xs">{zoom.toFixed(1)}x</span>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setZoom((prev) => Math.max(1, +(prev - 0.2).toFixed(1)))}
+                    onClick={() => updateZoom(+(zoom - 0.2).toFixed(1))}
                     disabled={zoom <= 1}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 cursor-pointer"
+                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 cursor-pointer transition-colors"
                     title="Zoom Out"
                     aria-label="Zoom Out"
                   >
@@ -573,19 +657,20 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                   <input
                     type="range"
                     min="1"
-                    max="2.5"
+                    max="3"
                     step="0.05"
                     value={zoom}
-                    onChange={(e) => setZoom(parseFloat(e.target.value))}
+                    onChange={(e) => updateZoom(parseFloat(e.target.value))}
                     className="flex-1 accent-[#2563EB] cursor-pointer h-1.5 bg-slate-700 rounded-lg"
                     aria-label="Zoom level"
-                  />
+                  >
+                  </input>
 
                   <button
                     type="button"
-                    onClick={() => setZoom((prev) => Math.min(2.5, +(prev + 0.2).toFixed(1)))}
-                    disabled={zoom >= 2.5}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 cursor-pointer"
+                    onClick={() => updateZoom(+(zoom + 0.2).toFixed(1))}
+                    disabled={zoom >= 3}
+                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 cursor-pointer transition-colors"
                     title="Zoom In"
                     aria-label="Zoom In"
                   >
@@ -598,7 +683,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                       setZoom(1);
                       setOffset({ x: 0, y: 0 });
                     }}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white cursor-pointer ml-1"
+                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#CBD5E1] hover:text-white cursor-pointer ml-1 transition-colors"
                     title="Reset Crop Position"
                     aria-label="Reset crop"
                   >
@@ -611,7 +696,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-xs text-[#2DD4BF] hover:underline cursor-pointer flex items-center gap-1"
+                className="text-xs text-[#2DD4BF] hover:underline cursor-pointer flex items-center gap-1.5 pt-0.5"
               >
                 <Camera className="w-3.5 h-3.5" />
                 <span>Choose a different photo</span>
@@ -620,7 +705,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
           )}
 
           {/* Action Buttons */}
-          <div className="w-full flex flex-col gap-2.5 pt-3 border-t border-white/10">
+          <div className="w-full flex flex-col gap-2 pt-2 border-t border-white/10 shrink-0">
             {rawImageSrc ? (
               <div className="flex items-center gap-3">
                 <button
@@ -630,7 +715,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                     setRawImageSrc(null);
                   }}
                   disabled={isUploading}
-                  className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-[#CBD5E1] text-xs font-semibold transition-colors cursor-pointer min-h-[44px]"
+                  className="flex-1 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-[#CBD5E1] text-xs font-semibold transition-colors cursor-pointer min-h-[42px]"
                 >
                   Cancel
                 </button>
@@ -639,7 +724,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                   type="button"
                   onClick={handleSavePhoto}
                   disabled={isUploading}
-                  className="flex-2 py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[44px]"
+                  className="flex-[2] py-2.5 rounded-xl bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-bold text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 min-h-[42px]"
                 >
                   {isUploading ? (
                     <>
@@ -660,7 +745,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
                   type="button"
                   onClick={handleRemovePhoto}
                   disabled={isRemoving}
-                  className="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 min-h-[44px]"
+                  className="w-full py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 text-xs font-semibold transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 min-h-[42px]"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                   <span>{isRemoving ? 'Removing Photo...' : 'Remove Photo & Use Initials'}</span>
