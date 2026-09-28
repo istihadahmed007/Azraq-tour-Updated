@@ -10,7 +10,7 @@ import { renderSeoPage } from "./src/lib/serverSeoHtmlRenderer";
 import { requestsStore, UnifiedRequest, UnifiedRequestType, UnifiedRequestStatus, RequestPriority } from "./server/requestsStore";
 import { emailService } from "./server/emailService";
 import { sessionStore } from "./server/sessionStore";
-import sharp from "sharp";
+import sharp, { type Metadata } from "sharp";
 import { travelBuddiesStore } from "./server/travelBuddiesStore";
 import { createTravelBuddiesRouter } from "./server/travelBuddiesRoutes";
 
@@ -5579,6 +5579,17 @@ const travelBuddiesRouter = createTravelBuddiesRouter({
   findUserByEmail: (email: string) => {
     return usersStore.get(email.toLowerCase());
   },
+  updateUserAvatar: (uid: string, avatarUrl: string) => {
+    for (const u of usersStore.values()) {
+      if (u.uid === uid) {
+        u.photoURL = avatarUrl;
+        u.updatedAt = new Date().toISOString();
+        usersStore.set(u.email.toLowerCase(), u);
+        saveUsersToDisk();
+        break;
+      }
+    }
+  },
 });
 app.use("/api/travel-buddies", travelBuddiesRouter);
 
@@ -7730,7 +7741,7 @@ app.post("/api/upload/avatar", requireAuth, async (req, res) => {
     }
 
     // Validate image format and content using sharp
-    let metadata: sharp.Metadata;
+    let metadata: Metadata;
     try {
       metadata = await sharp(imageBuffer).metadata();
     } catch {

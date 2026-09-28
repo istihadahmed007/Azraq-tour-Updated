@@ -32,11 +32,12 @@ export interface UserLookup {
 export interface TravelBuddiesRouteOptions {
   findUserById: (uid: string) => UserLookup | undefined;
   findUserByEmail: (email: string) => UserLookup | undefined;
+  updateUserAvatar?: (uid: string, avatarUrl: string) => void;
 }
 
 export function createTravelBuddiesRouter(options: TravelBuddiesRouteOptions): express.Router {
   const router = express.Router();
-  const { findUserById, findUserByEmail } = options;
+  const { findUserById, findUserByEmail, updateUserAvatar } = options;
 
   const postUploadsDir = path.join(process.cwd(), 'public', 'uploads', 'posts');
   if (!fs.existsSync(postUploadsDir)) {
@@ -305,6 +306,14 @@ export function createTravelBuddiesRouter(options: TravelBuddiesRouteOptions): e
       createdAt: existing.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
+
+    if (typeof avatarUrl === 'string' && updateUserAvatar) {
+      try {
+        updateUserAvatar(caller.uid, avatarUrl.trim());
+      } catch (syncErr) {
+        console.warn('[Community Profile] Avatar sync to account warning:', syncErr);
+      }
+    }
 
     res.json({
       success: true,

@@ -24,6 +24,7 @@ import {
   validateBuddyProfile,
 } from '../../lib/travelBuddyQueries';
 import { useAuth } from '../../context/AuthContext';
+import { UserAvatar } from '../UserAvatar';
 
 interface TravelBuddyProfileEditorProps {
   existingProfile: TravelBuddyProfile | null;
@@ -126,7 +127,7 @@ export const TravelBuddyProfileEditor: React.FC<TravelBuddyProfileEditorProps> =
 
     const payload: Partial<TravelBuddyProfile> = {
       displayName: displayName.trim(),
-      avatarUrl: avatarUrl.trim() || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
+      avatarUrl: avatarUrl.trim() || user?.photoURL || '',
       homeLocation: homeLocation.trim(),
       bio: bio.trim(),
       destinations: selectedDestinations,
@@ -251,20 +252,19 @@ export const TravelBuddyProfileEditor: React.FC<TravelBuddyProfileEditorProps> =
                 Profile Photo URL
               </label>
               <div className="flex items-center gap-3">
-                <img
-                  src={
-                    avatarUrl ||
-                    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
-                  }
-                  alt="Preview"
-                  className="h-10 w-10 shrink-0 rounded-full object-cover border border-slate-200 dark:border-slate-700"
+                <UserAvatar
+                  photoURL={avatarUrl || user?.photoURL}
+                  name={displayName || user?.fullName}
+                  email={user?.email}
+                  size="md"
+                  className="h-10 w-10 shrink-0 rounded-full border border-slate-200 dark:border-slate-700"
                 />
                 <input
                   id="input-buddy-avatar-url"
                   type="url"
                   value={avatarUrl}
                   onChange={(e) => setAvatarUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="https://... (or leave blank to use your Azraq account photo)"
                   className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-xs text-slate-900 focus:border-sky-500 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-500/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 />
               </div>

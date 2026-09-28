@@ -160,6 +160,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   const resolvedMediaUrls: string[] =
     Array.isArray(post.media_urls) && post.media_urls.length > 0
       ? post.media_urls
+      : Array.isArray((post as any).mediaUrls) && (post as any).mediaUrls.length > 0
+      ? (post as any).mediaUrls
       : (post as any).imageUrl
       ? [(post as any).imageUrl]
       : (post as any).image_url

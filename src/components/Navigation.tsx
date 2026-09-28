@@ -133,9 +133,14 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
       return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Keyboard shortcut for Smart Search (Cmd+K / Ctrl+K)
+    // Keyboard shortcut for Smart Search (Cmd+K / Ctrl+K) and Escape to close dropdowns
     useEffect(() => {
       const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setNotifDropdownOpen(false);
+          setUserDropdownOpen(false);
+          setMobileMenuOpen(false);
+        }
         if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
           e.preventDefault();
           handleNavigate('search');
@@ -412,7 +417,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                       setNotifDropdownOpen(!notifDropdownOpen);
                       setUserDropdownOpen(false);
                     }}
-                    className={`relative p-2 sm:p-2.5 rounded-xl border transition-all cursor-pointer shrink-0 ${
+                    className={`relative p-2 sm:p-2.5 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border transition-all cursor-pointer shrink-0 ${
                       notifDropdownOpen
                         ? 'bg-[#17BEBB]/20 text-[#17BEBB] border-[#17BEBB]'
                         : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
@@ -536,7 +541,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                 <button
                   type="button"
                   onClick={() => handleNavigate('planner')}
-                  className="hidden lg:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[#071A33] hover:bg-[#073B4C] transition-all shadow-xs cursor-pointer active:scale-95"
+                  className="hidden lg:inline-flex items-center gap-2 px-4 py-2 min-h-[44px] rounded-xl text-xs font-semibold text-white bg-[#071A33] hover:bg-[#073B4C] transition-all shadow-xs cursor-pointer active:scale-95"
                 >
                   <Sparkles className="w-3.5 h-3.5 text-[#17BEBB]" />
                   <span>Plan a Trip</span>
@@ -552,7 +557,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                         setUserDropdownOpen(!userDropdownOpen);
                         setNotifDropdownOpen(false);
                       }}
-                      className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-xl border transition-all cursor-pointer select-none ${
+                      className={`flex items-center gap-2 pl-1.5 pr-3 py-1 rounded-xl border transition-all cursor-pointer select-none min-h-[44px] ${
                         userDropdownOpen || currentView === 'profile'
                           ? 'bg-[#EAF7F8] text-[#071A33] border-[#17BEBB] font-bold shadow-xs'
                           : 'border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#071A33]'
@@ -637,14 +642,14 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                     <button
                       type="button"
                       onClick={() => openAuthModal('login')}
-                      className="px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-700 hover:text-[#071A33] transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                      className="px-2.5 sm:px-3 py-1.5 min-h-[44px] rounded-xl text-xs font-semibold text-slate-700 hover:text-[#071A33] transition-colors cursor-pointer shrink-0 whitespace-nowrap flex items-center"
                     >
                       Sign In
                     </button>
                     <button
                       type="button"
                       onClick={() => openAuthModal('register')}
-                      className="hidden sm:inline-flex px-3 sm:px-3.5 py-1.5 rounded-xl text-xs font-semibold text-[#071A33] border border-slate-300 hover:border-[#071A33] hover:bg-slate-50 transition-all cursor-pointer shrink-0 whitespace-nowrap"
+                      className="hidden sm:inline-flex items-center px-3 sm:px-3.5 py-1.5 min-h-[44px] rounded-xl text-xs font-semibold text-[#071A33] border border-slate-300 hover:border-[#071A33] hover:bg-slate-50 transition-all cursor-pointer shrink-0 whitespace-nowrap"
                     >
                       Create Account
                     </button>
@@ -655,7 +660,7 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
                 <button
                   type="button"
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                  className="xl:hidden p-2 rounded-xl text-[#071A33] hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                  className="xl:hidden p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#071A33] hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
                   aria-label="Toggle navigation menu"
                 >
                   {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

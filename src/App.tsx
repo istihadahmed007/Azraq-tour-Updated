@@ -600,7 +600,7 @@ function AppContent() {
   return (
     <ClientLayout
       className="min-h-screen text-slate-900 font-sans selection:bg-[#0D6EFD] selection:text-white bg-transparent"
-      mainClassName="w-full min-h-screen flex flex-col transition-all duration-300 pb-16 md:pb-0 relative"
+      mainClassName="w-full min-h-screen flex flex-col transition-all duration-300 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-0 relative"
       navbar={(navRef) => (
         <Navigation
           ref={navRef as React.Ref<HTMLElement>}

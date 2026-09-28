@@ -56,14 +56,27 @@ export const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+  const previousScrollYRef = useRef<number>(0);
 
-  // Prevent background scrolling while modal is open
+  // Prevent background scrolling while modal is open, and restore focus & scroll position on close
   useEffect(() => {
     if (isOpen) {
+      previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+      previousScrollYRef.current = window.scrollY;
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
+
       return () => {
         document.body.style.overflow = originalOverflow;
+        window.scrollTo({ top: previousScrollYRef.current, behavior: 'instant' as ScrollBehavior });
+        if (previousActiveElementRef.current && typeof previousActiveElementRef.current.focus === 'function') {
+          try {
+            previousActiveElementRef.current.focus();
+          } catch {
+            // Ignore focus failures
+          }
+        }
       };
     }
   }, [isOpen]);
@@ -111,10 +124,12 @@ export const PostCommentsModal: React.FC<PostCommentsModalProps> = ({
 
   if (!isOpen || !post) return null;
 
-  // Media URLs extraction
+  // Media URLs extraction (supports both snake_case and camelCase API structures)
   const mediaUrls: string[] =
     Array.isArray(post.media_urls) && post.media_urls.length > 0
       ? post.media_urls
+      : Array.isArray((post as any).mediaUrls) && (post as any).mediaUrls.length > 0
+      ? (post as any).mediaUrls
       : (post as any).imageUrl
       ? [(post as any).imageUrl]
       : (post as any).image_url

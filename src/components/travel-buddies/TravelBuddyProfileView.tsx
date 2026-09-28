@@ -52,7 +52,7 @@ export const TravelBuddyProfileView: React.FC<TravelBuddyProfileViewProps> = ({
   onStartChat,
   onClose,
 }) => {
-  const { user, isGuest, openAuthModal, showToast } = useAuth();
+  const { user, isGuest, openAuthModal, showToast, updateUserProfile } = useAuth();
   const isMe = !userId || (user && user.uid === userId);
 
   const [profile, setProfile] = useState<ApiProfile | null>(null);
@@ -98,10 +98,19 @@ export const TravelBuddyProfileView: React.FC<TravelBuddyProfileViewProps> = ({
         // Load user's posts
         const postRes = await apiGetPosts({ authorId: res.profile.userId });
         setPosts(postRes.posts || []);
-        // Load user's trips
+        // Load user's trips with stable record ID deduplication
         const allTrips = await apiGetTrips();
-        const userTrips = allTrips.filter(
-          (t) => t.organizerId === res.profile!.userId || t.approvedTravelers.some((p) => p.userId === res.profile!.userId)
+        const userTrips = Array.from(
+          new Map(
+            allTrips
+              .filter(
+                (t) =>
+                  Boolean(t && t.id) &&
+                  (t.organizerId === res.profile!.userId ||
+                    t.approvedTravelers.some((p) => p.userId === res.profile!.userId))
+              )
+              .map((t) => [t.id, t])
+          ).values()
         );
         setTrips(userTrips);
 
@@ -188,19 +197,37 @@ export const TravelBuddyProfileView: React.FC<TravelBuddyProfileViewProps> = ({
         reader.readAsDataURL(file);
       });
 
-      const res = await apiUploadPostMedia(dataUrl);
-      if (res.success && res.url) {
-        if (target === 'avatar') {
-          setEditAvatarUrl(res.url);
-        } else {
-          setEditCoverUrl(res.url);
+      let finalUrl = '';
+      if (target === 'avatar') {
+        const token = localStorage.getItem('azraq_tours_session_token') || '';
+        const uploadRes = await fetch('/api/upload/avatar', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ file: dataUrl }),
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok || !uploadData.success) {
+          throw new Error(uploadData.error || 'Failed to update avatar photo');
         }
-        showToast(`${target === 'avatar' ? 'Profile picture' : 'Cover image'} optimized & updated!`, 'success');
+        finalUrl = uploadData.photoURL || uploadData.url || uploadData.secure_url;
+        setEditAvatarUrl(finalUrl);
+        if (updateUserProfile) {
+          await updateUserProfile({ photoURL: finalUrl });
+        }
       } else {
-        showToast(res.error || 'Upload failed', 'error');
+        const res = await apiUploadPostMedia(dataUrl);
+        if (!res.success || !res.url) {
+          throw new Error(res.error || 'Upload failed');
+        }
+        finalUrl = res.url;
+        setEditCoverUrl(finalUrl);
       }
-    } catch {
-      showToast('Image processing failed', 'error');
+      showToast(`${target === 'avatar' ? 'Profile picture' : 'Cover image'} updated successfully!`, 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Image processing failed', 'error');
     }
   };
 

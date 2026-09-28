@@ -147,7 +147,11 @@ export const TravelBuddiesFeed: React.FC<TravelBuddiesFeedProps> = ({
         incoming = incoming.filter((p) => p.is_saved);
       }
 
-      setPosts((prev) => [...prev, ...incoming]);
+      setPosts((prev) => {
+        const existingIds = new Set(prev.map((p) => p.id));
+        const newItems = incoming.filter((p) => !existingIds.has(p.id));
+        return [...prev, ...newItems];
+      });
       setNextCursor(res.nextCursor);
     } catch (err) {
       console.warn('Infinite scroll error:', err);

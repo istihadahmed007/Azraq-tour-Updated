@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TourPackage } from '../types';
 import { usePackages } from '../context/PackageContext';
+import { useAuth } from '../context/AuthContext';
 import { getVisaFeeForDestination } from '../data/visaRequirementsData';
 import { X, Send, MapPin, Calendar, Users, FileText, CheckCircle2, ShieldCheck } from 'lucide-react';
 
@@ -11,15 +12,24 @@ interface PackageQuotationModalProps {
 
 export const PackageQuotationModal: React.FC<PackageQuotationModalProps> = ({ pkg, onClose }) => {
   const { submitPackageQuote } = usePackages();
+  const { user } = useAuth();
 
-  const [customerName, setCustomerName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [customerName, setCustomerName] = useState(user?.fullName || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '');
   const [travelDate, setTravelDate] = useState('');
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
   const [specialRequirements, setSpecialRequirements] = useState('');
   const [message, setMessage] = useState('');
+
+  React.useEffect(() => {
+    if (user) {
+      if (user.fullName && !customerName) setCustomerName(user.fullName);
+      if (user.email && !email) setEmail(user.email);
+      if (user.phone && !phone) setPhone(user.phone);
+    }
+  }, [user]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);

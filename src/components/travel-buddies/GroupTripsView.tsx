@@ -88,7 +88,9 @@ export const GroupTripsView: React.FC<GroupTripsViewProps> = ({ onNavigateToUser
         maxBudget: maxBudget ? parseFloat(maxBudget) : undefined,
         upcomingOnly: true,
       });
-      setTrips(data);
+      // Deduplicate trips by stable record ID while preserving genuinely separate trips
+      const uniqueTrips = Array.from(new Map(data.filter((t) => Boolean(t && t.id)).map((t) => [t.id, t])).values());
+      setTrips(uniqueTrips);
     } catch {
       setTrips([]);
     } finally {

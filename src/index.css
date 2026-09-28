@@ -553,3 +553,59 @@
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
+/* ========================================================================= */
+/* ACCESSIBILITY & PRODUCTION HARDENING                                      */
+/* ========================================================================= */
+
+/* Accessible high-contrast keyboard focus indicators */
+:focus-visible {
+  outline: 2px solid #17BEBB;
+  outline-offset: 2px;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #17BEBB;
+  outline-offset: 2px;
+}
+
+/* Respect user's reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .sky-natural-bg {
+    animation: none !important;
+  }
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(1px)) {
+  .ocean-card,
+  .glass-panel,
+  .glass-card {
+    background-color: #FFFFFF !important;
+  }
+  .glass-section,
+  .glass-section-subtle {
+    background-color: #FAF8F5 !important;
+  }
+  .bg-soft-aqua {
+    background-color: #EAF7F8 !important;
+  }
+}
+
+/* Strict mobile horizontal overflow prevention */
+html, body, #root {
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
