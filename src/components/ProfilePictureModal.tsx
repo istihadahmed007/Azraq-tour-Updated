@@ -176,22 +176,22 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
         throw new Error(data.error || 'Failed to upload profile picture.');
       }
 
-      setUploadProgress(85);
+      setUploadProgress(90);
       const newPhotoURL = data.url || data.secure_url || data.photoURL;
 
-      // 3. Update Firebase Auth user profile if currentUser exists
+      // 3. Update Firebase Auth user profile if currentUser exists (non-blocking)
       if (auth.currentUser) {
         try {
-          await updateProfile(auth.currentUser, {
+          updateProfile(auth.currentUser, {
             photoURL: newPhotoURL,
-          });
+          }).catch((authErr) => console.warn('Firebase Auth updateProfile notice:', authErr));
         } catch (authErr) {
           console.warn('Firebase Auth updateProfile notice:', authErr);
         }
       }
 
       // 4. Update Travel Buddy Profile & User doc in Firestore (background safe)
-      if (db && user.uid) {
+      if (db && user.uid && auth.currentUser) {
         try {
           const buddyRef = doc(db, 'travel_buddies_profiles', user.uid);
           updateDoc(buddyRef, {
@@ -208,14 +208,18 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
         photoURL: newPhotoURL,
       });
 
+      setPreviewUrl(newPhotoURL);
       setUploadProgress(100);
       showToast('Profile picture updated successfully! ✨', 'success');
 
       if (onSuccess) onSuccess(newPhotoURL);
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 400);
     } catch (err: any) {
       console.error('Failed to update profile picture:', err);
       showToast(err?.message || 'Failed to upload profile photo.', 'error');
+      setUploadProgress(0);
     } finally {
       setIsUploading(false);
     }

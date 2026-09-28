@@ -7737,24 +7737,29 @@ app.post("/api/upload/avatar", requireAuth, async (req, res) => {
 
     let finalUrl = "";
 
-    // 1. Try Cloudinary if API secret is configured
+    // 1. Try Cloudinary if API secret is configured (max 4s timeout)
     if (process.env.CLOUDINARY_API_SECRET) {
       try {
         const cld = getCloudinary();
         const base64ForCld = `data:image/jpeg;base64,${optimizedBuffer.toString("base64")}`;
-        const result = await cld.uploader.upload(base64ForCld, {
-          folder: "azraq_avatars",
-          public_id: `avatar_${authUser.uid}`,
-          resource_type: "image",
-          overwrite: true,
-          invalidate: true,
-          transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
-        });
+        const result = await Promise.race([
+          cld.uploader.upload(base64ForCld, {
+            folder: "azraq_avatars",
+            public_id: `avatar_${authUser.uid}`,
+            resource_type: "image",
+            overwrite: true,
+            invalidate: true,
+            transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
+          }),
+          new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error("Cloudinary upload timed out after 4s")), 4000)
+          ),
+        ]);
         if (result && result.secure_url) {
           finalUrl = result.secure_url;
         }
       } catch (cldErr: any) {
-        console.warn("[Avatar Upload] Cloudinary error, falling back to local file storage:", cldErr?.message || cldErr);
+        console.warn("[Avatar Upload] Cloudinary error or timeout, falling back to local file storage:", cldErr?.message || cldErr);
       }
     }
 

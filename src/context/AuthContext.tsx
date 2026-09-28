@@ -902,9 +902,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) {
       const updatedUser = { ...user, emailVerified: true };
       saveUserSession(updatedUser);
-      try {
-        await updateDoc(doc(db, 'users', user.uid), { emailVerified: true });
-      } catch {}
+      if (db && user.uid && auth.currentUser) {
+        updateDoc(doc(db, 'users', user.uid), { emailVerified: true }).catch(() => {});
+      }
     }
     setIsLoading(false);
     showToast('Email verified successfully! 🎉', 'success');
@@ -923,7 +923,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     details: Partial<User>
   ): Promise<{ success: boolean; message?: string; error?: string }> => {
     try {
-      setIsLoading(true);
       if (!user) throw new Error('No active user session');
 
       const updatedUser: User = {
@@ -932,14 +931,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatedAt: new Date().toISOString(),
       };
 
-      // Save to Firestore
-      try {
-        await updateDoc(doc(db, 'users', user.uid), details);
-      } catch (fsErr) {
-        console.warn('Firestore profile update notice:', fsErr);
+      // 1. Immediately update in-memory state and localStorage so UI responds instantaneously
+      saveUserSession(updatedUser);
+
+      // 2. Non-blocking Firestore sync (only if Firebase user session exists)
+      if (db && user.uid && auth.currentUser) {
+        updateDoc(doc(db, 'users', user.uid), details).catch((fsErr) => {
+          console.warn('Firestore profile update notice (non-fatal):', fsErr);
+        });
       }
 
-      // Safe sync to backend API with genuine session Authorization header
+      // 3. Safe sync to backend API with genuine session Authorization header (with 5s timeout)
       const token = localStorage.getItem(TOKEN_STORAGE_KEY) || authService.getSessionToken();
       const authHeaders: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -948,16 +950,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         authHeaders['Authorization'] = `Bearer ${token}`;
       }
 
-      await safeFetchJson('/api/auth/update-profile', {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({
-          email: user.email,
-          ...details,
-        }),
-      }).catch((err) => console.warn('Backend update-profile notice:', err));
+      safeFetchJson(
+        '/api/auth/update-profile',
+        {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({
+            email: user.email,
+            ...details,
+          }),
+        },
+        5000
+      ).catch((err) => console.warn('Backend update-profile notice:', err));
 
-      saveUserSession(updatedUser);
       setIsLoading(false);
       showToast('Profile updated successfully!', 'success');
       return { success: true, message: 'Profile updated' };
