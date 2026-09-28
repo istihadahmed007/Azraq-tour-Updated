@@ -14,6 +14,7 @@ import {
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { authService } from '../services/authService';
 
 interface AuthContextType {
   user: User | null;
@@ -155,8 +156,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newUser));
         if (token) {
           localStorage.setItem(TOKEN_STORAGE_KEY, token);
+          authService.setSessionToken(token);
         } else if (!localStorage.getItem(TOKEN_STORAGE_KEY)) {
-          localStorage.setItem(TOKEN_STORAGE_KEY, `token_${newUser.uid}_${Date.now()}`);
+          const generatedToken = `token_${newUser.uid}_${Date.now()}`;
+          localStorage.setItem(TOKEN_STORAGE_KEY, generatedToken);
+          authService.setSessionToken(generatedToken);
         }
         // Cache user profile for offline/standalone resilience
         const existingUsers = JSON.parse(localStorage.getItem(LOCAL_USERS_KEY) || '{}');
@@ -165,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } else {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
         localStorage.removeItem(TOKEN_STORAGE_KEY);
+        authService.clearSession();
       }
     } catch (e) {
       console.warn('Failed to persist user session:', e);
@@ -934,15 +939,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.warn('Firestore profile update notice:', fsErr);
       }
 
-      // Safe sync to backend API
-      safeFetchJson('/api/auth/update-profile', {
+      // Safe sync to backend API with genuine session Authorization header
+      const token = localStorage.getItem(TOKEN_STORAGE_KEY) || authService.getSessionToken();
+      const authHeaders: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (token) {
+        authHeaders['Authorization'] = `Bearer ${token}`;
+      }
+
+      await safeFetchJson('/api/auth/update-profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: authHeaders,
         body: JSON.stringify({
           email: user.email,
           ...details,
         }),
-      }).catch(() => {});
+      }).catch((err) => console.warn('Backend update-profile notice:', err));
 
       saveUserSession(updatedUser);
       setIsLoading(false);

@@ -13,19 +13,47 @@ export const ContactView: React.FC = () => {
   const [message, setMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submittedRequestId, setSubmittedRequestId] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone || !message) {
+    if (!name.trim() || !phone.trim() || !message.trim()) {
       showToast('Please fill in your name, contact phone, and message.', 'error');
       return;
     }
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      const res = await fetch('/api/requests/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          requestType: 'custom',
+          customerName: name.trim(),
+          customerEmail: email.trim(),
+          customerPhone: phone.trim(),
+          subject: subject,
+          message: message.trim(),
+          metadata: {
+            channel: 'contact_view_page',
+            category: subject,
+          },
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to submit inquiry. Please try again.');
+      }
+
+      setSubmittedRequestId(data.request?.request_id || null);
       setSubmitted(true);
-      showToast('Message sent successfully! Our team will contact you shortly.', 'success');
-    }, 600);
+      showToast('Inquiry submitted successfully! Our team will contact you shortly.', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Unable to submit your inquiry right now. Please reach out via WhatsApp.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -56,21 +84,38 @@ export const ContactView: React.FC = () => {
         <section aria-labelledby="inquiry-form-heading" className="lg:col-span-7 bg-white/75 backdrop-blur-xl rounded-2xl border border-white/60 p-6 sm:p-8 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
           <h2 id="inquiry-form-heading" className="sr-only">Send an Inquiry</h2>
           {submitted ? (
-            <div className="py-12 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto" aria-hidden="true">
+            <div className="py-10 text-center space-y-5">
+              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto shadow-inner" aria-hidden="true">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h2 className="text-2xl font-bold text-[#071A33]">Message Sent!</h2>
-              <p className="text-sm text-slate-600 max-w-md mx-auto">
-                Thank you for contacting us, {name}. A dedicated travel specialist from Azraq will respond to your request via phone/WhatsApp within 2 hours.
-              </p>
-              <button
-                type="button"
-                onClick={() => setSubmitted(false)}
-                className="mt-4 px-6 py-2.5 rounded-xl bg-[#0D6EFD] text-white font-bold text-sm hover:bg-blue-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[#0D6EFD] focus-visible:outline-none"
-              >
-                Send Another Inquiry
-              </button>
+              <div className="space-y-1">
+                <h2 className="text-2xl font-bold text-[#071A33]">Inquiry Submitted!</h2>
+                <p className="text-sm text-slate-600 max-w-md mx-auto">
+                  Thank you for contacting us, <span className="font-semibold text-slate-900">{name}</span>. A dedicated travel specialist from Azraq will respond to your request via Phone/WhatsApp within 2 hours.
+                </p>
+              </div>
+
+              {submittedRequestId && (
+                <div className="inline-block bg-blue-50/80 border border-blue-200/80 rounded-xl px-5 py-3 text-left">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-[#0D6EFD]">Reference Tracking ID</p>
+                  <p className="text-lg font-mono font-bold text-[#071A33] mt-0.5">{submittedRequestId}</p>
+                  <p className="text-xs text-slate-500 mt-1">Please quote this ID when contacting support or checking status.</p>
+                </div>
+              )}
+
+              <div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSubmitted(false);
+                    setMessage('');
+                    setSubmittedRequestId(null);
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-[#0D6EFD] text-white font-bold text-sm hover:bg-blue-700 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[#0D6EFD] focus-visible:outline-none"
+                >
+                  Send Another Inquiry
+                </button>
+              </div>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4" aria-label="Customer Travel Inquiry Form">

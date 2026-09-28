@@ -287,6 +287,11 @@ export class TravelBuddiesStore {
           p.travelStyles.some((s) => s.toLowerCase().includes(q))
       );
     }
+    profiles.sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.createdAt || 0).getTime();
+      const timeB = new Date(b.updatedAt || b.createdAt || 0).getTime();
+      return timeB - timeA;
+    });
     return profiles.slice(0, limit);
   }
 

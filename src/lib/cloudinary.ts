@@ -122,11 +122,16 @@ export async function uploadToCloudinary(
     const timeoutId = setTimeout(() => controller.abort(), 6000);
 
     try {
+      const token = typeof window !== 'undefined'
+        ? (localStorage.getItem('azraq_auth_session_token') || localStorage.getItem('azraq_tours_session_token'))
+        : null;
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
       const response = await fetch('/api/cloudinary/upload', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         signal: controller.signal,
         body: JSON.stringify({
           file: base64Data,

@@ -1384,8 +1384,23 @@ app.post("/api/auth/update-profile", requireAuth, (req, res) => {
     user.updatedAt = new Date().toISOString();
     user.isProfileComplete = true;
 
-    usersStore.set(user.email, user);
+    usersStore.set(user.email.toLowerCase(), user);
     saveUsersToDisk();
+
+    // Sync to Travel Buddies social community profile if present
+    try {
+      const buddy = travelBuddiesStore.getProfile(user.uid);
+      if (buddy) {
+        travelBuddiesStore.upsertProfile({
+          ...buddy,
+          displayName: user.fullName || buddy.displayName,
+          avatarUrl: user.photoURL !== undefined ? user.photoURL : buddy.avatarUrl,
+          homeCity: user.homeLocation || buddy.homeCity,
+          bio: user.bio || buddy.bio,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } catch {}
 
     res.json({ message: "Profile updated successfully!", user: sanitizeUserPayload(user) });
   } catch (err: any) {
@@ -4302,20 +4317,25 @@ app.post("/api/requests/create", async (req, res) => {
       assignedTo,
     } = req.body;
 
-    if (!customerName || !customerEmail || !customerPhone) {
+    if (!customerName || !customerPhone) {
       return res.status(400).json({
         success: false,
-        error: "Please provide your Full Name, Email address, and Phone / WhatsApp number.",
+        error: "Please provide your Full Name and Phone / WhatsApp number.",
       });
     }
 
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(customerEmail.trim())) {
-      return res.status(400).json({
-        success: false,
-        error: "Please enter a valid email address.",
-      });
+    let finalEmail = (customerEmail || "").trim();
+    if (finalEmail) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(finalEmail)) {
+        return res.status(400).json({
+          success: false,
+          error: "Please enter a valid email address.",
+        });
+      }
+    } else {
+      const cleanDigits = String(customerPhone).replace(/\D/g, "");
+      finalEmail = `${cleanDigits || 'guest'}@guest.azraqtrips.com`;
     }
 
     const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() || req.socket.remoteAddress;
@@ -4326,7 +4346,7 @@ app.post("/api/requests/create", async (req, res) => {
         userId,
         requestType: (requestType as UnifiedRequestType) || "custom",
         customerName: customerName.trim(),
-        customerEmail: customerEmail.trim(),
+        customerEmail: finalEmail,
         customerPhone: customerPhone.trim(),
         subject,
         destination,
@@ -7646,26 +7666,83 @@ app.get("/api/cloudinary/config", (req, res) => {
 
 // 2. Upload Image or Video to Cloudinary with local storage fallback
 
-// Authenticated User Avatar Upload Endpoint (5MB size limit & image validation)
+// Authenticated User Avatar Upload Endpoint (Image validation, sharp optimization & persistent profile sync)
 app.post("/api/upload/avatar", requireAuth, async (req, res) => {
   try {
-    const { file, image } = req.body;
-    const mediaSource = file || image;
-    if (!mediaSource) {
-      return res.status(400).json({ error: "Missing image payload." });
-    }
-
-    // Size limit check (approx 5MB base64 is ~7MB string)
-    if (typeof mediaSource === "string" && mediaSource.length > 7 * 1024 * 1024) {
-      return res.status(400).json({ error: "Avatar image exceeds maximum allowed size of 5MB." });
-    }
-
     const authUser = (req as any).user as ServerUser;
+    const { file, image, avatar, remove } = req.body;
 
+    // Handle photo removal
+    if (remove === true) {
+      const userRecord = usersStore.get(authUser.email.toLowerCase());
+      if (userRecord) {
+        userRecord.photoURL = "";
+        userRecord.updatedAt = new Date().toISOString();
+        usersStore.set(userRecord.email.toLowerCase(), userRecord);
+        saveUsersToDisk();
+      }
+      try {
+        const buddy = travelBuddiesStore.getProfile(authUser.uid);
+        if (buddy) {
+          travelBuddiesStore.upsertProfile({
+            ...buddy,
+            avatarUrl: "",
+            updatedAt: new Date().toISOString(),
+          });
+        }
+      } catch {}
+      return res.json({
+        success: true,
+        url: "",
+        secure_url: "",
+        photoURL: "",
+        message: "Profile photo removed successfully.",
+        user: userRecord ? sanitizeUserPayload(userRecord) : undefined,
+      });
+    }
+
+    const mediaSource = file || image || avatar;
+    if (!mediaSource || typeof mediaSource !== "string") {
+      return res.status(400).json({ success: false, error: "Missing image payload." });
+    }
+
+    // Size limit check (approx 15MB base64 is ~20MB string)
+    if (mediaSource.length > 20 * 1024 * 1024) {
+      return res.status(400).json({ success: false, error: "Avatar image exceeds maximum allowed size of 15MB." });
+    }
+
+    // Process image buffer using sharp for face/center crop and privacy metadata stripping
+    let imageBuffer: Buffer;
+    if (mediaSource.startsWith("data:")) {
+      const matches = mediaSource.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      if (!matches || matches.length !== 3) {
+        return res.status(400).json({ success: false, error: "Invalid image format. Expected base64 data URL." });
+      }
+      imageBuffer = Buffer.from(matches[2], "base64");
+    } else {
+      imageBuffer = Buffer.from(mediaSource, "base64");
+    }
+
+    let optimizedBuffer: Buffer;
+    try {
+      optimizedBuffer = await sharp(imageBuffer)
+        .rotate()
+        .resize(400, 400, { fit: "cover", position: "center" })
+        .jpeg({ quality: 88, progressive: true })
+        .toBuffer();
+    } catch (sharpErr) {
+      console.warn("[Avatar Sharp Notice]:", sharpErr);
+      optimizedBuffer = imageBuffer;
+    }
+
+    let finalUrl = "";
+
+    // 1. Try Cloudinary if API secret is configured
     if (process.env.CLOUDINARY_API_SECRET) {
       try {
         const cld = getCloudinary();
-        const result = await cld.uploader.upload(mediaSource, {
+        const base64ForCld = `data:image/jpeg;base64,${optimizedBuffer.toString("base64")}`;
+        const result = await cld.uploader.upload(base64ForCld, {
           folder: "azraq_avatars",
           public_id: `avatar_${authUser.uid}`,
           resource_type: "image",
@@ -7673,27 +7750,93 @@ app.post("/api/upload/avatar", requireAuth, async (req, res) => {
           invalidate: true,
           transformation: [{ width: 400, height: 400, crop: "fill", gravity: "face" }],
         });
-        return res.json({ success: true, secure_url: result.secure_url, url: result.secure_url });
+        if (result && result.secure_url) {
+          finalUrl = result.secure_url;
+        }
       } catch (cldErr: any) {
-        console.warn("[Avatar Upload] Cloudinary error, falling back to local storage:", cldErr);
+        console.warn("[Avatar Upload] Cloudinary error, falling back to local file storage:", cldErr?.message || cldErr);
       }
     }
 
-    // Fallback: save to public/uploads
-    if (typeof mediaSource === "string" && mediaSource.startsWith("data:image/")) {
-      const parts = mediaSource.split(";base64,");
-      const ext = parts[0].split("/")[1] || "png";
-      const filename = `avatar_${authUser.uid}_${Date.now()}.${ext}`;
+    // 2. Fallback: Save to public/uploads
+    if (!finalUrl) {
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const filename = `avatar_${authUser.uid}_${Date.now()}.jpg`;
       const diskPath = path.join(uploadsDir, filename);
-      fs.writeFileSync(diskPath, Buffer.from(parts[1], "base64"));
-      const localUrl = `/uploads/${filename}`;
-      return res.json({ success: true, secure_url: localUrl, url: localUrl });
+      fs.writeFileSync(diskPath, optimizedBuffer);
+      finalUrl = `/uploads/${filename}`;
     }
 
-    res.json({ success: true, secure_url: mediaSource, url: mediaSource });
+    // 3. PERSIST to usersStore & save to disk
+    const userRecord = usersStore.get(authUser.email.toLowerCase());
+    if (userRecord) {
+      userRecord.photoURL = finalUrl;
+      userRecord.updatedAt = new Date().toISOString();
+      usersStore.set(userRecord.email.toLowerCase(), userRecord);
+      saveUsersToDisk();
+    }
+
+    // 4. Sync to Travel Buddies social community profile
+    try {
+      const buddy = travelBuddiesStore.getProfile(authUser.uid);
+      if (buddy) {
+        travelBuddiesStore.upsertProfile({
+          ...buddy,
+          avatarUrl: finalUrl,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } catch (buddyErr) {
+      console.warn("[Avatar Upload] Travel buddies sync notice:", buddyErr);
+    }
+
+    return res.json({
+      success: true,
+      url: finalUrl,
+      secure_url: finalUrl,
+      photoURL: finalUrl,
+      user: userRecord ? sanitizeUserPayload(userRecord) : undefined,
+    });
   } catch (err: any) {
     console.error("Avatar Upload Error:", err);
-    res.status(500).json({ error: "Failed to upload avatar image." });
+    res.status(500).json({ success: false, error: "Failed to upload avatar image: " + (err?.message || "Server error") });
+  }
+});
+
+// Authenticated User Avatar Removal Endpoint
+app.delete("/api/upload/avatar", requireAuth, (req, res) => {
+  try {
+    const authUser = (req as any).user as ServerUser;
+    const userRecord = usersStore.get(authUser.email.toLowerCase());
+    if (userRecord) {
+      userRecord.photoURL = "";
+      userRecord.updatedAt = new Date().toISOString();
+      usersStore.set(userRecord.email.toLowerCase(), userRecord);
+      saveUsersToDisk();
+    }
+    try {
+      const buddy = travelBuddiesStore.getProfile(authUser.uid);
+      if (buddy) {
+        travelBuddiesStore.upsertProfile({
+          ...buddy,
+          avatarUrl: "",
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } catch {}
+    res.json({
+      success: true,
+      url: "",
+      secure_url: "",
+      photoURL: "",
+      message: "Profile photo removed.",
+      user: userRecord ? sanitizeUserPayload(userRecord) : undefined,
+    });
+  } catch (err: any) {
+    console.error("Avatar Delete Error:", err);
+    res.status(500).json({ success: false, error: "Failed to remove avatar." });
   }
 });
 

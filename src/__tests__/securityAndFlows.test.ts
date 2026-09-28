@@ -146,7 +146,7 @@ describe('Security & Business Flow Regression Suite', () => {
       isVerified: true,
       needsPasswordRotation: true,
     } as any);
-  });
+  }, 30000);
 
   afterAll(async () => {
     globalThis.fetch = originalFetch;

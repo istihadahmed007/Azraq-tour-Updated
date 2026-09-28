@@ -56,20 +56,27 @@ export const authService = {
   setSessionToken(token: string, persist = true) {
     if (persist) {
       localStorage.setItem(AUTH_TOKEN_KEY, token);
+      localStorage.setItem('azraq_tours_session_token', token);
     } else {
       sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+      localStorage.setItem('azraq_tours_session_token', token);
     }
   },
 
   // Get active session token
   getSessionToken(): string | null {
-    return localStorage.getItem(AUTH_TOKEN_KEY) || sessionStorage.getItem(AUTH_TOKEN_KEY);
+    return (
+      localStorage.getItem(AUTH_TOKEN_KEY) ||
+      sessionStorage.getItem(AUTH_TOKEN_KEY) ||
+      localStorage.getItem('azraq_tours_session_token')
+    );
   },
 
   // Clear session
   clearSession() {
     localStorage.removeItem(AUTH_TOKEN_KEY);
     sessionStorage.removeItem(AUTH_TOKEN_KEY);
+    localStorage.removeItem('azraq_tours_session_token');
     localStorage.removeItem(AUTH_USER_KEY);
   },
 

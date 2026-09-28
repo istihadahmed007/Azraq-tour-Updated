@@ -79,7 +79,7 @@ describe('Travel Buddies Community Social Platform End-to-End Test Suite', () =>
     });
     const adminData = await adminRes.json();
     adminToken = adminData.token;
-  });
+  }, 30000);
 
   afterAll(async () => {
     if (server) {

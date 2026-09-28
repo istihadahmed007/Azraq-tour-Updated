@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { uploadToCloudinary } from '../lib/cloudinary';
+import { authService } from '../services/authService';
 import { db, auth } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { updateProfile } from 'firebase/auth';
@@ -10,16 +10,62 @@ import {
   Camera,
   Trash2,
   CheckCircle2,
-  Sparkles,
   RefreshCw,
-  Image as ImageIcon,
-  User as UserIcon,
 } from 'lucide-react';
 
 interface ProfilePictureModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (newPhotoURL: string | null) => void;
+}
+
+/**
+ * Pre-processes an image file on the client using HTML5 Canvas.
+ * Caps dimension at 800px and produces an optimized JPEG Data URL (~80-120KB).
+ * This ensures lightning-fast uploads without browser or network timeouts.
+ */
+async function prepareAvatarDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Failed to read image file.'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('The selected file could not be decoded as an image.'));
+      img.onload = () => {
+        try {
+          const MAX_DIM = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.max(width, 1);
+          canvas.height = Math.max(height, 1);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            return resolve(reader.result as string);
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/jpeg', 0.9);
+          resolve(compressed);
+        } catch {
+          resolve(reader.result as string);
+        }
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
@@ -35,6 +81,14 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
   const [isRemoving, setIsRemoving] = useState<boolean>(false);
   const [dragActive, setDragActive] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setPreviewUrl(user?.photoURL || null);
+      setSelectedFile(null);
+      setUploadProgress(0);
+    }
+  }, [isOpen, user?.photoURL]);
 
   if (!isOpen) return null;
 
@@ -93,19 +147,39 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
       return;
     }
 
+    const token = authService.getSessionToken() || localStorage.getItem('azraq_tours_session_token');
+    if (!token) {
+      showToast('Authentication session expired. Please sign in again.', 'error');
+      return;
+    }
+
     setIsUploading(true);
-    setUploadProgress(15);
+    setUploadProgress(20);
 
     try {
-      // 1. Upload to Cloudinary / permanent media endpoint
-      const uploadRes = await uploadToCloudinary(selectedFile, (p) => {
-        setUploadProgress(Math.min(90, Math.round(p * 0.85) + 10));
+      // 1. Client-side canvas preprocessing (downscale & compress)
+      const dataUrl = await prepareAvatarDataUrl(selectedFile);
+      setUploadProgress(50);
+
+      // 2. Direct upload to authenticated /api/upload/avatar endpoint
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ file: dataUrl }),
       });
 
-      const newPhotoURL = uploadRes.secure_url;
-      setUploadProgress(95);
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to upload profile picture.');
+      }
 
-      // 2. Update Firebase Auth user profile if currentUser exists
+      setUploadProgress(85);
+      const newPhotoURL = data.url || data.secure_url || data.photoURL;
+
+      // 3. Update Firebase Auth user profile if currentUser exists
       if (auth.currentUser) {
         try {
           await updateProfile(auth.currentUser, {
@@ -116,7 +190,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
         }
       }
 
-      // 3. Update Travel Buddy Profile in Firestore (background safe)
+      // 4. Update Travel Buddy Profile & User doc in Firestore (background safe)
       if (db && user.uid) {
         try {
           const buddyRef = doc(db, 'travel_buddies_profiles', user.uid);
@@ -129,7 +203,7 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
         }
       }
 
-      // 4. Update AuthContext, Firestore user doc, and local session
+      // 5. Update AuthContext, state, and local session
       await updateUserProfile({
         photoURL: newPhotoURL,
       });
@@ -155,9 +229,15 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
 
     setIsRemoving(true);
     try {
-      const defaultSeed = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
-        user.fullName || user.email || 'traveler'
-      )}`;
+      const token = authService.getSessionToken() || localStorage.getItem('azraq_tours_session_token');
+      if (token) {
+        await fetch('/api/upload/avatar', {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch(() => {});
+      }
 
       // Update Firebase Auth user
       if (auth.currentUser) {
@@ -168,18 +248,18 @@ export const ProfilePictureModal: React.FC<ProfilePictureModalProps> = ({
         } catch {}
       }
 
-      // Update Travel Buddy Profile
+      // Update Travel Buddy Profile in Firestore
       try {
         if (db && user.uid) {
           const buddyRef = doc(db, 'travel_buddies_profiles', user.uid);
           await updateDoc(buddyRef, {
-            avatarUrl: defaultSeed,
+            avatarUrl: '',
             updatedAt: new Date().toISOString(),
           });
         }
       } catch {}
 
-      // Update user state
+      // Update AuthContext state
       await updateUserProfile({
         photoURL: '',
       });
