@@ -8975,7 +8975,12 @@ app.get("/google8c244b3abfc7b998.html", (req, res) => {
 });
 
 app.get(["/travelpayouts.txt", "/.well-known/travelpayouts.txt", "/tp.txt"], (req, res) => {
-  res.type("text/plain").send("565363");
+  const tpPath = path.join(process.cwd(), "public", "travelpayouts.txt");
+  if (fs.existsSync(tpPath)) {
+    res.type("text/plain").sendFile(tpPath);
+  } else {
+    res.type("text/plain").send("566378\n565363\n565709\n765415");
+  }
 });
 
 app.get("/robots.txt", (req, res) => {

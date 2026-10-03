@@ -5,10 +5,10 @@
 - **Flight Engine**: `https://flights.azraqtrips.com/` (Travelpayouts White Label Engine & Aviasales)
 - **Travelpayouts Configuration & Project Reconciliation**:
   - Global Affiliate Marker: `765415` (affiliate marker for all partner revenue attribution)
-  - Main Platform Domain (`azraqtrips.com`): TRS / Project ID `565363` (canonical script `https://tpembars.com/NTY1MzYz.js?t=565363`)
+  - Main Platform Domain (`azraqtrips.com`): TRS / Flight Partner Attribution ID `565363`, Affiliate Marker `765415`
+  - Travelpayouts Drive Integration: Project ID `566378` (canonical script `https://tpembars.com/NTY2Mzc4.js?t=566378` placed at head top)
   - Flight Engine Subdomain (`flights.azraqtrips.com`): White Label Project ID `565349` (injected via `[:embed_script:]`)
-  - Emerald / MoneyScript Widget: `566378` (domain verification retained)
-  - Deprecated Duplicate Script: `565709` (purged from active runtime loading)
+  - Verification & Tokens: IDs `566378`, `565363`, `565709`, `765415` in `travelpayouts.txt` and meta tags
   - Flight Engine Subdomain: `https://flights.azraqtrips.com/`
   - Direct Booking Gateway: `https://www.aviasales.com/`
 
