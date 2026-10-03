@@ -8950,6 +8950,14 @@ app.get(["/flights", "/flight", "/flights/", "/flight/", "/flights/*", "/flight/
 // 301 Permanent Redirects for non-www and trailing slashes
 app.use((req, res, next) => {
   const host = req.headers.host || "";
+  if (
+    req.path === "/travelpayouts.txt" ||
+    req.path === "/.well-known/travelpayouts.txt" ||
+    req.path === "/tp.txt"
+  ) {
+    return next();
+  }
+
   if (host === "azraqtrips.com") {
     return res.redirect(301, `https://www.azraqtrips.com${req.originalUrl}`);
   }
