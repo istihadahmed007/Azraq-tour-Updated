@@ -79,10 +79,10 @@ export const SavedDestinationsTab: React.FC<SavedDestinationsTabProps> = ({
           {savedDestinations.map((dest) => (
             <div
               key={dest.id}
-              className="rounded-2xl border border-white/10 bg-[#0F2339]/90 shadow-md overflow-hidden hover:border-[#2563EB]/50 transition-all flex flex-col justify-between group"
+              className="rounded-none border border-white/10 bg-[#0F2339]/90 shadow-md overflow-hidden hover:border-[#2563EB]/50 transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className="h-44 w-full relative overflow-hidden bg-[#071426]">
+                <div className="h-44 w-full relative overflow-hidden bg-[#071426] rounded-none">
                   <img
                     src={dest.imageUrl || dest.thumbnailUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80'}
                     alt={dest.name}

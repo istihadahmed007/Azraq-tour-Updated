@@ -131,22 +131,35 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
 
       {/* Asymmetric Editorial Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Large Featured Story Destination (Span 7) */}
+        {/* Large Featured Story Destination (Span 7) - Square Corners & Full-Bleed Photograph */}
         <motion.div
           initial={shouldReduceMotion ? false : { opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.35, ease: 'easeOut' }}
-          className="lg:col-span-7 group relative rounded-3xl overflow-hidden min-h-[420px] sm:min-h-[500px] flex flex-col justify-end p-6 sm:p-10 cursor-pointer shadow-lg border border-white/60 backdrop-blur-md"
+          role="button"
+          tabIndex={0}
+          aria-label={`Featured destination: ${featuredDest.name}, ${featuredDest.country}`}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleCardClick(featuredDest.name);
+            }
+          }}
+          className="lg:col-span-7 group relative rounded-none overflow-hidden min-h-[440px] sm:min-h-[520px] flex flex-col justify-end p-6 sm:p-10 cursor-pointer shadow-xl border border-slate-200/40"
           onClick={() => handleCardClick(featuredDest.name)}
         >
           <img
             src={featuredDest.imageUrl}
             alt={featuredDest.name}
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            loading="eager"
+            className="absolute inset-0 w-full h-full object-cover rounded-none group-hover:scale-105 transition-transform duration-700 ease-out"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=1200&q=80';
+            }}
           />
-          {/* Subtle dark gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/90 via-[#071A33]/40 to-transparent" />
+          {/* Elegant dark gradient overlays for maximum contrast and editorial punch */}
+          <div className="absolute inset-0 bg-gradient-to-t from-[#071A33] via-[#071A33]/55 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#071A33]/40 via-transparent to-transparent pointer-events-none" />
 
           {/* Content Overlay */}
           <div className="relative z-10 space-y-3.5 text-white">
@@ -154,7 +167,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
               <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold text-white border border-white/20">
                 Featured Story
               </span>
-              <span className="px-3 py-1 rounded-full bg-[#17BEBB]/90 text-xs font-bold text-[#071A33]">
+              <span className="px-3 py-1 rounded-full bg-[#17BEBB] text-xs font-bold text-[#071A33]">
                 {featuredDest.routeTag}
               </span>
             </div>
@@ -163,7 +176,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
               <h3 className="text-3xl sm:text-4xl font-bold tracking-[-0.025em] text-white">
                 {featuredDest.name}, {featuredDest.country}
               </h3>
-              <p className="text-sm text-slate-200/90 font-light mt-1 max-w-md">
+              <p className="text-sm text-slate-200/90 font-light mt-1 max-w-md leading-relaxed">
                 Bustling night markets, tranquil floating temples, world-class shopping, and fast-track Thai visa processing.
               </p>
             </div>
@@ -175,7 +188,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                   e.stopPropagation();
                   handleFlightClick(featuredDest.code);
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#071A33] hover:bg-[#FAF8F5] text-xs font-semibold shadow-sm transition-all min-h-[44px]"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white text-[#071A33] hover:bg-[#FAF8F5] text-xs font-semibold shadow-sm transition-all min-h-[44px] cursor-pointer"
               >
                 <Plane className="w-3.5 h-3.5 text-[#17BEBB]" />
                 <span>Search Flights from DAC</span>
@@ -187,7 +200,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                   e.stopPropagation();
                   handleCardClick(featuredDest.name);
                 }}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all min-h-[44px]"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold backdrop-blur-md border border-white/20 transition-all min-h-[44px] cursor-pointer"
               >
                 <span>Explore Itinerary</span>
                 <ChevronRight className="w-3.5 h-3.5 text-[#17BEBB]" />
@@ -196,7 +209,7 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
           </div>
         </motion.div>
 
-        {/* Supporting Destinations Stack (Span 5) */}
+        {/* Supporting Destinations Stack (Span 5) - Square Corners & Full-Bleed Photograph */}
         <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4 sm:gap-5">
           {supportingDests.map((dest, idx) => (
             <motion.div
@@ -209,16 +222,28 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                 ease: 'easeOut',
               }}
               whileHover={shouldReduceMotion ? undefined : { y: -2 }}
+              role="button"
+              tabIndex={0}
+              aria-label={`Destination: ${dest.name}, ${dest.country}`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleCardClick(dest.name);
+                }
+              }}
               onClick={() => handleCardClick(dest.name)}
-              className="group relative rounded-2xl overflow-hidden min-h-[160px] sm:min-h-[150px] lg:min-h-[155px] flex items-end p-5 cursor-pointer shadow-md hover:shadow-xl border border-white/60 backdrop-blur-md transition-all"
+              className="group relative rounded-none overflow-hidden min-h-[175px] sm:min-h-[165px] lg:min-h-[165px] flex items-end p-5 cursor-pointer shadow-md hover:shadow-xl border border-slate-200/40 transition-all"
             >
               <img
                 src={dest.imageUrl}
                 alt={dest.name}
                 loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                className="absolute inset-0 w-full h-full object-cover rounded-none group-hover:scale-105 transition-transform duration-500 ease-out"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80';
+                }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/90 via-[#071A33]/35 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#071A33] via-[#071A33]/45 to-transparent pointer-events-none" />
 
               <div className="relative z-10 w-full flex items-center justify-between gap-3 text-white">
                 <div>
@@ -228,9 +253,11 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                   <h4 className="text-xl font-bold tracking-tight text-white group-hover:text-teal-200 transition-colors">
                     {dest.name}, {dest.country}
                   </h4>
-                  <p className="text-xs text-slate-300 font-light mt-0.5">
-                    Visa: {dest.visaType}
-                  </p>
+                  {dest.visaType && (
+                    <p className="text-xs text-slate-300 font-light mt-0.5">
+                      Visa: {dest.visaType}
+                    </p>
+                  )}
                 </div>
 
                 <button
@@ -239,8 +266,9 @@ export const DestinationSection: React.FC<DestinationSectionProps> = ({
                     e.stopPropagation();
                     handleFlightClick(dest.code);
                   }}
-                  className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#17BEBB] group-hover:text-[#071A33] transition-colors shrink-0 shadow-sm"
+                  className="w-10 h-10 rounded-full bg-white/15 backdrop-blur-md text-white flex items-center justify-center group-hover:bg-[#17BEBB] group-hover:text-[#071A33] transition-colors shrink-0 shadow-sm cursor-pointer"
                   title="Search Flights"
+                  aria-label={`Search flights to ${dest.name}`}
                 >
                   <Plane className="w-4 h-4" />
                 </button>
