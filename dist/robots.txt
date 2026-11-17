@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+Allow: /destinations
+Allow: /destinations/*
+Allow: /travel-guides
+Allow: /travel-guides/*
+Allow: /itineraries
+Allow: /itineraries/*
+Allow: /visa
+Allow: /visa/*
+Allow: /ai-travel-planner
+Allow: /flights
+Allow: /packages
+Allow: /about
+Allow: /contact
+
+# Disallow private user-specific and backend routes
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /profile
+Disallow: /settings/
+Disallow: /settings
+Disallow: /admin/
+Disallow: /admin
+Disallow: /api/
+Disallow: /auth/
+
+Host: https://www.azraqtrips.com
+Sitemap: https://www.azraqtrips.com/sitemap.xml
+
