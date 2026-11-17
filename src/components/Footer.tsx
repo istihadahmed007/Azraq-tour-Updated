@@ -36,51 +36,51 @@ export const Footer: React.FC<FooterProps> = ({
 
   return (
     <>
-      <footer className="w-full bg-[#071A33]/90 backdrop-blur-2xl border-t border-white/10 text-slate-300 pt-16 pb-28 md:pb-16 px-4 sm:px-6 lg:px-8 font-inter">
+      <footer className="w-full bg-[#E7F0F8]/85 backdrop-blur-2xl border-t border-white/80 text-[#63778D] pt-16 pb-28 md:pb-16 px-4 sm:px-6 lg:px-8 font-inter">
         <div className="max-w-7xl mx-auto space-y-12">
           {/* Top Section: Brand + 4 Clean Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-white/10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 pb-12 border-b border-[#A6B9CC]/30">
             {/* Brand and Direct Desk Info (Span 4) */}
             <div className="lg:col-span-4 space-y-4">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl overflow-hidden bg-white shadow-sm flex items-center justify-center p-1 border border-white/20 shrink-0">
+                <div className="w-11 h-11 rounded-2xl overflow-hidden bg-[#F7FAFD] shadow-[-3px_-3px_8px_rgba(255,255,255,0.9),3px_3px_8px_rgba(166,185,204,0.3)] flex items-center justify-center p-1.5 border border-white shrink-0">
                   <AzraqLogo size={36} className="w-full h-full" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-normal text-white tracking-tight font-serif-display">
+                  <h3 className="text-xl font-bold text-[#263B55] tracking-tight">
                     Azraq Trips
                   </h3>
-                  <p className="text-xs text-[#17BEBB] font-medium">
+                  <p className="text-xs text-[#73A9D2] font-semibold">
                     {AZRAQ_AGENCY_CONFIG.tagline}
                   </p>
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed max-w-sm">
+              <p className="text-xs sm:text-sm text-[#63778D] leading-relaxed max-w-sm">
                 A modern travel platform engineered for Bangladeshi travelers. Transparent flight searches, verified embassy visa guidance, and bespoke Asian holiday packages.
               </p>
 
-              <div className="pt-2 space-y-2 text-xs text-slate-300">
+              <div className="pt-2 space-y-2 text-xs text-[#63778D]">
                 <div className="flex items-center gap-2.5">
-                  <MapPin className="w-4 h-4 text-[#17BEBB] shrink-0" />
+                  <MapPin className="w-4 h-4 text-[#73A9D2] shrink-0" />
                   <span>Banani, Dhaka 1213, Bangladesh</span>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Phone className="w-4 h-4 text-[#17BEBB] shrink-0" />
+                  <Phone className="w-4 h-4 text-[#73A9D2] shrink-0" />
                   <a
                     href={`https://wa.me/${AZRAQ_AGENCY_CONFIG.whatsappNumber}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="hover:text-white font-mono"
+                    className="hover:text-[#263B55] font-semibold font-mono"
                   >
                     {AZRAQ_AGENCY_CONFIG.phoneDisplay}
                   </a>
                 </div>
                 <div className="flex items-center gap-2.5">
-                  <Mail className="w-4 h-4 text-[#17BEBB] shrink-0" />
+                  <Mail className="w-4 h-4 text-[#73A9D2] shrink-0" />
                   <a
                     href={`mailto:${AZRAQ_AGENCY_CONFIG.email}`}
-                    className="hover:text-white transition-colors"
+                    className="hover:text-[#263B55] transition-colors"
                   >
                     {AZRAQ_AGENCY_CONFIG.email}
                   </a>
@@ -90,14 +90,14 @@ export const Footer: React.FC<FooterProps> = ({
 
             {/* Column 1: Explore */}
             <div className="lg:col-span-2 space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+              <h4 className="text-xs font-bold text-[#263B55] uppercase tracking-wider font-mono">
                 Explore
               </h4>
               <ul className="space-y-2 text-xs">
                 <li>
                   <button
                     onClick={() => handleNav('destinations')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Featured Destinations
                   </button>
@@ -105,7 +105,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNav('guides')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Editorial Travel Guides
                   </button>
@@ -113,7 +113,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNav('itineraries')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Curated Itineraries
                   </button>
@@ -121,7 +121,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNav('feed')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Travel Buddies
                   </button>
@@ -131,7 +131,7 @@ export const Footer: React.FC<FooterProps> = ({
 
             {/* Column 2: Services */}
             <div className="lg:col-span-2 space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+              <h4 className="text-xs font-bold text-[#263B55] uppercase tracking-wider font-mono">
                 Services
               </h4>
               <ul className="space-y-2 text-xs">
@@ -140,7 +140,7 @@ export const Footer: React.FC<FooterProps> = ({
                     onClick={() => {
                       window.location.replace('https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt');
                     }}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer text-left"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer text-left"
                   >
                     Flight Discovery from DAC
                   </button>
@@ -148,7 +148,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNav('packages')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Holiday Packages
                   </button>
@@ -156,7 +156,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNav('visa')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Visa Assistance Desk
                   </button>
@@ -164,7 +164,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNavToSection('discover', 'travel-essentials')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer text-left"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer text-left"
                   >
                     Travel Essentials
                   </button>
@@ -172,7 +172,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNav('planner')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     AI Itinerary Planner
                   </button>
@@ -182,7 +182,7 @@ export const Footer: React.FC<FooterProps> = ({
 
             {/* Column 3: Support */}
             <div className="lg:col-span-2 space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+              <h4 className="text-xs font-bold text-[#263B55] uppercase tracking-wider font-mono">
                 Support
               </h4>
               <ul className="space-y-2 text-xs">
@@ -191,7 +191,7 @@ export const Footer: React.FC<FooterProps> = ({
                     href={`https://wa.me/${AZRAQ_AGENCY_CONFIG.whatsappNumber}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#17BEBB] hover:text-white font-semibold transition-colors inline-flex items-center gap-1.5"
+                    className="text-[#73A9D2] hover:text-[#263B55] font-semibold transition-colors inline-flex items-center gap-1.5"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
                     <span>WhatsApp Concierge</span>
@@ -200,7 +200,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => handleNav('contact')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Contact Travel Desk
                   </button>
@@ -208,7 +208,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => setActiveLegalModal('faq')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Frequently Asked Questions
                   </button>
@@ -218,14 +218,14 @@ export const Footer: React.FC<FooterProps> = ({
 
             {/* Column 4: Company & Legal */}
             <div className="lg:col-span-2 space-y-3">
-              <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
+              <h4 className="text-xs font-bold text-[#263B55] uppercase tracking-wider font-mono">
                 Company
               </h4>
               <ul className="space-y-2 text-xs">
                 <li>
                   <button
                     onClick={() => handleNav('about')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     About Azraq
                   </button>
@@ -233,7 +233,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => setActiveLegalModal('privacy')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Privacy Policy
                   </button>
@@ -241,7 +241,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => setActiveLegalModal('terms')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Terms & Conditions
                   </button>
@@ -249,7 +249,7 @@ export const Footer: React.FC<FooterProps> = ({
                 <li>
                   <button
                     onClick={() => setActiveLegalModal('affiliate')}
-                    className="hover:text-[#17BEBB] transition-colors cursor-pointer"
+                    className="hover:text-[#73A9D2] transition-colors cursor-pointer"
                   >
                     Affiliate Disclosure
                   </button>
@@ -258,29 +258,29 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
           </div>
 
-          <PartnerQuickLinks placement="footer" title="Travel partner links" dark showFlightAlternative />
+          <PartnerQuickLinks placement="footer" title="Travel partner links" dark={false} showFlightAlternative />
 
           {/* Compliance & Partner Transparency */}
-          <div className="text-[11px] text-slate-400 leading-relaxed space-y-2 border-b border-white/10 pb-8">
+          <div className="text-[11px] text-[#63778D] leading-relaxed space-y-2 border-b border-[#A6B9CC]/30 pb-8">
             <p>
-              <strong className="text-slate-300">Transparency Notice:</strong> {AZRAQ_AGENCY_CONFIG.partnerDisclaimer}
+              <strong className="text-[#263B55]">Transparency Notice:</strong> {AZRAQ_AGENCY_CONFIG.partnerDisclaimer}
             </p>
-            <p className="text-slate-500">
+            <p className="text-[#63778D]/90">
               {AZRAQ_AGENCY_CONFIG.affiliateDisclosureText}
             </p>
           </div>
 
           {/* Bottom Bar: Copyright & Verified Status */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#63778D]">
             <p>© {currentYear} Azraq Tours & Travels. All rights reserved.</p>
-            <div className="flex items-center gap-4 text-[11px] text-slate-400">
+            <div className="flex items-center gap-4 text-[11px] text-[#63778D]">
               <span>Licensed Travel Agency Desk</span>
               <span>•</span>
               <span>Dhaka, Bangladesh</span>
               <span>•</span>
               <button
                 onClick={() => setActiveLegalModal('affiliate')}
-                className="hover:text-white underline cursor-pointer"
+                className="hover:text-[#263B55] underline cursor-pointer"
               >
                 Affiliate Policy
               </button>

@@ -11,6 +11,7 @@ import { PartnerQuickLinks } from './PartnerQuickLinks';
 // Composed Home Section Components
 import { HomeHero } from './home/HomeHero';
 import { TrustStrip } from './home/TrustStrip';
+import { PremiumShowcaseSection } from './home/PremiumShowcaseSection';
 import { DestinationSection } from './home/DestinationSection';
 import { ServiceGrid } from './home/ServiceGrid';
 import { FeaturedPackagesSection } from './home/FeaturedPackagesSection';
@@ -109,9 +110,24 @@ export const DiscoverView: React.FC<DiscoverViewProps> = ({
         <PartnerQuickLinks placement="home_top" title="Travel essentials, one click away" />
       </div>
 
-      {/* Trust Strip - Glassy Floating Bar */}
-      <div className="w-full py-3.5 border-y border-white/40 bg-white/25 backdrop-blur-md">
+      {/* Trust Strip - Neumorphic Clean Bar */}
+      <div className="w-full py-3.5 border-y border-white/60 bg-[#E7F0F8]/60 backdrop-blur-md">
         <TrustStrip />
+      </div>
+
+      {/* 03: Premium Asymmetric Reference Travel Showcase */}
+      <div className="w-full py-6 sm:py-10">
+        <PremiumShowcaseSection
+          destinations={destinations}
+          packages={packages}
+          onSelectDestination={onSelectDestination}
+          onViewPackageDetails={(pkg) => setActivePackageModal(pkg)}
+          onRequestQuote={(pkg) => {
+            if (onOpenQuote) onOpenQuote(pkg);
+            else setActiveQuotationModal(pkg);
+          }}
+          onNavigateToView={onNavigateToView}
+        />
       </div>
 
       {/* 03: Featured Destinations (Asymmetric Glassy Editorial Layout) */}

@@ -29,14 +29,14 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#17BEBB]">
+          <div className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#73A9D2]">
             <BookOpen className="w-3.5 h-3.5" />
             <span>Travel Stories & Insights</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#071A33] tracking-[-0.025em]">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#263B55] tracking-[-0.025em]">
             Curated Guides for Bangladeshi Travelers
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-inter max-w-xl">
+          <p className="text-xs sm:text-sm text-[#63778D] font-inter max-w-xl">
             Authentic, practical advice written for trips originating in Dhaka. Direct flight timings, verified embassy visa rules, and realistic BDT budgets.
           </p>
         </div>
@@ -45,10 +45,10 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
           <button
             type="button"
             onClick={onNavigateToGuides}
-            className="min-h-[44px] px-5 py-2.5 rounded-full bg-white/60 hover:bg-white/90 text-[#071A33] backdrop-blur-md border border-white/70 font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer flex items-center gap-2 self-start sm:self-auto"
+            className="min-h-[44px] px-5 py-2.5 rounded-full bg-[#E7F0F8] hover:bg-[#F7FAFD] text-[#263B55] border border-white/80 shadow-[-3px_-3px_8px_rgba(255,255,255,0.8),3px_3px_8px_rgba(166,185,204,0.35)] font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center gap-2 self-start sm:self-auto"
           >
             <span>All Travel Guides</span>
-            <ArrowRight className="w-4 h-4 text-[#17BEBB]" />
+            <ArrowRight className="w-4 h-4 text-[#73A9D2]" />
           </button>
         )}
       </div>
@@ -59,7 +59,7 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
         {featuredGuide && (
           <div
             onClick={() => handleGuideClick(featuredGuide.slug)}
-            className="lg:col-span-7 group cursor-pointer rounded-3xl overflow-hidden bg-white/70 hover:bg-white/85 backdrop-blur-xl border border-white/65 shadow-[0_8px_30px_rgba(7,26,51,0.05)] hover:shadow-2xl transition-all duration-300 flex flex-col justify-between"
+            className="lg:col-span-7 group cursor-pointer rounded-[28px] overflow-hidden bg-[#E7F0F8] border border-white/70 shadow-[-8px_-8px_20px_rgba(255,255,255,0.8),8px_8px_20px_rgba(166,185,204,0.35)] hover:shadow-[-10px_-10px_24px_rgba(255,255,255,0.9),10px_10px_24px_rgba(166,185,204,0.45)] transition-all duration-300 flex flex-col justify-between"
           >
             <div className="relative h-64 sm:h-80 md:h-96 w-full overflow-hidden bg-slate-900">
               <img
@@ -68,38 +68,38 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
                 loading="lazy"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#071A33]/90 via-[#071A33]/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#263B55]/95 via-[#263B55]/30 to-transparent" />
               
               <div className="absolute top-4 left-4 flex items-center gap-2">
-                <span className="px-3 py-1 rounded-full bg-white/90 backdrop-blur-md text-[#071A33] text-xs font-bold uppercase tracking-wider font-mono">
+                <span className="px-3.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-[#263B55] text-xs font-bold uppercase tracking-wider font-mono">
                   {featuredGuide.country}
                 </span>
-                <span className="px-3 py-1 rounded-full bg-[#071A33]/80 backdrop-blur-md text-white text-xs font-medium flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-[#17BEBB]" />
+                <span className="px-3 py-1 rounded-full bg-[#263B55]/80 backdrop-blur-md text-white text-xs font-medium flex items-center gap-1 border border-white/20">
+                  <Clock className="w-3 h-3 text-[#73A9D2]" />
                   {featuredGuide.readingTimeMinutes} min read
                 </span>
               </div>
 
               <div className="absolute bottom-4 left-4 right-4 text-white space-y-2">
-                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] leading-snug group-hover:text-[#17BEBB] transition-colors">
+                <h3 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-[-0.02em] leading-snug group-hover:text-blue-100 transition-colors">
                   {featuredGuide.title}
                 </h3>
               </div>
             </div>
 
             <div className="p-6 sm:p-7 space-y-4 flex-1 flex flex-col justify-between">
-              <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-inter line-clamp-3">
+              <p className="text-xs sm:text-sm text-[#63778D] leading-relaxed font-inter line-clamp-3">
                 {featuredGuide.intro}
               </p>
 
-              <div className="pt-4 border-t border-white/50 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-xs text-slate-600 font-inter">
-                  <Plane className="w-4 h-4 text-[#17BEBB]" />
-                  <span className="font-medium text-slate-800">Flight:</span>
+              <div className="pt-4 border-t border-[#A6B9CC]/30 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs text-[#63778D] font-inter">
+                  <Plane className="w-4 h-4 text-[#73A9D2]" />
+                  <span className="font-semibold text-[#263B55]">Flight:</span>
                   <span>Direct from Dhaka (DAC)</span>
                 </div>
 
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#071A33] group-hover:text-[#17BEBB] transition-colors">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[#263B55] group-hover:text-[#73A9D2] transition-colors">
                   <span>Read Full Guide</span>
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -114,7 +114,7 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
             <div
               key={guide.slug}
               onClick={() => handleGuideClick(guide.slug)}
-              className="group cursor-pointer p-4 sm:p-5 rounded-2xl bg-white/65 hover:bg-white/85 backdrop-blur-xl border border-white/65 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl hover:border-[#17BEBB]/50 transition-all flex items-center gap-4"
+              className="group cursor-pointer p-4 sm:p-5 rounded-[22px] bg-[#E7F0F8] border border-white/70 shadow-[-5px_-5px_12px_rgba(255,255,255,0.75),5px_5px_12px_rgba(166,185,204,0.3)] hover:shadow-[-7px_-7px_16px_rgba(255,255,255,0.85),7px_7px_16px_rgba(166,185,204,0.4)] transition-all flex items-center gap-4"
             >
               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden shrink-0 bg-slate-900 relative">
                 <img
@@ -127,25 +127,25 @@ export const EditorialStoriesSection: React.FC<EditorialStoriesSectionProps> = (
 
               <div className="flex-1 min-w-0 space-y-1.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#17BEBB] font-mono">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[#73A9D2] font-mono">
                     {guide.country}
                   </span>
-                  <span className="text-slate-300">•</span>
-                  <span className="text-[11px] text-slate-400 font-medium">
+                  <span className="text-[#A6B9CC]">•</span>
+                  <span className="text-[11px] text-[#63778D] font-medium">
                     {guide.readingTimeMinutes} min read
                   </span>
                 </div>
 
-                <h4 className="text-sm sm:text-base font-bold text-[#071A33] group-hover:text-[#17BEBB] transition-colors font-inter line-clamp-2 leading-snug">
+                <h4 className="text-sm sm:text-base font-bold text-[#263B55] group-hover:text-[#73A9D2] transition-colors font-inter line-clamp-2 leading-snug">
                   {guide.title}
                 </h4>
 
-                <p className="text-xs text-slate-500 line-clamp-1 font-inter">
+                <p className="text-xs text-[#63778D] line-clamp-1 font-inter">
                   {guide.destination}
                 </p>
               </div>
 
-              <div className="shrink-0 pl-1 text-slate-300 group-hover:text-[#17BEBB] transition-colors">
+              <div className="shrink-0 pl-1 text-[#63778D] group-hover:text-[#73A9D2] transition-colors">
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
             </div>

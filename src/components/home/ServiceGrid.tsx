@@ -108,10 +108,10 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
   return (
     <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 space-y-6">
       <div className="space-y-1">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#086788] font-mono">
+        <span className="text-xs font-bold uppercase tracking-wider text-[#73A9D2] font-mono">
           Comprehensive Services
         </span>
-        <h2 className="text-2xl sm:text-3xl font-bold text-[#073B4C] tracking-[-0.025em]">
+        <h2 className="text-2xl sm:text-3xl font-bold text-[#263B55] tracking-[-0.025em]">
           Everything You Need for a Seamless Journey
         </h2>
       </div>
@@ -121,23 +121,23 @@ export const ServiceGrid: React.FC<ServiceGridProps> = ({ onNavigateToView, onOp
           <div
             key={srv.id}
             onClick={srv.action}
-            className={`p-5 rounded-2xl bg-white/60 hover:bg-white/85 backdrop-blur-xl border border-white/65 shadow-[0_4px_20px_rgba(7,26,51,0.04)] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer group ${srv.border}`}
+            className="p-5 rounded-2xl bg-[#E7F0F8] border border-white/70 shadow-[-5px_-5px_12px_rgba(255,255,255,0.75),5px_5px_12px_rgba(166,185,204,0.3)] hover:shadow-[-7px_-7px_16px_rgba(255,255,255,0.85),7px_7px_16px_rgba(166,185,204,0.4)] transition-all duration-300 flex flex-col justify-between cursor-pointer group"
           >
             <div className="space-y-3">
-              <div className={`w-11 h-11 rounded-xl ${srv.bg} flex items-center justify-center`}>
+              <div className="w-11 h-11 rounded-xl bg-[#F7FAFD] border border-white/80 shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)] flex items-center justify-center">
                 {srv.icon}
               </div>
               <div className="space-y-1.5">
-                <h3 className="text-sm font-bold text-[#073B4C] group-hover:text-[#086788] transition-colors font-inter line-clamp-2">
+                <h3 className="text-sm font-bold text-[#263B55] group-hover:text-[#73A9D2] transition-colors font-inter line-clamp-2">
                   {srv.title}
                 </h3>
-                <p className="text-xs text-slate-600 leading-relaxed line-clamp-3 font-inter">{srv.desc}</p>
+                <p className="text-xs text-[#63778D] leading-relaxed line-clamp-3 font-inter">{srv.desc}</p>
               </div>
             </div>
 
-            <div className="pt-3 mt-3 border-t border-white/50 flex items-center justify-between text-xs font-bold text-[#086788] group-hover:text-[#073B4C]">
+            <div className="pt-3 mt-3 border-t border-[#A6B9CC]/20 flex items-center justify-between text-xs font-bold text-[#263B55] group-hover:text-[#73A9D2]">
               <span>{srv.cta}</span>
-              <ArrowRight className="w-3.5 h-3.5 text-[#17BEBB] group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-3.5 h-3.5 text-[#73A9D2] group-hover:translate-x-1 transition-transform" />
             </div>
           </div>
         ))}

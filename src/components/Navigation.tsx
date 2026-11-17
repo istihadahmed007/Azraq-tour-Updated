@@ -187,58 +187,66 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
       onClick?: () => void;
     }
 
-    // Desktop Primary Navigation Items (5 main items always visible)
-    const desktopNavItems: DesktopNavItem[] = [
+    // Primary Travel Service Navigation Categories (Inspired by reference sub-header)
+    const categoryNavItems = [
       {
-        id: 'explore',
-        label: 'Explore',
-        icon: <Compass className="w-4 h-4" />,
-        view: 'destinations' as NavView,
-        isActive:
-          currentView === 'destinations' ||
-          currentView === 'destination-detail' ||
-          currentView === 'guides' ||
-          currentView === 'guide-detail',
+        id: 'home',
+        label: 'Home',
+        view: 'discover' as NavView,
+        isActive: currentView === 'discover',
       },
       {
         id: 'flights',
         label: 'Flights',
-        icon: <Plane className="w-4 h-4" />,
         isExternal: true,
         href: 'https://flights.azraqtrips.com/?marker=765415&trs=565363&currency=bdt',
       },
       {
-        id: 'visa',
-        label: 'Visa',
-        icon: <FileCheck2 className="w-4 h-4" />,
-        view: 'visa' as NavView,
-        isActive: currentView === 'visa' || currentView === 'visa-detail',
-      },
-      {
         id: 'packages',
-        label: 'Packages',
-        icon: <Package className="w-4 h-4" />,
+        label: 'Holiday Packages',
         view: 'packages' as NavView,
         isActive: currentView === 'packages',
       },
       {
-        id: 'planner',
-        label: 'Trip Planner',
-        icon: <Sparkles className="w-4 h-4" />,
-        view: 'planner' as NavView,
-        isActive: currentView === 'planner' || currentView === 'ai-planner',
+        id: 'visa',
+        label: 'Visa Services',
+        view: 'visa' as NavView,
+        isActive: currentView === 'visa' || currentView === 'visa-detail',
       },
       {
-        id: 'buddies',
-        label: 'Travel Buddies',
-        icon: <Users className="w-4 h-4" />,
+        id: 'hotels',
+        label: 'Hotels',
+        view: 'hotels' as NavView,
+        isActive: currentView === 'hotels',
+      },
+      {
+        id: 'transfers',
+        label: 'Airport Transfers',
+        view: 'activities' as NavView,
+        isActive: currentView === 'activities',
+      },
+      {
+        id: 'guides',
+        label: 'Travel Guides',
+        view: 'guides' as NavView,
+        isActive: currentView === 'guides' || currentView === 'guide-detail',
+      },
+      {
+        id: 'community',
+        label: 'Travel Community',
         view: 'feed' as NavView,
         isActive: currentView === 'feed',
+      },
+      {
+        id: 'planner',
+        label: 'AI Trip Planner',
+        view: 'planner' as NavView,
+        isActive: currentView === 'planner' || currentView === 'ai-planner',
       },
     ];
 
     // All items for the mobile drawer
-    const allNavItems = desktopNavItems;
+    const allNavItems = categoryNavItems;
 
     // Mobile Bottom Navigation Items (5 items)
     const mobileBottomTabs = [
@@ -290,13 +298,13 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
     return (
       <>
         {/* ========================================================================= */}
-        {/* DESKTOP & TOP NAVBAR */}
+        {/* DESKTOP & TOP NAVBAR (Premium Ice-Blue Neumorphic Layout)                 */}
         {/* ========================================================================= */}
         <header
           ref={ref}
           id="main-navigation-header"
-          className={`sticky top-0 left-0 right-0 w-full z-50 transition-all duration-300 bg-white/70 hover:bg-white/85 backdrop-blur-xl text-[#073B4C] border-b overflow-x-clip ${
-            isScrolled ? 'border-white/50 shadow-md bg-white/85' : 'border-white/40 shadow-xs'
+          className={`sticky top-0 left-0 right-0 w-full z-50 transition-all duration-300 bg-[#DCEAF3]/95 hover:bg-[#DCEAF3] backdrop-blur-xl text-[#263B55] border-b border-white/70 overflow-x-clip ${
+            isScrolled ? 'shadow-[0_4px_24px_rgba(166,185,204,0.35)]' : 'shadow-[0_2px_12px_rgba(166,185,204,0.2)]'
           }`}
         >
           <div className="w-full max-w-[1600px] mx-auto px-3 sm:px-4 lg:px-6 2xl:px-8">
@@ -306,107 +314,70 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
               <button
                 type="button"
                 onClick={() => handleNavigate('discover')}
-                className="flex items-center gap-2 sm:gap-3 cursor-pointer text-left group shrink-0 focus:outline-none py-1 select-none"
+                className="flex items-center gap-2.5 sm:gap-3 cursor-pointer text-left group shrink-0 focus:outline-none py-1 select-none"
                 aria-label="Azraq Trips Home"
               >
                 {/* Official Azraq Tours & Travels Logo Emblem */}
-                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-white shadow-sm flex items-center justify-center group-hover:scale-105 active:scale-95 transition-all duration-200 border border-[#0047BA]/20 shrink-0">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-white shadow-[2px_2px_8px_rgba(166,185,204,0.3)] flex items-center justify-center group-hover:scale-105 active:scale-95 transition-all duration-200 border border-white/80 shrink-0">
                   <AzraqLogo size={40} className="w-full h-full p-0.5" />
                 </div>
 
                 {/* Brand Name & Slogan */}
                 <div className="flex flex-col">
-                  <span className="text-base sm:text-lg 2xl:text-xl font-extrabold tracking-tight leading-none uppercase font-sans text-[#073B4C] group-hover:text-[#0047BA] transition-colors">
+                  <span className="text-base sm:text-lg 2xl:text-xl font-extrabold tracking-tight leading-none uppercase font-sans text-[#263B55] group-hover:text-[#73A9D2] transition-colors">
                     AZRAQ TRIPS
                   </span>
-                  <span className="text-[9px] sm:text-[10px] 2xl:text-[11px] text-[#0047BA] tracking-wider uppercase font-bold mt-0.5">
+                  <span className="text-[9px] sm:text-[10px] 2xl:text-[11px] text-[#73A9D2] tracking-wider uppercase font-bold mt-0.5">
                     Tours &amp; Travels
                   </span>
                 </div>
               </button>
 
-              {/* DESKTOP NAVIGATION LINKS */}
-              <nav className="hidden xl:flex items-center gap-0.5 2xl:gap-1 min-w-0 shrink">
-                {desktopNavItems.map((item) => {
-                  const isActive = !!item.isActive;
-
-                  if (item.isExternal && item.href) {
-                    return (
-                      <a
-                        key={item.id}
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="group relative flex items-center gap-1 px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-xl text-[11px] 2xl:text-xs font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer text-slate-700 hover:text-[#071A33] hover:bg-slate-100/90"
-                      >
-                        <span className="text-slate-400 group-hover:text-[#17BEBB] transition-colors">
-                          {item.icon}
-                        </span>
-                        <span>{item.label}</span>
-                      </a>
-                    );
-                  }
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        if (item.onClick) {
-                          item.onClick();
-                        } else if (item.view) {
-                          handleNavigate(item.view);
-                        }
-                      }}
-                      className={`group relative flex items-center gap-1 px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-xl text-[11px] 2xl:text-xs font-semibold transition-all duration-200 whitespace-nowrap cursor-pointer ${
-                        isActive
-                          ? 'bg-[#071A33]/5 text-[#071A33] font-bold'
-                          : 'text-slate-700 hover:text-[#071A33] hover:bg-slate-100/90'
-                      }`}
-                    >
-                      <span
-                        className={`transition-colors ${
-                          isActive
-                            ? 'text-[#17BEBB]'
-                            : 'text-slate-400 group-hover:text-[#17BEBB]'
-                        }`}
-                      >
-                        {item.icon}
-                      </span>
-                      <span>{item.label}</span>
-
-                      {/* Active Teal Indicator */}
-                      {isActive && (
-                        <span
-                          className="absolute bottom-0 left-2 right-2 h-[2px] bg-[#17BEBB] rounded-full"
-                          aria-hidden="true"
-                        />
-                      )}
-                    </button>
-                  );
-                })}
-              </nav>
+              {/* CENTER SEARCH PILL (Matching reference top search pill) */}
+              <div
+                onClick={() => handleNavigate('search')}
+                className="hidden md:flex items-center justify-between flex-1 max-w-sm lg:max-w-md xl:max-w-lg px-4 py-2 rounded-full bg-[#EAF2F8] border border-white/80 shadow-[inset_2px_2px_5px_rgba(166,185,204,0.3),inset_-2px_-2px_5px_rgba(255,255,255,0.85)] cursor-pointer text-[#63778D] hover:text-[#263B55] hover:border-[#73A9D2]/70 transition-all select-none mx-2 lg:mx-4"
+                title="Search destinations, flights, packages, visas (⌘K)"
+              >
+                <span className="text-xs font-medium tracking-wide truncate">
+                  Search destinations, flights, packages...
+                </span>
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                  <kbd className="hidden lg:inline-flex items-center px-1.5 py-0.5 text-[9px] font-mono rounded bg-white/70 text-[#63778D] border border-white/60">
+                    ⌘K
+                  </kbd>
+                  <Search className="w-4 h-4 text-[#73A9D2]" />
+                </div>
+              </div>
 
               {/* RIGHT SIDE UTILITIES */}
-              <div className="flex items-center gap-1.5 sm:gap-2 lg:gap-3 shrink-0 ml-auto">
+              <div className="flex items-center gap-1.5 sm:gap-2.5 lg:gap-3 shrink-0 ml-auto md:ml-0">
                 
-                {/* Search Quick Action (Desktop & Tablet) */}
+                {/* Search Quick Action for Mobile / Tablet */}
                 <button
                   type="button"
                   onClick={() => handleNavigate('search')}
-                  className={`hidden sm:flex items-center gap-1.5 p-2 2xl:px-3 2xl:py-1.5 rounded-xl border text-xs font-semibold transition-all cursor-pointer shrink-0 ${
-                    currentView === 'search'
-                      ? 'bg-[#17BEBB] text-[#073B4C] border-[#17BEBB] shadow-xs'
-                      : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
-                  }`}
-                  title="Search flights, packages, visas (⌘K)"
+                  className="md:hidden w-10 h-10 rounded-full bg-[#E7F0F8] border border-white/80 shadow-[3px_3px_8px_rgba(166,185,204,0.35),-3px_-3px_8px_rgba(255,255,255,0.85)] flex items-center justify-center text-[#263B55] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  title="Search (⌘K)"
                   aria-label="Search"
                 >
-                  <Search className="w-4 h-4 text-[#17BEBB]" />
-                  <span className="hidden 2xl:inline">Search</span>
-                  <kbd className="hidden 2xl:inline-flex items-center px-1 py-0.2 text-[9px] font-mono rounded bg-slate-200 text-slate-600">
-                    ⌘K
-                  </kbd>
+                  <Search className="w-4 h-4 text-[#73A9D2]" />
+                </button>
+
+                {/* SAVED TRIPS / WISHLIST (Circular Neumorphic Button with Badge) */}
+                <button
+                  type="button"
+                  onClick={() => handleNavigate('packages')}
+                  className="relative w-10 h-10 rounded-full bg-[#E7F0F8] border border-white/80 shadow-[3px_3px_8px_rgba(166,185,204,0.35),-3px_-3px_8px_rgba(255,255,255,0.85)] flex items-center justify-center text-[#263B55] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                  title="Saved Trips & Wishlist"
+                  aria-label="Saved Trips"
+                >
+                  <Heart className={`w-4 h-4 ${savedTripsCount > 0 ? 'text-[#E67A60] fill-[#E67A60]' : 'text-[#63778D]'}`} />
+                  {savedTripsCount > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#E67A60] text-white text-[9px] font-black rounded-full flex items-center justify-center shadow-xs border border-white">
+                      {savedTripsCount}
+                    </span>
+                  )}
                 </button>
 
                 {/* NOTIFICATION BELL */}
@@ -669,68 +640,86 @@ export const Navigation = React.forwardRef<HTMLElement, NavigationProps>(
             </div>
           </div>
 
-          {/* SECONDARY MOBILE / TABLET DRAWER */}
-          {mobileMenuOpen && (
-            <div className="xl:hidden border-t border-white/50 bg-white/90 backdrop-blur-2xl px-4 pt-4 pb-6 space-y-4 shadow-2xl animate-fadeIn text-slate-800">
-              <div className="flex flex-col gap-1.5">
-                {allNavItems.map((item) => (
+          {/* SUB-HEADER TRAVEL SERVICE CATEGORIES (Inspired by reference sub-navigation) */}
+          <div className="border-t border-white/60 bg-[#DCEAF3]/80 backdrop-blur-md px-3 sm:px-4 lg:px-6 2xl:px-8 py-2 overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-center gap-1.5 sm:gap-2.5 min-w-max mx-auto">
+              {categoryNavItems.map((item) => {
+                const isActive = !!item.isActive;
+
+                if (item.isExternal && item.href) {
+                  return (
+                    <a
+                      key={item.id}
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-[#63778D] hover:text-[#263B55] hover:bg-white/60 transition-all duration-200 whitespace-nowrap"
+                    >
+                      {item.label}
+                    </a>
+                  );
+                }
+
+                return (
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => {
-                      if (item.isExternal && item.href) {
-                        window.open(item.href, '_blank');
-                      } else if (item.onClick) {
-                        item.onClick();
-                      } else if (item.view) {
-                        handleNavigate(item.view);
-                      }
-                      setMobileMenuOpen(false);
-                    }}
-                    className={`flex items-center justify-between p-3 rounded-xl text-sm font-medium transition-all cursor-pointer text-left min-h-[44px] ${
-                      item.isActive
-                        ? 'bg-white/80 text-[#071A33] font-bold border border-white/60 shadow-xs'
-                        : 'text-slate-700 hover:bg-white/50'
+                    onClick={() => item.view && handleNavigate(item.view)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs transition-all duration-200 cursor-pointer whitespace-nowrap select-none ${
+                      isActive
+                        ? 'bg-[#F7FAFD] text-[#263B55] font-extrabold shadow-[2px_2px_6px_rgba(166,185,204,0.35),-2px_-2px_6px_rgba(255,255,255,0.9)] border border-white/90'
+                        : 'text-[#63778D] hover:text-[#263B55] hover:bg-white/50 font-medium'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className={item.isActive ? 'text-[#17BEBB]' : 'text-slate-400'}>
-                        {item.icon}
-                      </span>
-                      <span>{item.label}</span>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-slate-300" />
+                    {item.label}
                   </button>
-                ))}
-              </div>
-
-              {/* Mobile CTA */}
-              <button
-                type="button"
-                onClick={() => {
-                  handleNavigate('planner');
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl bg-[#071A33] text-white text-sm font-semibold min-h-[44px] cursor-pointer"
-              >
-                <Sparkles className="w-4 h-4 text-[#17BEBB]" />
-                <span>Start AI Trip Plan</span>
-              </button>
-
-              {/* Contact Desk */}
-              <div className="flex items-center justify-between text-xs text-slate-600 px-3.5 py-2.5 bg-white/60 backdrop-blur-md rounded-xl border border-white/60">
-                <span className="flex items-center gap-1.5 font-medium text-[#071A33]">
-                  <Globe className="w-3.5 h-3.5 text-[#17BEBB]" />
-                  BDT (৳) · Dhaka Desk
-                </span>
-                <span className="flex items-center gap-1 text-slate-600 font-medium">
-                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                  Verified Agency
-                </span>
-              </div>
+                );
+              })}
             </div>
-          )}
+          </div>
         </header>
+
+        {/* SECONDARY MOBILE / TABLET DRAWER (Ice-Blue Neumorphic Surface) */}
+        {mobileMenuOpen && (
+          <div className="xl:hidden fixed top-[108px] left-0 right-0 z-40 border-b border-white/70 bg-[#DCEAF3]/95 backdrop-blur-2xl px-4 pt-4 pb-6 space-y-4 shadow-[0_16px_36px_rgba(166,185,204,0.5)] animate-fadeIn text-[#263B55] max-h-[calc(100vh-120px)] overflow-y-auto">
+            <div className="flex flex-col gap-1.5">
+              {allNavItems.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => {
+                    if (item.isExternal && item.href) {
+                      window.open(item.href, '_blank');
+                    } else if (item.view) {
+                      handleNavigate(item.view);
+                    }
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center justify-between p-3 rounded-2xl text-sm transition-all cursor-pointer text-left min-h-[44px] ${
+                    item.isActive
+                      ? 'bg-[#F7FAFD] text-[#263B55] font-extrabold border border-white/80 shadow-[2px_2px_8px_rgba(166,185,204,0.3)]'
+                      : 'text-[#63778D] hover:bg-white/60 hover:text-[#263B55]'
+                  }`}
+                >
+                  <span className="font-semibold">{item.label}</span>
+                  <ChevronRight className="w-4 h-4 text-[#73A9D2]" />
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile Contact Desk */}
+            <div className="flex items-center justify-between text-xs text-[#63778D] px-3.5 py-2.5 bg-[#E7F0F8] rounded-xl border border-white/70 shadow-[inset_1px_1px_3px_rgba(166,185,204,0.3)]">
+              <span className="flex items-center gap-1.5 font-medium text-[#263B55]">
+                <Globe className="w-3.5 h-3.5 text-[#73A9D2]" />
+                BDT (৳) · Dhaka Desk
+              </span>
+              <span className="flex items-center gap-1 text-[#263B55] font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#73A9D2]" />
+                Verified Agency
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* ========================================================================= */}
         {/* MOBILE BOTTOM NAVIGATION (Fixed bottom, safe area, touch friendly)        */}

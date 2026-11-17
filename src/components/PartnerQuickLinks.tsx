@@ -45,10 +45,10 @@ export function PartnerQuickLinks({
 }: PartnerQuickLinksProps) {
   const headingId = useId();
   const groups = partnerGroups.filter(group => categories.includes(group.category));
-  const linkClassName = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
+  const linkClassName = `inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-semibold transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-500 ${
     dark
       ? 'border-slate-600 bg-slate-800 text-white hover:bg-slate-700'
-      : 'border-slate-200 bg-white text-slate-900 hover:border-sky-400 hover:bg-sky-50'
+      : 'border-white/80 bg-[#E7F0F8] text-[#263B55] hover:bg-[#F7FAFD] shadow-[-2px_-2px_6px_rgba(255,255,255,0.8),2px_2px_6px_rgba(166,185,204,0.3)]'
   }`;
   const renderLink = (brand: AffiliateBrand, label: string) => {
     const subId = `${placement}_${brand}`.replace(/[^a-zA-Z0-9_]/g, '_');
