@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Destination } from '../types';
-import { Search, MapPin, ArrowRight, Star, Sparkles, Filter, Globe, RotateCcw } from 'lucide-react';
+import { Search, MapPin, ArrowRight, Star, Sparkles, Filter } from 'lucide-react';
 import { getOptimizedUnsplashUrl, getUnsplashSrcSet } from '../utils/imageOptimization';
 import { SEOHead } from './SEOHead';
 import { Breadcrumbs } from './Breadcrumbs';
@@ -26,7 +26,7 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
   const countries = useMemo(() => {
     const set = new Set<string>();
     destinations.forEach((d) => {
-      if (d.country && d.country.trim()) set.add(d.country.trim());
+      if (d.country) set.add(d.country);
     });
     return ['All', ...Array.from(set).sort()];
   }, [destinations]);
@@ -40,17 +40,10 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
         !q ||
         d.name.toLowerCase().includes(q) ||
         d.country.toLowerCase().includes(q) ||
-        (d.cityRegion && d.cityRegion.toLowerCase().includes(q)) ||
         d.description.toLowerCase().includes(q);
       return matchCat && matchCountry && matchQuery;
     });
   }, [destinations, selectedCategory, selectedCountry, searchQuery]);
-
-  const handleClearFilters = () => {
-    setSearchQuery('');
-    setSelectedCategory('All');
-    setSelectedCountry('All');
-  };
 
   const canonicalUrl = `${SITE_URL}/destinations`;
 
@@ -97,9 +90,8 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
         </p>
       </div>
 
-      {/* Filter and Search Bar with Country Selector */}
-      <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between bg-white/70 backdrop-blur-xl p-4 rounded-none border border-slate-200/80 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
-        {/* Search input */}
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between bg-white/70 backdrop-blur-xl p-4 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
           <input
@@ -107,72 +99,41 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by city or country (e.g. Bali, Bangkok, Dubai)..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-none bg-white/80 border border-slate-200 text-sm text-[#071A33] placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-[#0D6EFD]"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white/60 border border-white/80 text-sm text-[#071A33] placeholder:text-slate-400 focus:bg-white/90 focus:outline-none focus:border-[#0D6EFD]"
           />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3">
-          {/* Country Selector Dropdown */}
-          <div className="relative min-w-[170px]">
-            <label htmlFor="country-selector" className="sr-only">Filter by Country</label>
-            <select
-              id="country-selector"
-              value={selectedCountry}
-              onChange={(e) => setSelectedCountry(e.target.value)}
-              className="w-full appearance-none pl-3.5 pr-8 py-2.5 rounded-none bg-white/80 border border-slate-200 text-xs sm:text-sm font-semibold text-[#071A33] focus:bg-white focus:outline-none focus:border-[#0D6EFD] cursor-pointer shadow-xs"
-            >
-              <option value="All">All Countries ({countries.length - 1})</option>
-              {countries.filter((c) => c !== 'All').map((c) => (
-                <option key={c} value={c}>{c}</option>
-              ))}
-            </select>
-            <Globe className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
-
-          {/* Category Pills */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            {categories.map((cat) => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3 py-1.5 rounded-none text-xs font-semibold transition-colors cursor-pointer ${
-                  selectedCategory === cat
-                    ? 'bg-[#0D6EFD] text-white font-bold shadow-xs'
-                    : 'bg-white/80 text-slate-700 hover:bg-white hover:text-slate-900 border border-slate-200'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-
-          {/* Clear Filters Reset Button */}
-          {(searchQuery || selectedCategory !== 'All' || selectedCountry !== 'All') && (
+        {/* Category Pills */}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {categories.map((cat) => (
             <button
-              type="button"
-              onClick={handleClearFilters}
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-none text-xs font-bold text-red-600 hover:bg-red-50 border border-red-200 transition-colors cursor-pointer shrink-0"
-              title="Reset all filters"
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                selectedCategory === cat
+                  ? 'bg-[#0D6EFD] text-white font-bold shadow-xs'
+                  : 'bg-white/60 backdrop-blur-md text-slate-700 hover:bg-white/90 hover:text-slate-900 border border-white/70'
+              }`}
             >
-              <RotateCcw className="w-3 h-3" />
-              <span>Reset</span>
+              {cat}
             </button>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* Grid of Full-Bleed Photographic Destination Cards (Square Corners: border-radius: 0) */}
+      {/* Grid of Clean Destination Cards */}
       {filteredDestinations.length === 0 ? (
-        <div className="text-center py-16 bg-white/70 backdrop-blur-xl rounded-none border border-slate-200/80 p-8 space-y-3 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
+        <div className="text-center py-16 bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 p-8 space-y-3 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
           <p className="text-base font-bold text-slate-700">No destinations found</p>
           <p className="text-xs text-slate-500">
-            Try adjusting your search criteria, country selector, or category filter.
+            Try adjusting your search criteria or category filter.
           </p>
           <button
-            type="button"
-            onClick={handleClearFilters}
-            className="px-4 py-2 rounded-none bg-blue-50 text-[#0D6EFD] font-bold text-xs hover:bg-blue-100 cursor-pointer"
+            onClick={() => {
+              setSearchQuery('');
+              setSelectedCategory('All');
+            }}
+            className="px-4 py-2 rounded-lg bg-blue-50 text-[#0D6EFD] font-bold text-xs hover:bg-blue-100 cursor-pointer"
           >
             Clear Filters
           </button>
@@ -182,106 +143,56 @@ export const DestinationsView: React.FC<DestinationsViewProps> = ({
           {filteredDestinations.map((dest) => (
             <div
               key={dest.id}
-              role="button"
-              tabIndex={0}
-              aria-label={`Explore destination: ${dest.name}, ${dest.country}`}
-              onClick={() => onSelectDestination(dest)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSelectDestination(dest);
-                }
-              }}
-              className="group relative rounded-none overflow-hidden h-[460px] sm:h-[480px] cursor-pointer shadow-md hover:shadow-2xl border border-slate-200/40 transition-all duration-500 flex flex-col justify-between p-6 bg-[#071A33]"
+              className="group bg-white/70 backdrop-blur-xl rounded-2xl border border-white/60 overflow-hidden shadow-[0_8px_32px_rgba(7,26,51,0.05)] hover:shadow-[0_12px_40px_rgba(13,110,253,0.12)] hover:border-[#0D6EFD]/60 hover:bg-white/80 transition-all duration-300 flex flex-col justify-between"
             >
-              {/* Full-bleed photograph occupying 100% width and 100% height */}
-              <img
-                src={getOptimizedUnsplashUrl(dest.imageUrl, 800, 80)}
-                srcSet={getUnsplashSrcSet(dest.imageUrl, [400, 600, 800, 1200], 80)}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px"
-                alt={`Travel photograph of ${dest.name}, ${dest.country}`}
-                loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover rounded-none group-hover:scale-105 transition-transform duration-700 ease-out"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=800&q=80';
-                }}
-              />
-
-              {/* Multi-stage dark gradient overlays for impeccable typography contrast */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#071A33] via-[#071A33]/65 to-transparent pointer-events-none" />
-              <div className="absolute inset-0 bg-gradient-to-b from-[#071A33]/55 via-transparent to-transparent pointer-events-none" />
-
-              {/* Top Badges (Category & Rating) */}
-              <div className="relative z-10 flex items-center justify-between gap-2 w-full">
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {dest.category && (
-                    <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-[11px] font-bold text-white border border-white/20 uppercase tracking-wider">
-                      {dest.category}
-                    </span>
-                  )}
-                  {dest.badge && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#17BEBB] text-[10px] font-extrabold text-[#071A33] uppercase tracking-wide">
-                      {dest.badge}
-                    </span>
-                  )}
+              {/* Image Container */}
+              <div
+                className="relative h-48 sm:h-52 overflow-hidden bg-slate-100 cursor-pointer"
+                onClick={() => onSelectDestination(dest)}
+              >
+                <img
+                  src={getOptimizedUnsplashUrl(dest.imageUrl, 600, 80)}
+                  srcSet={getUnsplashSrcSet(dest.imageUrl, [300, 600, 800], 80)}
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
+                  alt={dest.name}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-slate-900/80 backdrop-blur-sm text-white text-xs font-semibold flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-sky-300" />
+                  <span>{dest.country}</span>
                 </div>
-
-                {typeof dest.rating === 'number' && dest.rating > 0 && (
-                  <div className="px-2.5 py-1 rounded-full bg-slate-900/75 backdrop-blur-md text-white text-xs font-bold flex items-center gap-1 border border-white/15 shadow-sm shrink-0">
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span>{dest.rating.toFixed(1)}</span>
-                  </div>
-                )}
+                <div className="absolute top-3 right-3 px-2 py-1 rounded-full bg-white/90 backdrop-blur-sm text-amber-600 text-xs font-bold flex items-center gap-1 shadow-sm">
+                  <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+                  <span>{dest.rating}</span>
+                </div>
               </div>
 
-              {/* Bottom Editorial Content Overlay */}
-              <div className="relative z-10 space-y-3 text-white">
-                {/* Location / Country */}
-                <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#17BEBB]">
-                  <MapPin className="w-3.5 h-3.5 text-[#17BEBB] shrink-0" />
-                  <span>{dest.country}</span>
-                  {dest.cityRegion && (
-                    <span className="text-white/60 font-normal">· {dest.cityRegion}</span>
-                  )}
-                </div>
-
-                {/* Destination Name */}
-                <div>
-                  <h3 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight leading-snug group-hover:text-teal-200 transition-colors">
+              {/* Card Body */}
+              <div className="p-5 flex flex-col flex-1 justify-between gap-4">
+                <div className="space-y-1.5">
+                  <h3
+                    onClick={() => onSelectDestination(dest)}
+                    className="text-lg font-bold text-[#071A33] group-hover:text-[#0D6EFD] transition-colors cursor-pointer"
+                  >
                     {dest.name}
                   </h3>
-                  {dest.description && (
-                    <p className="text-xs sm:text-sm text-slate-200/90 font-light line-clamp-2 mt-1 leading-relaxed">
-                      {dest.description}
-                    </p>
-                  )}
+                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    {dest.description}
+                  </p>
                 </div>
 
-                {/* Verified Travel Info Row (Only when actual data exists) */}
-                <div className="pt-2.5 border-t border-white/20 flex flex-wrap items-center justify-between gap-3 text-xs">
-                  <div className="flex flex-wrap items-center gap-3 text-slate-300">
-                    {dest.recommendedDays && (
-                      <span className="font-mono text-[11px] text-white/90">
-                        {dest.recommendedDays}
-                      </span>
-                    )}
-                    {dest.flightDuration && (
-                      <span className="text-[11px] text-white/80">
-                        ✈ {dest.flightDuration}
-                      </span>
-                    )}
-                    {dest.visaFee && (
-                      <span className="text-[11px] text-[#17BEBB] font-semibold">
-                        Visa: {dest.visaFee}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Clear Explore Action */}
-                  <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/20 hover:bg-[#17BEBB] text-white hover:text-[#071A33] text-xs font-bold backdrop-blur-md border border-white/30 transition-all duration-200 shrink-0 group-hover:bg-[#17BEBB] group-hover:text-[#071A33] group-hover:border-transparent">
+                <div className="pt-3 border-t border-white/60 flex items-center justify-between">
+                  <span className="text-xs text-slate-500">
+                    Visa: <strong className="text-slate-800 font-mono">{dest.visaFee || 'Available'}</strong>
+                  </span>
+                  <button
+                    onClick={() => onSelectDestination(dest)}
+                    className="inline-flex items-center gap-1 text-xs font-bold text-[#0D6EFD] hover:text-blue-700 cursor-pointer"
+                  >
                     <span>Explore</span>
                     <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
+                  </button>
                 </div>
               </div>
             </div>

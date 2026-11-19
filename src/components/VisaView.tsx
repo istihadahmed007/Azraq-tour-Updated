@@ -87,54 +87,54 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
 
       {/* Page Header */}
       <div className="max-w-3xl space-y-3">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E7F0F8] border border-white/80 shadow-[-2px_-2px_6px_rgba(255,255,255,0.8),2px_2px_6px_rgba(166,185,204,0.3)] text-[#263B55] text-xs font-bold uppercase tracking-wider">
-          <FileCheck2 className="w-3.5 h-3.5 text-[#73A9D2]" />
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#EAF7FF] border border-[#CDE9FB] text-[#0759B8] text-xs font-bold uppercase tracking-wider">
+          <FileCheck2 className="w-3.5 h-3.5" />
           <span>Official Visa & Embassy Guidance</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-[#263B55] tracking-tight font-poppins">
+        <h1 className="text-3xl sm:text-4xl font-black text-[#12304A] tracking-tight font-poppins">
           Visa Assistance for Bangladeshi Travelers
         </h1>
-        <p className="text-[#63778D] text-base leading-relaxed">
+        <p className="text-slate-600 text-base leading-relaxed">
           Accurate documentation checklists, bank solvency rules, embassy fee breakdowns, and end-to-end submission support for Bangladeshi passport holders.
         </p>
       </div>
 
       {/* 3 Step Process Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-2xl bg-[#E7F0F8] border border-white/80 shadow-[-6px_-6px_16px_rgba(255,255,255,0.8),6px_6px_16px_rgba(166,185,204,0.3)]">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 rounded-2xl bg-white/70 backdrop-blur-xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)]">
         <div className="flex items-start gap-4">
-          <div className="w-9 h-9 rounded-xl bg-[#F7FAFD] text-[#263B55] font-black flex items-center justify-center shrink-0 text-sm border border-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)]">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF7FF] text-[#0759B8] font-black flex items-center justify-center shrink-0 text-sm">
             1
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#263B55]">Choose Destination</h3>
-            <p className="text-xs text-[#63778D] mt-0.5">Select from top countries visited by Bangladeshi tourists and business travelers.</p>
+            <h3 className="text-sm font-bold text-[#12304A]">Choose Destination</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Select from top countries visited by Bangladeshi tourists and business travelers.</p>
           </div>
         </div>
 
         <div className="flex items-start gap-4">
-          <div className="w-9 h-9 rounded-xl bg-[#F7FAFD] text-[#263B55] font-black flex items-center justify-center shrink-0 text-sm border border-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)]">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF7FF] text-[#0759B8] font-black flex items-center justify-center shrink-0 text-sm">
             2
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#263B55]">Verify Requirements</h3>
-            <p className="text-xs text-[#63778D] mt-0.5">Check official embassy fees, 6-month bank statement rules, and occupation checklists.</p>
+            <h3 className="text-sm font-bold text-[#12304A]">Verify Requirements</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Check official embassy fees, 6-month bank statement rules, and occupation checklists.</p>
           </div>
         </div>
 
         <div className="flex items-start gap-4">
-          <div className="w-9 h-9 rounded-xl bg-[#F7FAFD] text-[#263B55] font-black flex items-center justify-center shrink-0 text-sm border border-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)]">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF7FF] text-[#0759B8] font-black flex items-center justify-center shrink-0 text-sm">
             3
           </div>
           <div>
-            <h3 className="text-sm font-bold text-[#263B55]">Hassle-Free Submission</h3>
-            <p className="text-xs text-[#63778D] mt-0.5">Our Dhaka visa desk verifies all papers before embassy / VFS submission.</p>
+            <h3 className="text-sm font-bold text-[#12304A]">Hassle-Free Submission</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Our Dhaka visa desk verifies all papers before embassy / VFS submission.</p>
           </div>
         </div>
       </div>
 
       {/* Quick Destination Filter Pills */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-[#63778D] mr-1">Popular:</span>
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-500 mr-1">Popular:</span>
         {[
           { label: 'All Destinations', query: '' },
           { label: '🇲🇾 Malaysia', query: 'Malaysia' },
@@ -158,8 +158,6 @@ export const VisaView: React.FC<VisaViewProps> = ({ onOpenVisaQuote }) => {
             onClick={() => setSearchQuery(f.query)}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               searchQuery.toLowerCase() === f.query.toLowerCase()
-                ? 'bg-[#73A9D2] text-white shadow-[-2px_-2px_6px_rgba(255,255,255,0.8),2px_2px_6px_rgba(166,185,204,0.4)]'
-                : 'bg-[#E7F0F8] text-[#263B55] border border-white/80 shadow-[-2px_-2px_5px_rgba(255,255,255,0.7),2px_2px_5px_rgba(166,185,204,0.25)] hover:bg-[#F7FAFD]'
                 ? 'bg-[#0759B8] text-white shadow-xs'
                 : 'bg-white/60 backdrop-blur-md border border-white/70 text-slate-700 hover:bg-white/90'
             }`}

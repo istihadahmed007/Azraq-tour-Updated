@@ -24,51 +24,41 @@
     --profile-text-on-light: #0F172A;
     --profile-text-on-light-sec: #475569;
 
-    /* AZRAQ TRIPS Premium Ice-Blue Neumorphic Palette */
-    --color-ice-bg: #DCEAF3;
-    --color-ice-bg-subtle: #EAF2F8;
-    --color-ice-card: #E7F0F8;
-    --color-ice-surface: #F7FAFD;
-    --color-ice-text: #263B55;
-    --color-ice-text-muted: #63778D;
-    --color-ice-accent: #73A9D2;
-    --color-ice-accent-hover: #5A94C2;
-
-    /* Luxury Travel Editorial Color System (Harmonized with Ice-Blue Reference) */
-    --color-midnight: #263B55;
-    --color-navy: #263B55;
-    --color-ocean-deep: #263B55;
-    --color-ocean-blue: #73A9D2;
-    --color-teal-accent: #73A9D2;
-    --color-teal-dark: #5A94C2;
-    --color-aqua: #73A9D2;
-    --color-aqua-soft: #EAF2F8;
-    --color-sand: #E7F0F8;
-    --color-ivory: #F7FAFD;
-    --color-cta-coral: #73A9D2;
-    --color-cta-coral-hover: #5A94C2;
-    --color-surface-white: #F7FAFD;
-    --color-surface-soft: #E7F0F8;
-    --color-surface-base: #DCEAF3;
-    --color-text-main: #263B55;
-    --color-text-muted: #63778D;
-    --color-border-subtle: rgba(255, 255, 255, 0.7);
-    --color-border-dark: rgba(38, 59, 85, 0.12);
+    /* Luxury Travel Editorial Color System */
+    --color-midnight: #071A33;
+    --color-navy: #073B4C;
+    --color-ocean-deep: #071A33;
+    --color-ocean-blue: #086788;
+    --color-teal-accent: #17BEBB;
+    --color-teal-dark: #0D9488;
+    --color-aqua: #17BEBB;
+    --color-aqua-soft: #F0FDF4;
+    --color-sand: #FAF8F5;
+    --color-ivory: #F4F1EA;
+    --color-cta-coral: #0D9488;
+    --color-cta-coral-hover: #0F766E;
+    --color-surface-white: #FFFFFF;
+    --color-surface-soft: #FAF8F5;
+    --color-surface-base: #FAF8F5;
+    --color-text-main: #0F172A;
+    --color-text-muted: #64748B;
+    --color-border-subtle: rgba(226, 232, 240, 0.8);
+    --color-border-dark: rgba(255, 255, 255, 0.12);
 
     /* Backwards compatibility aliases for existing components */
-    --color-azraq-sky: #73A9D2;
-    --color-azraq-sky-hover: #5A94C2;
-    --color-azraq-deep: #263B55;
-    --color-azraq-deep-dark: #1A293B;
-    --color-azraq-cyan: #73A9D2;
-    --color-azraq-cyan-light: #EAF2F8;
-    --color-azraq-pale: #E7F0F8;
-    --color-azraq-pale-subtle: #F7FAFD;
-    --color-azraq-navy: #263B55;
-    --color-azraq-navy-deep: #1A293B;
-    --color-azraq-slate: #63778D;
-    --color-azraq-slate-light: #8BA1B7;
-    --color-azraq-coral: #E67A60;
+    --color-azraq-sky: #086788;
+    --color-azraq-sky-hover: #071A33;
+    --color-azraq-deep: #071A33;
+    --color-azraq-deep-dark: #030E1D;
+    --color-azraq-cyan: #17BEBB;
+    --color-azraq-cyan-light: #F0F9FF;
+    --color-azraq-pale: #FAF8F5;
+    --color-azraq-pale-subtle: #F8FAFC;
+    --color-azraq-navy: #071A33;
+    --color-azraq-navy-deep: #030E1D;
+    --color-azraq-slate: #64748B;
+    --color-azraq-slate-light: #94A3B8;
+    --color-azraq-coral: #17BEBB;
     --color-azraq-emerald: #10B981;
     --color-azraq-emerald-light: #D1FAE5;
     --color-azraq-amber: #F59E0B;
@@ -77,11 +67,11 @@
     --color-azraq-rose-light: #FFE4E6;
 
     /* Surface & Elevation */
-    --color-surface-card: #E7F0F8;
-    --color-surface-dark: #263B55;
-    --shadow-card: 6px 6px 18px rgba(166, 185, 204, 0.4), -6px -6px 18px rgba(255, 255, 255, 0.85);
-    --shadow-elevated: 10px 10px 28px rgba(166, 185, 204, 0.45), -10px -10px 28px rgba(255, 255, 255, 0.9);
-    --shadow-glow: 0 0 25px rgba(115, 169, 210, 0.3);
+    --color-surface-card: #FFFFFF;
+    --color-surface-dark: #071A33;
+    --shadow-card: 0 4px 20px -2px rgba(7, 26, 51, 0.04), 0 2px 6px -1px rgba(7, 26, 51, 0.02);
+    --shadow-elevated: 0 20px 40px -4px rgba(7, 26, 51, 0.08), 0 8px 16px -2px rgba(7, 26, 51, 0.04);
+    --shadow-glow: 0 0 25px rgba(23, 190, 187, 0.2);
 
     /* Motion Tokens */
     --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
@@ -617,109 +607,5 @@ textarea:focus-visible {
 html, body, #root {
   max-width: 100vw;
   overflow-x: clip;
-  background-color: #DCEAF3;
-}
-
-/* ========================================================================= */
-/* AZRAQ TRIPS PREMIUM ICE-BLUE NEUMORPHIC DESIGN UTILITIES                  */
-/* ========================================================================= */
-
-.bg-ice-canvas {
-  background-color: #DCEAF3;
-}
-
-.bg-ice-card {
-  background-color: #E7F0F8;
-}
-
-.bg-ice-surface {
-  background-color: #F7FAFD;
-}
-
-.text-ice-dark {
-  color: #263B55;
-}
-
-.text-ice-muted {
-  color: #63778D;
-}
-
-.neumorphic-card {
-  background: #E7F0F8;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 8px 8px 24px rgba(166, 185, 204, 0.45), -8px -8px 24px rgba(255, 255, 255, 0.85);
-  border-radius: 1.75rem;
-}
-
-.neumorphic-card-sm {
-  background: #E7F0F8;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 5px 5px 14px rgba(166, 185, 204, 0.35), -5px -5px 14px rgba(255, 255, 255, 0.85);
-  border-radius: 1.25rem;
-}
-
-.neumorphic-button {
-  background: #E7F0F8;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 4px 4px 10px rgba(166, 185, 204, 0.35), -4px -4px 10px rgba(255, 255, 255, 0.85);
-  color: #263B55;
-  transition: all 0.2s cubic-bezier(0.2, 0, 0, 1);
-}
-
-.neumorphic-button:hover {
-  box-shadow: 6px 6px 16px rgba(166, 185, 204, 0.45), -6px -6px 16px rgba(255, 255, 255, 0.95);
-  transform: translateY(-1px);
-}
-
-.neumorphic-button:active {
-  box-shadow: inset 2px 2px 5px rgba(166, 185, 204, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
-  transform: translateY(0);
-}
-
-.neumorphic-button-primary {
-  background: #73A9D2;
-  border: 1px solid rgba(255, 255, 255, 0.45);
-  box-shadow: 4px 4px 12px rgba(115, 169, 210, 0.45), -3px -3px 8px rgba(255, 255, 255, 0.65);
-  color: #FFFFFF;
-}
-
-.neumorphic-button-primary:hover {
-  background: #5A94C2;
-  box-shadow: 5px 5px 16px rgba(90, 148, 194, 0.5), -4px -4px 12px rgba(255, 255, 255, 0.75);
-}
-
-.neumorphic-input {
-  background: #EAF2F8;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: inset 2px 2px 6px rgba(166, 185, 204, 0.35), inset -2px -2px 6px rgba(255, 255, 255, 0.85);
-  color: #263B55;
-  border-radius: 9999px;
-}
-
-.neumorphic-input:focus {
-  outline: none;
-  border-color: #73A9D2;
-  box-shadow: inset 2px 2px 6px rgba(115, 169, 210, 0.3), inset -2px -2px 6px rgba(255, 255, 255, 0.9), 0 0 0 2px rgba(115, 169, 210, 0.25);
-}
-
-.neumorphic-circle-btn {
-  background: #E7F0F8;
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: 4px 4px 10px rgba(166, 185, 204, 0.35), -4px -4px 10px rgba(255, 255, 255, 0.85);
-  border-radius: 9999px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.neumorphic-circle-btn:hover {
-  box-shadow: 5px 5px 14px rgba(166, 185, 204, 0.45), -5px -5px 14px rgba(255, 255, 255, 0.95);
-  transform: scale(1.04);
-}
-
-.neumorphic-circle-btn:active {
-  box-shadow: inset 2px 2px 5px rgba(166, 185, 204, 0.4), inset -2px -2px 5px rgba(255, 255, 255, 0.8);
-  transform: scale(0.96);
 }
 

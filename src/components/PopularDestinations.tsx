@@ -111,20 +111,20 @@ export const PopularDestinations: React.FC<PopularDestinationsProps> = ({
         </div>
       </div>
 
-      {/* Grid of Destination Cards - Completely Square Corners */}
+      {/* Grid of Destination Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
         {filtered.map((dest) => (
           <div
             key={dest.id}
-            className="group rounded-none bg-white border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
+            className="group rounded-2xl bg-white border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between hover:-translate-y-1"
           >
             {/* Image & Badges */}
-            <div className="relative h-44 overflow-hidden bg-slate-100 rounded-none">
+            <div className="relative h-44 overflow-hidden bg-slate-100">
               <img
                 src={dest.imageUrl}
                 alt={`${dest.city}, ${dest.country}`}
                 loading="lazy"
-                className="w-full h-full object-cover rounded-none group-hover:scale-105 transition-transform duration-500"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
 

@@ -75,45 +75,48 @@ export const PackagesView: React.FC = () => {
       />
 
       {/* Hero Banner */}
-      <section aria-labelledby="packages-hero-heading" className="relative rounded-3xl overflow-hidden bg-[#E7F0F8] border border-white/80 shadow-[-8px_-8px_20px_rgba(255,255,255,0.8),8px_8px_20px_rgba(166,185,204,0.35)] p-6 sm:p-10 text-[#263B55]">
+      <section aria-labelledby="packages-hero-heading" className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-[#002f6c] via-[#0759B8] to-[#003B80] border border-white/20 shadow-xl p-6 sm:p-10 text-white">
         <div className="relative z-10 max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F7FAFD] text-[#263B55] border border-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)] text-xs font-bold uppercase tracking-wider">
-            <FileText className="w-4 h-4 text-[#73A9D2]" aria-hidden="true" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 text-white border border-white/20 text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+            <FileText className="w-4 h-4 text-[#5BC7F4]" aria-hidden="true" />
             Verified Agency PDF Packages
           </div>
 
-          <h1 id="packages-hero-heading" className="text-3xl sm:text-5xl font-extrabold text-[#263B55] tracking-tight font-poppins">
-            Explore Curated <span className="text-[#73A9D2]">Tour Packages</span>
+          <h1 id="packages-hero-heading" className="text-3xl sm:text-5xl font-black text-white tracking-tight font-poppins">
+            Explore Curated <span className="text-[#5BC7F4]">Tour Packages</span>
           </h1>
 
-          <p className="text-sm sm:text-base text-[#63778D] font-medium leading-relaxed">
+          <p className="text-sm sm:text-base text-sky-100 font-medium leading-relaxed">
             Browse verified travel itineraries, pricing tiers, and complete day-by-day tour programs curated by Azraq Bangladesh.
           </p>
 
           {/* Quick Metrics Badge */}
-          <div className="pt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-[#263B55]">
-            <span className="flex items-center gap-1.5 bg-[#F7FAFD] px-3.5 py-1.5 rounded-xl border border-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)] text-[#263B55] font-extrabold text-sm">
-              <Compass className="w-4 h-4 text-[#73A9D2]" aria-hidden="true" />
+          <div className="pt-2 flex flex-wrap items-center gap-3 text-xs font-semibold text-white">
+            <span className="flex items-center gap-1.5 bg-white/15 backdrop-blur-md px-3.5 py-1.5 rounded-xl border border-white/25 text-white font-extrabold text-sm shadow-xs">
+              <Compass className="w-4 h-4 text-[#5BC7F4]" aria-hidden="true" />
               {filteredPackages.length === packages.length
                 ? `${packages.length} Tour Packages Available`
                 : `${filteredPackages.length} of ${packages.length} Packages Showing`}
             </span>
-            <span className="flex items-center gap-1.5 bg-[#F7FAFD] px-3 py-1.5 rounded-xl border border-white shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)] text-[#63778D]">
-              <MapPin className="w-4 h-4 text-[#73A9D2]" aria-hidden="true" />
+            <span className="flex items-center gap-1.5 bg-black/20 backdrop-blur-md px-3 py-1.5 rounded-xl border border-white/15 text-sky-200">
+              <MapPin className="w-4 h-4 text-amber-300" aria-hidden="true" />
               {destinations.length} Destination Spots ({allCountries.length} Countries)
             </span>
           </div>
         </div>
+
+        {/* Ambient Glow background */}
+        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-white/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true" />
       </section>
 
       {/* Filter and Search Control Bar */}
-      <section aria-label="Search and Filter Tour Packages" className="bg-[#E7F0F8] p-5 rounded-2xl border border-white/80 shadow-[-6px_-6px_16px_rgba(255,255,255,0.8),6px_6px_16px_rgba(166,185,204,0.3)] space-y-4">
+      <section aria-label="Search and Filter Tour Packages" className="bg-white/70 backdrop-blur-xl p-5 rounded-2xl border border-white/60 shadow-[0_8px_32px_rgba(7,26,51,0.05)] space-y-4">
         {/* Search Input */}
         <div className="relative w-full">
           <label htmlFor="package-search-input" className="sr-only">
             Search tour packages
           </label>
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#73A9D2]" aria-hidden="true" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#0759B8]" aria-hidden="true" />
           <input
             id="package-search-input"
             name="searchQuery"
@@ -121,13 +124,13 @@ export const PackagesView: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by package name, destination, country, or hotel..."
-            className="w-full pl-12 pr-4 py-3 rounded-xl bg-[#F7FAFD] border border-white/80 text-[#263B55] placeholder-[#63778D]/60 text-sm focus:outline-none focus:border-[#73A9D2] transition-colors shadow-inner"
+            className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/60 border border-white/80 text-[#12304A] placeholder-slate-400 text-sm focus:outline-none focus:border-[#1389E8] focus:bg-white/90 transition-colors shadow-xs focus-visible:ring-2 focus-visible:ring-[#1389E8]"
           />
           {searchQuery && (
             <button
               type="button"
               onClick={() => setSearchQuery('')}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#63778D] hover:text-[#263B55] cursor-pointer rounded"
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-700 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#0759B8] focus-visible:outline-none rounded"
               aria-label="Clear package search query"
             >
               Clear
@@ -136,11 +139,11 @@ export const PackagesView: React.FC = () => {
         </div>
 
         {/* Selectors Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-3 border-t border-[#A6B9CC]/30">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 pt-3 border-t border-white/60">
           {/* Country Filter */}
           <div>
-            <label htmlFor="package-country-select" className="block text-xs font-bold text-[#263B55] uppercase tracking-wider mb-1 flex items-center gap-1">
-              <MapPin className="w-3.5 h-3.5 text-[#73A9D2]" aria-hidden="true" />
+            <label htmlFor="package-country-select" className="block text-xs font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
+              <MapPin className="w-3.5 h-3.5 text-[#1389E8]" aria-hidden="true" />
               Country
             </label>
             <select
@@ -151,7 +154,7 @@ export const PackagesView: React.FC = () => {
                 setSelectedCountry(e.target.value);
                 setSelectedDestinationId('All');
               }}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-[#F7FAFD] border border-white/80 text-[#263B55] text-sm font-semibold focus:outline-none focus:border-[#73A9D2] cursor-pointer shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)]"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/60 border border-white/70 text-[#12304A] text-sm font-semibold focus:outline-none focus:border-[#1389E8] focus:bg-white/90 cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
             >
               <option value="All">All Countries ({allCountries.length})</option>
               {allCountries.map((country) => (
@@ -164,8 +167,8 @@ export const PackagesView: React.FC = () => {
 
           {/* Destination Filter */}
           <div>
-            <label htmlFor="package-destination-select" className="block text-[11px] font-bold text-[#263B55] uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Compass className="w-3.5 h-3.5 text-[#73A9D2]" aria-hidden="true" />
+            <label htmlFor="package-destination-select" className="block text-[11px] font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
+              <Compass className="w-3.5 h-3.5 text-[#1389E8]" aria-hidden="true" />
               Destination
             </label>
             <select
@@ -173,7 +176,7 @@ export const PackagesView: React.FC = () => {
               name="destination"
               value={selectedDestinationId}
               onChange={(e) => setSelectedDestinationId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#F7FAFD] border border-white/80 text-[#263B55] text-xs font-semibold focus:outline-none focus:border-[#73A9D2] cursor-pointer shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)]"
+              className="w-full px-3 py-2 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-xs font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
             >
               <option value="All">All Destinations ({destinations.length})</option>
               {destinations
@@ -188,8 +191,8 @@ export const PackagesView: React.FC = () => {
 
           {/* Duration Filter */}
           <div>
-            <label htmlFor="package-duration-select" className="block text-[11px] font-bold text-[#263B55] uppercase tracking-wider mb-1 flex items-center gap-1">
-              <Calendar className="w-3.5 h-3.5 text-[#73A9D2]" aria-hidden="true" />
+            <label htmlFor="package-duration-select" className="block text-[11px] font-bold text-[#12304A] uppercase tracking-wider mb-1 flex items-center gap-1">
+              <Calendar className="w-3.5 h-3.5 text-[#1389E8]" aria-hidden="true" />
               Duration
             </label>
             <select
@@ -197,7 +200,7 @@ export const PackagesView: React.FC = () => {
               name="duration"
               value={selectedDuration}
               onChange={(e) => setSelectedDuration(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-[#F7FAFD] border border-white/80 text-[#263B55] text-xs font-semibold focus:outline-none focus:border-[#73A9D2] cursor-pointer shadow-[-2px_-2px_5px_rgba(255,255,255,0.9),2px_2px_5px_rgba(166,185,204,0.25)]"
+              className="w-full px-3 py-2 rounded-xl bg-[#F4FAFD] border border-[#E1EFF8] text-[#12304A] text-xs font-semibold focus:outline-none focus:border-[#1389E8] cursor-pointer focus-visible:ring-2 focus-visible:ring-[#1389E8]"
             >
               <option value="All">All Durations</option>
               <option value="Short (1-3 Days)">Short (1-3 Days)</option>
@@ -209,11 +212,11 @@ export const PackagesView: React.FC = () => {
           {/* Price Range Slider */}
           <div>
             <div className="flex justify-between items-center mb-1">
-              <label htmlFor="package-price-range" className="text-[11px] font-bold text-[#263B55] uppercase tracking-wider flex items-center gap-1">
-                <DollarSign className="w-3.5 h-3.5 text-[#73A9D2]" aria-hidden="true" />
+              <label htmlFor="package-price-range" className="text-[11px] font-bold text-[#12304A] uppercase tracking-wider flex items-center gap-1">
+                <DollarSign className="w-3.5 h-3.5 text-[#0759B8]" aria-hidden="true" />
                 Max Price
               </label>
-              <span className="text-xs font-mono font-extrabold text-[#263B55]">
+              <span className="text-xs font-mono font-extrabold text-[#0759B8]">
                 ৳ {maxPriceFilter.toLocaleString()}
               </span>
             </div>
@@ -225,7 +228,7 @@ export const PackagesView: React.FC = () => {
               step={1000}
               value={maxPriceFilter}
               onChange={(e) => setMaxPriceFilter(Number(e.target.value))}
-              className="w-full accent-[#73A9D2] cursor-pointer"
+              className="w-full accent-[#0759B8] cursor-pointer"
             />
           </div>
         </div>

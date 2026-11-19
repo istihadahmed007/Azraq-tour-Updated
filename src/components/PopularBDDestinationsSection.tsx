@@ -149,105 +149,98 @@ export const PopularBDDestinationsSection: React.FC<PopularBDDestinationsSection
           };
 
           return (
+            <div
+              key={`featured-${dest.id}`}
+              className="group rounded-2xl sm:rounded-3xl overflow-hidden bg-white text-slate-900 border border-slate-200/80 hover:border-[#0D6EFD] transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-blue-900/20 flex flex-col justify-between hover:-translate-y-1"
+            >
+              {/* Top Image with Location Pin Badge */}
               <div
-                key={`featured-${dest.id}`}
-                role="button"
-                tabIndex={0}
-                aria-label={`Explore destination: ${dest.name}, ${dest.country}`}
+                className="relative h-48 sm:h-52 overflow-hidden bg-slate-100 cursor-pointer"
                 onClick={() => onSelectDestination(dest)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelectDestination(dest);
-                  }
-                }}
-                className="group relative rounded-none overflow-hidden h-[420px] sm:h-[440px] cursor-pointer shadow-lg hover:shadow-2xl border border-slate-200/40 transition-all duration-500 flex flex-col justify-between p-5 bg-[#071A33] hover:-translate-y-1"
               >
-                {/* Full-bleed background image */}
                 <img
                   src={getOptimizedUnsplashUrl(dest.imageUrl, 600, 80)}
                   srcSet={getUnsplashSrcSet(dest.imageUrl, [300, 600, 800], 80)}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 280px"
                   alt={`Travel destination ${dest.name}, ${dest.country}`}
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover rounded-none group-hover:scale-105 transition-transform duration-700 ease-out"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1508009603885-50cf7c579365?auto=format&fit=crop&w=800&q=80';
-                  }}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
-
-                {/* Dark gradient overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#071A33] via-[#071A33]/60 to-transparent pointer-events-none" />
-                <div className="absolute inset-0 bg-gradient-to-b from-[#071A33]/50 via-transparent to-transparent pointer-events-none" />
                 
-                {/* Top Badges */}
-                <div className="relative z-10 flex items-center justify-between gap-2 w-full">
-                  <div className="px-2.5 py-1 rounded-full bg-[#071A33]/80 backdrop-blur-md border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
-                    <MapPin className="w-3 h-3 text-[#22C7C9]" />
-                    <span>{dest.cityRegion || dest.country}</span>
-                  </div>
-
-                  {dest.rating && dest.rating > 0 && (
-                    <div className="px-2 py-1 rounded-full bg-slate-900/75 backdrop-blur-md text-white font-bold text-xs flex items-center gap-1 border border-white/15 shadow-sm">
-                      <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
-                      <span>{dest.rating}</span>
-                    </div>
-                  )}
+                {/* Location Pin Badge over Image */}
+                <div className="absolute top-3 left-3 px-3 py-1 rounded-full bg-[#071A33]/80 backdrop-blur-md border border-white/20 text-xs font-bold text-white flex items-center gap-1.5 shadow-md">
+                  <MapPin className="w-3.5 h-3.5 text-[#22C7C9]" />
+                  <span>{dest.cityRegion || dest.country}</span>
                 </div>
 
-                {/* Bottom Overlay Info */}
-                <div className="relative z-10 space-y-2.5 text-white">
+                {/* Trip Type Pill */}
+                <div className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg bg-[#071A33]/90 backdrop-blur-md text-[11px] font-bold text-[#22C7C9] border border-sky-400/30">
+                  {reasonMeta.tripType}
+                </div>
+
+                {/* Star Rating Badge */}
+                <div className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-amber-500 font-bold text-xs flex items-center gap-1 shadow-sm">
+                  <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  <span className="text-slate-900 font-extrabold">{dest.rating}</span>
+                </div>
+              </div>
+
+              {/* Clean White Content Area */}
+              <div className="p-4 sm:p-5 flex flex-col gap-3 flex-1 justify-between bg-white">
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span className="font-semibold text-[#0D6EFD] uppercase tracking-wider text-[10px]">{dest.country}</span>
+                    <span className="text-[11px] text-slate-400">Dhaka Departure</span>
+                  </div>
+                  <h3
+                    onClick={() => onSelectDestination(dest)}
+                    className="text-base sm:text-lg font-bold text-[#071A33] group-hover:text-[#0D6EFD] transition-colors cursor-pointer line-clamp-1"
+                  >
+                    {dest.name}
+                  </h3>
+                  <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                    {reasonMeta.reason}
+                  </p>
+                </div>
+
+                {/* Pricing & Visa Row */}
+                <div className="p-2.5 rounded-xl bg-[#EAF7FF] border border-sky-200/80 flex items-center justify-between text-xs">
                   <div>
-                    <div className="flex items-center justify-between text-xs text-[#22C7C9] mb-0.5">
-                      <span className="font-semibold uppercase tracking-wider text-[10px]">{dest.country}</span>
-                      <span className="text-[10px] text-white/70">{reasonMeta.tripType}</span>
-                    </div>
-                    <h3
-                      className="text-xl font-extrabold text-white group-hover:text-teal-200 transition-colors line-clamp-1"
-                    >
-                      {dest.name}
-                    </h3>
-                    <p className="text-xs text-slate-200/90 line-clamp-2 mt-0.5 leading-relaxed font-light">
-                      {reasonMeta.reason}
-                    </p>
+                    <span className="text-[10px] text-slate-500 block">Starting from</span>
+                    <span className="font-bold text-[#071A33] font-mono text-xs">{reasonMeta.startingPriceBDT}</span>
                   </div>
-
-                  {/* Pricing & Visa Row */}
-                  <div className="pt-2 border-t border-white/20 flex items-center justify-between text-xs">
-                    <div>
-                      {reasonMeta.startingPriceBDT && (
-                        <span className="font-bold text-white font-mono text-xs">{reasonMeta.startingPriceBDT}</span>
-                      )}
-                    </div>
-                    {dest.visaFee && (
-                      <span className="text-[11px] font-semibold text-[#22C7C9]">
-                        Visa: {dest.visaFee}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Action Link */}
-                  <div className="pt-1 flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#22C7C9] group-hover:text-white flex items-center gap-1 transition-colors">
-                      <span>Explore Destination</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
+                  <div className="text-right">
+                    <span className="text-[10px] text-slate-500 block">Visa</span>
+                    <span className="font-semibold text-[#0D6EFD] text-[11px]">
+                      {dest.visaFee || getVisaFeeForDestination(dest.country || dest.name)}
                     </span>
+                  </div>
+                </div>
+
+                {/* Action Links */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                  <button
+                    onClick={() => onSelectDestination(dest)}
+                    className="text-xs font-extrabold text-[#0D6EFD] hover:text-blue-700 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    <span>Explore</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
                     <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setVisaModalCountry(dest.country);
-                      }}
-                      className="text-[11px] font-medium text-white/80 hover:text-white underline underline-offset-2 cursor-pointer"
+                      onClick={() => handleOpenVisaQuote(dest.country || dest.name)}
+                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-teal-50 text-teal-700 hover:bg-teal-100 border border-teal-200 transition-all cursor-pointer"
                     >
-                      Visa Assistance
+                      Visa Guide
                     </button>
                   </div>
                 </div>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
+      </div>
 
       {/* Footnote on Pricing & Availability */}
       <p className="text-[11px] text-slate-400 text-center max-w-2xl mx-auto pt-1">

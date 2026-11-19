@@ -281,19 +281,19 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
 
   return (
     <div className={`w-full max-w-full ${className}`}>
-      {/* 1. Mode Category Tabs (Neumorphic Ice-Blue Segmented Control) */}
+      {/* 1. Mode Category Tabs (Refined Segmented Control) */}
       <div className="flex items-center gap-1 sm:gap-2 pb-3 overflow-x-auto no-scrollbar">
-        <div className="inline-flex p-1.5 rounded-2xl bg-[#E7F0F8] border border-white/80 shadow-[inset_2px_2px_5px_rgba(166,185,204,0.3),inset_-2px_-2px_5px_rgba(255,255,255,0.8)]">
+        <div className="inline-flex p-1.5 rounded-2xl bg-black/40 backdrop-blur-md border border-white/15">
           <button
             type="button"
             onClick={() => setActiveTab('flights')}
             className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'flights'
-                ? 'bg-[#F7FAFD] text-[#263B55] shadow-[2px_2px_6px_rgba(166,185,204,0.35),-2px_-2px_6px_rgba(255,255,255,0.9)] border border-white/90 font-extrabold'
-                : 'text-[#63778D] hover:text-[#263B55] hover:bg-white/40'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
             }`}
           >
-            <Plane className={`w-4 h-4 ${activeTab === 'flights' ? 'text-[#73A9D2]' : 'text-[#63778D]'}`} />
+            <Plane className={`w-4 h-4 ${activeTab === 'flights' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
             <span>Flights</span>
           </button>
 
@@ -302,11 +302,11 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
             onClick={() => setActiveTab('packages')}
             className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'packages'
-                ? 'bg-[#F7FAFD] text-[#263B55] shadow-[2px_2px_6px_rgba(166,185,204,0.35),-2px_-2px_6px_rgba(255,255,255,0.9)] border border-white/90 font-extrabold'
-                : 'text-[#63778D] hover:text-[#263B55] hover:bg-white/40'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
             }`}
           >
-            <Package className={`w-4 h-4 ${activeTab === 'packages' ? 'text-[#73A9D2]' : 'text-[#63778D]'}`} />
+            <Package className={`w-4 h-4 ${activeTab === 'packages' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
             <span>Holiday Packages</span>
           </button>
 
@@ -315,11 +315,11 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
             onClick={() => setActiveTab('visa')}
             className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'visa'
-                ? 'bg-[#F7FAFD] text-[#263B55] shadow-[2px_2px_6px_rgba(166,185,204,0.35),-2px_-2px_6px_rgba(255,255,255,0.9)] border border-white/90 font-extrabold'
-                : 'text-[#63778D] hover:text-[#263B55] hover:bg-white/40'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
             }`}
           >
-            <FileCheck2 className={`w-4 h-4 ${activeTab === 'visa' ? 'text-[#73A9D2]' : 'text-[#63778D]'}`} />
+            <FileCheck2 className={`w-4 h-4 ${activeTab === 'visa' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
             <span>Visa Assistance</span>
           </button>
 
@@ -328,11 +328,11 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
             onClick={() => setActiveTab('planner')}
             className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'planner'
-                ? 'bg-[#F7FAFD] text-[#263B55] shadow-[2px_2px_6px_rgba(166,185,204,0.35),-2px_-2px_6px_rgba(255,255,255,0.9)] border border-white/90 font-extrabold'
-                : 'text-[#63778D] hover:text-[#263B55] hover:bg-white/40'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
             }`}
           >
-            <Sparkles className={`w-4 h-4 ${activeTab === 'planner' ? 'text-amber-500' : 'text-[#63778D]'}`} />
+            <Sparkles className={`w-4 h-4 ${activeTab === 'planner' ? 'text-amber-500' : 'text-white/70'}`} />
             <span>AI Trip Planner</span>
           </button>
 
@@ -341,18 +341,18 @@ export const AzraqTripFinder: React.FC<AzraqTripFinderProps> = ({
             onClick={() => setActiveTab('hotels')}
             className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer ${
               activeTab === 'hotels'
-                ? 'bg-[#F7FAFD] text-[#263B55] shadow-[2px_2px_6px_rgba(166,185,204,0.35),-2px_-2px_6px_rgba(255,255,255,0.9)] border border-white/90 font-extrabold'
-                : 'text-[#63778D] hover:text-[#263B55] hover:bg-white/40'
+                ? 'bg-white text-[#071A33] shadow-xs'
+                : 'text-white/80 hover:text-white hover:bg-white/10'
             }`}
           >
-            <Building2 className={`w-4 h-4 ${activeTab === 'hotels' ? 'text-[#73A9D2]' : 'text-[#63778D]'}`} />
+            <Building2 className={`w-4 h-4 ${activeTab === 'hotels' ? 'text-[#17BEBB]' : 'text-white/70'}`} />
             <span>Hotels</span>
           </button>
         </div>
       </div>
 
-      {/* 2. Main Search Container: Premium Ice-Blue Neumorphic Floating Panel */}
-      <div className="w-full bg-[#E7F0F8]/95 backdrop-blur-2xl rounded-[28px] p-4 sm:p-6 lg:p-7 shadow-[8px_8px_24px_rgba(166,185,204,0.45),-8px_-8px_24px_rgba(255,255,255,0.85)] border border-white/80 text-[#263B55] relative z-20 transition-all">
+      {/* 2. Main Search Container: Premium Glassmorphic Floating Panel */}
+      <div className="w-full bg-white/30 hover:bg-white/35 backdrop-blur-2xl rounded-3xl p-3.5 sm:p-5 lg:p-6 shadow-[0_20px_50px_rgba(7,26,51,0.28)] border border-white/45 text-slate-900 ring-1 ring-white/30 relative z-20 transition-all">
         {/* Luminous top specular refraction highlight */}
         <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/80 to-transparent pointer-events-none rounded-t-3xl" />
 

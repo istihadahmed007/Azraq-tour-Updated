@@ -10,10 +10,10 @@ export const AnimatedSkyBackground: React.FC = () => {
       className="fixed inset-0 pointer-events-none -z-10 overflow-hidden select-none"
       style={{ willChange: 'transform' }}
     >
-      {/* 1. Base Rich Atmospheric Ice-Blue Canvas Layer */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#DCEAF3] via-[#EAF2F8] to-[#DCEAF3]" />
+      {/* 1. Base Rich Atmospheric Gradient Layer */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#06152B] via-[#0A2E50] to-[#041224]" />
 
-      {/* 2. Floating Ambient Light Orbs (Soft Azure / Pure White / Pale Cyan) */}
+      {/* 2. Floating Ambient Light Orbs (Cyan / Teal / Ocean Azure) */}
       <motion.div
         animate={
           shouldReduceMotion
@@ -25,7 +25,7 @@ export const AnimatedSkyBackground: React.FC = () => {
             }
         }
         transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] max-w-[900px] max-h-[900px] rounded-full bg-gradient-to-br from-[#73A9D2]/20 via-[#FFFFFF]/40 to-transparent blur-[120px] opacity-75"
+        className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] max-w-[900px] max-h-[900px] rounded-full bg-gradient-to-br from-[#17BEBB]/25 via-[#086788]/20 to-transparent blur-[100px] opacity-70"
       />
 
       <motion.div
@@ -39,7 +39,7 @@ export const AnimatedSkyBackground: React.FC = () => {
             }
         }
         transition={{ duration: 22, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-[25%] -right-[15%] w-[60vw] h-[60vw] max-w-[850px] max-h-[850px] rounded-full bg-gradient-to-bl from-[#FFFFFF]/50 via-[#73A9D2]/15 to-transparent blur-[130px] opacity-70"
+        className="absolute top-[25%] -right-[15%] w-[60vw] h-[60vw] max-w-[850px] max-h-[850px] rounded-full bg-gradient-to-bl from-[#00D2C4]/20 via-[#0D9488]/15 to-transparent blur-[110px] opacity-60"
       />
 
       <motion.div
@@ -53,7 +53,7 @@ export const AnimatedSkyBackground: React.FC = () => {
             }
         }
         transition={{ duration: 26, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-[60%] -left-[10%] w-[70vw] h-[70vw] max-w-[950px] max-h-[950px] rounded-full bg-gradient-to-tr from-[#73A9D2]/20 via-[#FFFFFF]/35 to-transparent blur-[140px] opacity-65"
+        className="absolute top-[60%] -left-[10%] w-[70vw] h-[70vw] max-w-[950px] max-h-[950px] rounded-full bg-gradient-to-tr from-[#086788]/25 via-[#17BEBB]/15 to-transparent blur-[120px] opacity-55"
       />
 
       <motion.div
@@ -67,7 +67,7 @@ export const AnimatedSkyBackground: React.FC = () => {
             }
         }
         transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute bottom-[-10%] right-[10%] w-[55vw] h-[55vw] max-w-[800px] max-h-[800px] rounded-full bg-gradient-to-tl from-[#FFFFFF]/60 via-[#73A9D2]/20 to-transparent blur-[120px] opacity-70"
+        className="absolute bottom-[-10%] right-[10%] w-[55vw] h-[55vw] max-w-[800px] max-h-[800px] rounded-full bg-gradient-to-tl from-[#0A3D62]/35 via-[#17BEBB]/20 to-transparent blur-[100px] opacity-65"
       />
 
       {/* 3. Drifting High-Altitude Cloud Wisps (Dual Layer) */}
@@ -102,14 +102,14 @@ export const AnimatedSkyBackground: React.FC = () => {
       >
         <defs>
           <linearGradient id="flightStreamer1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#73A9D2" stopOpacity="0" />
-            <stop offset="50%" stopColor="#73A9D2" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#5A94C2" stopOpacity="0" />
+            <stop offset="0%" stopColor="#17BEBB" stopOpacity="0" />
+            <stop offset="50%" stopColor="#17BEBB" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#086788" stopOpacity="0" />
           </linearGradient>
           <linearGradient id="flightStreamer2" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#A6C8E0" stopOpacity="0" />
-            <stop offset="45%" stopColor="#A6C8E0" stopOpacity="0.35" />
-            <stop offset="100%" stopColor="#73A9D2" stopOpacity="0" />
+            <stop offset="0%" stopColor="#5BC7F4" stopOpacity="0" />
+            <stop offset="45%" stopColor="#5BC7F4" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#17BEBB" stopOpacity="0" />
           </linearGradient>
         </defs>
 

@@ -309,11 +309,11 @@ export const DestinationDiscoveryHub: React.FC<DestinationDiscoveryHubProps> = (
           return (
             <div
               key={dest.id}
-              className="group rounded-none overflow-hidden bg-slate-900/90 border border-white/15 hover:border-sky-400/60 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-sky-500/10 flex flex-col justify-between hover:-translate-y-1"
+              className="group rounded-3xl overflow-hidden bg-slate-900/90 border border-white/15 hover:border-sky-400/60 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-sky-500/10 flex flex-col justify-between hover:-translate-y-1"
             >
               {/* Destination Cover Image */}
               <div
-                className="relative h-60 overflow-hidden bg-slate-950 cursor-pointer rounded-none"
+                className="relative h-60 overflow-hidden bg-slate-950 cursor-pointer"
                 onClick={() => onSelectDestination(dest)}
               >
                 <img
@@ -322,7 +322,7 @@ export const DestinationDiscoveryHub: React.FC<DestinationDiscoveryHubProps> = (
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 380px"
                   alt={dest.name}
                   loading="lazy"
-                  className="w-full h-full object-cover rounded-none group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
 
